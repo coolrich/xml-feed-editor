@@ -6,23 +6,101 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>325</width>
-    <height>284</height>
+    <width>666</width>
+    <height>214</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTreeView" name="tree_view">
+   <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
-      <width>256</width>
-      <height>192</height>
+      <y>140</y>
+      <width>91</width>
+      <height>23</height>
      </rect>
     </property>
+    <property name="text">
+     <string>Отримати XML</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Початковий список</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>0</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Кінцевий список</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="search_line_edit">
+    <property name="geometry">
+     <rect>
+      <x>58</x>
+      <y>37</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>14</x>
+      <y>40</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Пошук:</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>601</width>
+      <height>73</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTableView" name="source_category_table_view"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="text">
+        <string>Додати до
+XML</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableView" name="final_category_table_view"/>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -30,7 +108,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>325</width>
+     <width>666</width>
      <height>21</height>
     </rect>
    </property>

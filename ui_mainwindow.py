@@ -16,28 +16,62 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QHeaderView, QMainWindow, QMenu,
-    QMenuBar, QSizePolicy, QStatusBar, QTreeView,
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QStatusBar, QTableView,
     QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(325, 284)
+        MainWindow.resize(666, 214)
         self.open_action = QAction(MainWindow)
         self.open_action.setObjectName(u"open_action")
         self.exit_action = QAction(MainWindow)
         self.exit_action.setObjectName(u"exit_action")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.tree_view = QTreeView(self.centralwidget)
-        self.tree_view.setObjectName(u"tree_view")
-        self.tree_view.setGeometry(QRect(10, 10, 256, 192))
+        self.pushButton = QPushButton(self.centralwidget)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QRect(10, 140, 91, 23))
+        self.label = QLabel(self.centralwidget)
+        self.label.setObjectName(u"label")
+        self.label.setGeometry(QRect(10, 0, 111, 16))
+        self.label_2 = QLabel(self.centralwidget)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setGeometry(QRect(360, 0, 91, 16))
+        self.search_line_edit = QLineEdit(self.centralwidget)
+        self.search_line_edit.setObjectName(u"search_line_edit")
+        self.search_line_edit.setGeometry(QRect(58, 37, 113, 20))
+        self.label_3 = QLabel(self.centralwidget)
+        self.label_3.setObjectName(u"label_3")
+        self.label_3.setGeometry(QRect(14, 40, 47, 13))
+        self.widget = QWidget(self.centralwidget)
+        self.widget.setObjectName(u"widget")
+        self.widget.setGeometry(QRect(10, 60, 601, 73))
+        self.horizontalLayout = QHBoxLayout(self.widget)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.source_category_table_view = QTableView(self.widget)
+        self.source_category_table_view.setObjectName(u"source_category_table_view")
+
+        self.horizontalLayout.addWidget(self.source_category_table_view)
+
+        self.pushButton_2 = QPushButton(self.widget)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+
+        self.horizontalLayout.addWidget(self.pushButton_2)
+
+        self.final_category_table_view = QTableView(self.widget)
+        self.final_category_table_view.setObjectName(u"final_category_table_view")
+
+        self.horizontalLayout.addWidget(self.final_category_table_view)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 325, 21))
+        self.menubar.setGeometry(QRect(0, 0, 666, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         MainWindow.setMenuBar(self.menubar)
@@ -59,6 +93,12 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.open_action.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0456\u0434\u043a\u0440\u0438\u0442\u0438", None))
         self.exit_action.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0445\u0456\u0434", None))
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0447\u0430\u0442\u043a\u043e\u0432\u0438\u0439 \u0441\u043f\u0438\u0441\u043e\u043a", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u041a\u0456\u043d\u0446\u0435\u0432\u0438\u0439 \u0441\u043f\u0438\u0441\u043e\u043a", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
+        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0434\u043e\n"
+"XML", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))
     # retranslateUi
 
