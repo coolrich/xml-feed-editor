@@ -44,12 +44,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # open xml file
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
+        categories = self.parse(file_path)
+        for category in categories:
+            category_item = QStandardItem(category)
+            category_item.setCheckable(True)
+            self.source_cat_model.appendRow(category_item)
 
+        print("File closed")
+
+    def parse(self, file_path):
         if file_path:
             # Завантажити файл
             with open(file_path, "r", encoding="windows-1251") as f:
                 soup = BeautifulSoup(f.read(), "lxml")
-
         # Знайти всі теги
         tags = soup.find_all("category")
         categories = []
@@ -64,14 +71,4 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category = tag.text.strip()
             categories.append(category)
             products[category] = ["product_1", "product_2", "product_3"]
-
-        # Створити модель даних
-
-        # Додати категорії товарів
-        for category in categories:
-            # Створити вузол для категорії
-            category_item = QStandardItem(category)
-            category_item.setCheckable(True)
-            self.source_cat_model.appendRow(category_item)
-
-        print("File closed")
+        return categories
