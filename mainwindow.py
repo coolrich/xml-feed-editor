@@ -131,15 +131,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
         categories = self.parse(file_path)
-        self.populate_source_cat_table(categories)
+        # self.populate_source_cat_table(categories)
         print("File closed")
 
-    def populate_source_cat_table(self, categories):
-        for category in categories:
-            category_item = QStandardItem()
-            category_item.setCheckable(True)
-            category_item.setData(category, Qt.DisplayRole)
-            self.source_cat_model.appendRow(category_item)
+    # def populate_source_cat_table(self, categories):
+    #     for category in categories:
+    #         category_item = QStandardItem()
+    #         category_item.setCheckable(True)
+    #         category_item.setData(category, Qt.DisplayRole)
+    #         self.source_cat_model.appendRow(category_item)
 
     @staticmethod
     def parse(file_path):
@@ -149,16 +149,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 soup = BeautifulSoup(f.read(), "lxml")
         # Знайти всі теги
         tags = soup.find_all("category")
-        categories = []
-        products = {}
+        categories = {}
         # Для кожного тегу
         for tag in tags:
-            # Вивести ім'я тегу
-            # print(f"Назва елемента: {tag.name}")
-
-            # Вивести текст тегу
-            # print(f"Вміст елемента: {tag.text.strip()}")
             category = tag.text.strip()
-            categories.append(category)
-            products[category] = ["product_1", "product_2", "product_3"]
+            categories[category] = f"{tag['id']}"
         return categories
