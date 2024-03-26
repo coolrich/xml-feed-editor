@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView
 from bs4 import BeautifulSoup
 
 from ui_mainwindow import Ui_MainWindow
@@ -47,8 +47,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.search_category_line_edit.textChanged.connect(self.onTextChanged)
         self.open_action.triggered.connect(self.open_file)
-        self.add_cat_push_button.clicked.connect(self.add_category_into_table)
-        self.delete_cat_push_button.clicked.connect(self.remove_category_from_table)
+        # self.add_cat_push_button.clicked.connect(self.add_category_into_table)
+        self.add_cat_push_button.clicked.connect(
+            lambda: self.move_items_between_tables(self.source_category_table_view, self.final_category_table_view))
+        # self.delete_cat_push_button.clicked.connect(self.remove_category_from_table)
+        self.delete_cat_push_button.clicked.connect(
+            lambda: self.move_items_between_tables(self.final_category_table_view, self.source_category_table_view))
         self.fin_cat_model.rowsInserted.connect(self.add_products_to_table)
         self.fin_cat_model.rowsRemoved.connect(self.remove_products_from_table)
         self.xml_data = None
@@ -64,75 +68,64 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def onTextChanged(self, text):
         self.source_cat_proxy_model.setFilterFixedString(text)
 
-    def add_category_into_table(self):
-        sctv_model = self.source_category_table_view.model()
-        fctv_model = self.final_category_table_view.model()
-        sctv_results = []
-        # Select checked categories to the final category table
-        # for row in range(row_count):
-        row_count = sctv_model.rowCount()
+    from PySide6.QtCore import Qt
+
+    @staticmethod
+    def move_items_between_tables(source_table_view: QTableView,
+                                  destination_table_view: QTableView):
+        """
+        Moves checked items from the source table view to the destination table view.
+
+        Args:
+            source_table_view (QtWidgets.QTableView): The source table view.
+            destination_table_view (QtWidgets.QTableView): The destination table view.
+        """
+
+        # Get source and destination models
+        source_model = source_table_view.model()
+        destination_model = destination_table_view.model()
+
+        if not source_model or not destination_model:
+            print("Error: Invalid table view models.")
+            return
+
+        # Collect checked items in source model
+        source_results = []
+        row_count = source_model.rowCount()
         row = 0
-        while True:
-            checked = sctv_model.data(sctv_model.index(row, 0), Qt.CheckStateRole)
-            item = sctv_model.data(sctv_model.index(row, 0))
+        while row < row_count:
+            checked = source_model.data(source_model.index(row, 0), Qt.CheckStateRole)
             if checked == 2:
-                sctv_results.append(item)
-                sctv_model.removeRow(row)
+                item = source_model.data(source_model.index(row, 0))
+                source_results.append(item)
+                source_model.removeRow(row)
             else:
                 row += 1
-            if row >= row_count:
-                break
 
-        print(sctv_results)
+        # Check for destination model existence (improved error handling)
+        if not destination_model:
+            print("Error: Destination table view has no model.")
+            return
 
-        # Checking for the presence of an element in the final table
-        fctv_results = []
-        for row in range(fctv_model.rowCount()):
-            item = fctv_model.data(fctv_model.index(row, 0))
-            fctv_results.append(item)
+        # Collect existing items in destination model
+        destination_results = []
+        for row in range(destination_model.rowCount()):
+            item = destination_model.data(destination_model.index(row, 0))
+            destination_results.append(item)
 
-        for category in sctv_results:
+        # Add unique items from source to destination
+        for category in source_results:
             category_item = QStandardItem()
             category_item.setData(category, Qt.DisplayRole)
             category_item.setCheckable(True)
-            # If the element is not in the final table, add it
-            if category_item.data(Qt.DisplayRole) not in fctv_results:
-                fctv_model.appendRow(category_item)
+            if category_item.data(Qt.DisplayRole) not in destination_results:
+                if destination_model.__class__ == QStandardItemModel:
+                    destination_model.appendRow(category_item)
+                    continue
+                destination_model.sourceModel().appendRow(category_item)
 
-    def remove_category_from_table(self):
-        fctv_model = self.source_category_table_view.model()
-        sctv_model = self.final_category_table_view.model()
-        sctv_results = []
-        # Select checked categories to the final category table
-        # for row in range(row_count):
-        row_count = sctv_model.rowCount()
-        row = 0
-        while True:
-            checked = sctv_model.data(sctv_model.index(row, 0), Qt.CheckStateRole)
-            item = sctv_model.data(sctv_model.index(row, 0))
-            if checked == 2:
-                sctv_results.append(item)
-                sctv_model.removeRow(row)
-            else:
-                row += 1
-            if row >= row_count:
-                break
+        print("The process of moving items has been completed.")
 
-        print(sctv_results)
-
-        # Checking for the presence of an element in the final table
-        fctv_results = []
-        for row in range(fctv_model.rowCount()):
-            item = fctv_model.data(fctv_model.index(row, 0))
-            fctv_results.append(item)
-
-        for category in sctv_results:
-            category_item = QStandardItem()
-            category_item.setData(category, Qt.DisplayRole)
-            category_item.setCheckable(True)
-            # If the element is not in the final table, add it
-            if category_item.data(Qt.DisplayRole) not in fctv_results:
-                self.source_cat_model.insertRow(0, category_item)
 
     # open xml file
     def open_file(self):
