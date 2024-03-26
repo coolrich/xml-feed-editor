@@ -1,9 +1,9 @@
-from PySide6 import QtGui, QtCore
-from PySide6.QtCore import Qt
 from PySide6.QtCore import QSortFilterProxyModel
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView
+from PySide6.QtWidgets import QMainWindow, QFileDialog
 from bs4 import BeautifulSoup
+
 from ui_mainwindow import Ui_MainWindow
 
 
@@ -13,10 +13,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.app = app
 
-        # Init of table_view_1
-        header_name = ["Категорія"]
+        # Init of source_category_table_view
+        category_header_name = ["Категорія"]
         self.source_cat_model = QStandardItemModel()
-        self.source_cat_model.setHorizontalHeaderLabels(header_name)
+        self.source_cat_model.setHorizontalHeaderLabels(category_header_name)
         self.source_cat_proxy_model = QSortFilterProxyModel()
         self.source_cat_proxy_model.setSourceModel(self.source_cat_model)
         self.source_cat_proxy_model.setFilterKeyColumn(0)
@@ -25,25 +25,46 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.source_category_table_view.horizontalHeader().setStretchLastSection(True)
         self.source_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
-        # Init of table_view_2
+        # Init of final_category_table_view
         self.fin_cat_model = QStandardItemModel()
-        self.fin_cat_model.setHorizontalHeaderLabels(header_name)
+        self.fin_cat_model.setHorizontalHeaderLabels(category_header_name)
         self.final_category_table_view.setModel(self.fin_cat_model)
         self.final_category_table_view.resizeColumnsToContents()
         self.final_category_table_view.horizontalHeader().setStretchLastSection(True)
         self.final_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
-        self.search_line_edit.textChanged.connect(self.onTextChanged)
-        self.open_action.triggered.connect(self.open_file)
-        self.add_cat_push_button.clicked.connect(self.add_category)
-        self.delete_cat_push_button.clicked.connect(self.remove_category)
+        # Init of products_table_view
+        product_header_name = ["Товар", "Дроп Ціна", "Націнка", "Оптова Ціна", "Націнка"]
+        self.products_model = QStandardItemModel()
+        self.products_model.setHorizontalHeaderLabels(product_header_name)
+        self.products_proxy_model = QSortFilterProxyModel()
+        self.products_proxy_model.setSourceModel(self.products_model)
+        self.products_proxy_model.setFilterKeyColumn(0)
+        self.source_products_table_view.setModel(self.products_proxy_model)
+        self.source_products_table_view.resizeColumnsToContents()
+        self.source_products_table_view.horizontalHeader().setStretchLastSection(True)
+        self.source_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
+        self.search_category_line_edit.textChanged.connect(self.onTextChanged)
+        self.open_action.triggered.connect(self.open_file)
+        self.add_cat_push_button.clicked.connect(self.add_category_into_table)
+        self.delete_cat_push_button.clicked.connect(self.remove_category_from_table)
+        self.fin_cat_model.rowsInserted.connect(self.add_products_to_table)
+        self.fin_cat_model.rowsRemoved.connect(self.remove_products_from_table)
         self.xml_data = None
+
+    def add_products_to_table(self):
+        sptv_model = self.source_products_table_view.model()
+        print("Data has been added to table")
+
+    def remove_products_from_table(self):
+        sptv_model = self.source_products_table_view.model()
+        print("Data has been removed from table")
 
     def onTextChanged(self, text):
         self.source_cat_proxy_model.setFilterFixedString(text)
 
-    def add_category(self):
+    def add_category_into_table(self):
         sctv_model = self.source_category_table_view.model()
         fctv_model = self.final_category_table_view.model()
         sctv_results = []
@@ -76,9 +97,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_item.setCheckable(True)
             # If the element is not in the final table, add it
             if category_item.data(Qt.DisplayRole) not in fctv_results:
-                self.fin_cat_model.appendRow(category_item)
+                fctv_model.appendRow(category_item)
 
-    def remove_category(self):
+    def remove_category_from_table(self):
         fctv_model = self.source_category_table_view.model()
         sctv_model = self.final_category_table_view.model()
         sctv_results = []
