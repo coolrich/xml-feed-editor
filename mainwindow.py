@@ -1,8 +1,12 @@
+import gc
+import pprint
+
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView
 from bs4 import BeautifulSoup
+from lxml import etree
 
 from ui_mainwindow import Ui_MainWindow
 
@@ -12,6 +16,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.app = app
+
+        self.categories_products_dict = None
 
         # Init of source_category_table_view
         category_header_name = ["Категорія"]
@@ -24,6 +30,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.source_category_table_view.resizeColumnsToContents()
         self.source_category_table_view.horizontalHeader().setStretchLastSection(True)
         self.source_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        self.source_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of final_category_table_view
         self.fin_cat_model = QStandardItemModel()
@@ -126,32 +133,56 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         print("The process of moving items has been completed.")
 
-
     # open xml file
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
         categories = self.parse(file_path)
-        # self.populate_source_cat_table(categories)
+        self.categories_products_dict = categories
+        self.reset_tables_data()
+        self.populate_source_cat_table(categories)
         print("File closed")
 
-    # def populate_source_cat_table(self, categories):
-    #     for category in categories:
-    #         category_item = QStandardItem()
-    #         category_item.setCheckable(True)
-    #         category_item.setData(category, Qt.DisplayRole)
-    #         self.source_cat_model.appendRow(category_item)
+    def reset_tables_data(self):
+        self.source_cat_model.removeRows(0, self.source_cat_model.rowCount())
+        self.fin_cat_model.removeRows(0, self.fin_cat_model.rowCount())
+
+    def populate_source_cat_table(self, categories):
+        for category in categories:
+            category_item = QStandardItem()
+            category_item.setCheckable(True)
+            category_item.setData(category, Qt.DisplayRole)
+            self.source_cat_model.appendRow(category_item)
 
     @staticmethod
     def parse(file_path):
-        if file_path:
-            # Завантажити файл
-            with open(file_path, "r", encoding="windows-1251") as f:
-                soup = BeautifulSoup(f.read(), "lxml")
-        # Знайти всі теги
-        tags = soup.find_all("category")
-        categories = {}
-        # Для кожного тегу
-        for tag in tags:
-            category = tag.text.strip()
-            categories[category] = f"{tag['id']}"
-        return categories
+        parser = etree.XMLParser(huge_tree=True, encoding="windows-1251")
+        tree = etree.parse(file_path, parser=parser)
+        category_elems = tree.xpath("//category")
+        category_ids_names = {}
+
+        categories = set()
+        for category in category_elems:
+            category_id = category.get("id").strip()
+            category_name = category.text.strip()
+            categories.add(category_name)
+            category_ids_names[category_id] = category_name
+
+        category_products_dict = {}
+        for category in categories:
+            category_products_dict[category] = []
+
+        offer_tags = tree.xpath("//offer")
+        for offer_tag in offer_tags:
+            category_id = offer_tag.xpath("categoryId")
+            product_name = offer_tag.xpath("name")
+            cid = category_id[0].text.strip()
+            print(cid)
+            if cid not in category_ids_names:
+                continue
+            category_name = category_ids_names[cid]
+            category_products_dict[category_name].append(product_name[0].text)
+        pprint.pp(category_products_dict)
+
+        # del tree, categories, offer_tags
+        # gc.collect()
+        return category_products_dict
