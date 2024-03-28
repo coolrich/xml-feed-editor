@@ -338,7 +338,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     destination_model.appendRow(category_item)
                     continue
                 destination_model.sourceModel().appendRow(category_item)
-
         print("The process of moving items has been completed.")
 
     # open xml file
