@@ -158,7 +158,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 759, 738))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, -153, 759, 738))
         self.verticalLayout_12 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
         self.groupBox_5 = QGroupBox(self.scrollAreaWidgetContents)
@@ -279,13 +279,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.label_12)
 
-        self.comboBox = QComboBox(self.groupBox_6)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
-        self.comboBox.setMaximumSize(QSize(94, 16777215))
+        self.price_category_combo_box = QComboBox(self.groupBox_6)
+        self.price_category_combo_box.addItem("")
+        self.price_category_combo_box.addItem("")
+        self.price_category_combo_box.setObjectName(u"price_category_combo_box")
+        self.price_category_combo_box.setMaximumSize(QSize(94, 16777215))
 
-        self.horizontalLayout_12.addWidget(self.comboBox)
+        self.horizontalLayout_12.addWidget(self.price_category_combo_box)
 
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_12)
@@ -299,11 +299,11 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_6.addWidget(self.label_7)
 
-        self.doubleSpinBox = QDoubleSpinBox(self.groupBox_6)
-        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
-        self.doubleSpinBox.setMaximumSize(QSize(77, 16777215))
+        self.multiplier_double_spin_box = QDoubleSpinBox(self.groupBox_6)
+        self.multiplier_double_spin_box.setObjectName(u"multiplier_double_spin_box")
+        self.multiplier_double_spin_box.setMaximumSize(QSize(77, 16777215))
 
-        self.horizontalLayout_6.addWidget(self.doubleSpinBox)
+        self.horizontalLayout_6.addWidget(self.multiplier_double_spin_box)
 
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_6)
@@ -316,11 +316,11 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.label_5)
 
-        self.spinBox_2 = QSpinBox(self.groupBox_6)
-        self.spinBox_2.setObjectName(u"spinBox_2")
-        self.spinBox_2.setMaximumSize(QSize(70, 16777215))
+        self.upper_price_limit_spin_box = QSpinBox(self.groupBox_6)
+        self.upper_price_limit_spin_box.setObjectName(u"upper_price_limit_spin_box")
+        self.upper_price_limit_spin_box.setMaximumSize(QSize(70, 16777215))
 
-        self.horizontalLayout_5.addWidget(self.spinBox_2)
+        self.horizontalLayout_5.addWidget(self.upper_price_limit_spin_box)
 
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_5)
@@ -334,21 +334,21 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_4.addWidget(self.label_6)
 
-        self.spinBox = QSpinBox(self.groupBox_6)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setMinimumSize(QSize(55, 0))
-        self.spinBox.setMaximumSize(QSize(69, 16777215))
+        self.bottom_price_limit_spin_box = QSpinBox(self.groupBox_6)
+        self.bottom_price_limit_spin_box.setObjectName(u"bottom_price_limit_spin_box")
+        self.bottom_price_limit_spin_box.setMinimumSize(QSize(55, 0))
+        self.bottom_price_limit_spin_box.setMaximumSize(QSize(69, 16777215))
 
-        self.horizontalLayout_4.addWidget(self.spinBox)
+        self.horizontalLayout_4.addWidget(self.bottom_price_limit_spin_box)
 
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_4)
 
-        self.pushButton_2 = QPushButton(self.groupBox_6)
-        self.pushButton_2.setObjectName(u"pushButton_2")
-        self.pushButton_2.setMaximumSize(QSize(128, 16777215))
+        self.apply_multiplier_push_button = QPushButton(self.groupBox_6)
+        self.apply_multiplier_push_button.setObjectName(u"apply_multiplier_push_button")
+        self.apply_multiplier_push_button.setMaximumSize(QSize(128, 16777215))
 
-        self.horizontalLayout_16.addWidget(self.pushButton_2)
+        self.horizontalLayout_16.addWidget(self.apply_multiplier_push_button)
 
 
         self.verticalLayout_6.addLayout(self.horizontalLayout_16)
@@ -483,16 +483,16 @@ class Ui_MainWindow(object):
         self.remove_prod_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
 "XML", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0446\u0456\u043d", None))
-        self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
-        self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0442", None))
+        self.price_category_combo_box.setItemText(0, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
+        self.price_category_combo_box.setItemText(1, QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0442", None))
 
-        self.comboBox.setCurrentText(QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
+        self.price_category_combo_box.setCurrentText(QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"\u041c\u043d\u043e\u0436\u043d\u0438\u043a", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0435\u0440\u0445\u043d\u044f \u043c\u0435\u0436\u0430\n"
 "(\u0432\u043a\u043b\u044e\u0447\u043d\u043e)", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0438\u0436\u043d\u044f \u043c\u0435\u0436\u0430\n"
 "(\u0432\u043a\u043b\u044e\u0447\u043d\u043e)", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u0441\u0442\u043e\u0441\u0443\u0432\u0430\u0442\u0438 \u043c\u043d\u043e\u0436\u043d\u0438\u043a", None))
+        self.apply_multiplier_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u0441\u0442\u043e\u0441\u0443\u0432\u0430\u0442\u0438 \u043c\u043d\u043e\u0436\u043d\u0438\u043a", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"\u0422\u043e\u0432\u0430\u0440\u0438", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0457", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))

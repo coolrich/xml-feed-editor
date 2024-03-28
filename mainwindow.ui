@@ -159,7 +159,7 @@ XML</string>
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-153</y>
              <width>759</width>
              <height>738</height>
             </rect>
@@ -343,7 +343,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QComboBox" name="comboBox">
+                      <widget class="QComboBox" name="price_category_combo_box">
                        <property name="maximumSize">
                         <size>
                          <width>94</width>
@@ -386,7 +386,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                      <widget class="QDoubleSpinBox" name="multiplier_double_spin_box">
                        <property name="maximumSize">
                         <size>
                          <width>77</width>
@@ -414,7 +414,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QSpinBox" name="spinBox_2">
+                      <widget class="QSpinBox" name="upper_price_limit_spin_box">
                        <property name="maximumSize">
                         <size>
                          <width>70</width>
@@ -445,7 +445,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QSpinBox" name="spinBox">
+                      <widget class="QSpinBox" name="bottom_price_limit_spin_box">
                        <property name="minimumSize">
                         <size>
                          <width>55</width>
@@ -463,7 +463,7 @@ XML</string>
                     </layout>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="pushButton_2">
+                    <widget class="QPushButton" name="apply_multiplier_push_button">
                      <property name="maximumSize">
                       <size>
                        <width>128</width>

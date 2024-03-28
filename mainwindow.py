@@ -101,9 +101,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.move_products_from_source_to_destination_table(
                 self.final_products_table_view, self.source_products_table_view)
         )
-
         self.fin_cat_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
+        self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.xml_data = None
+
+    def apply_multiplier(self):
+
 
     def add_products_to_src_products_table(self):
         sptv_model = self.source_products_table_view.model()
@@ -234,7 +237,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def find_in_fin_products(self, text):
         self.final_products_table_view.model().setFilterFixedString(text)
         self.final_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
-
 
     def move_categories_between_tables(self, source_table_view: QTableView,
                                        destination_table_view: QTableView):
