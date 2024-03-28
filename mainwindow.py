@@ -106,6 +106,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.xml_data = None
 
     def apply_multiplier(self):
+        """ Get value from price_category_combo_box
+         Get value from bottom_price_limit_spin_box
+         Get value from upper_price_limit_spin_box
+         Get value from multiplier_double_spin_box
+         Save them in variables
+         Find all products in the final_products_table_view
+         by column using valu from price_category_combo_box
+         then filter them by range from bottom_price_limit_spin_box
+         to upper_price_limit_spin_box. Save found products in resulted_products_list.
+         Then apply value from multiplier_double_spin_box to each product price and save them in the next column.
+         Then save and back products and their prices to final_products_table_view.
+         """
+        price_category = self.price_category_combo_box.currentText()
+        bottom_price_limit = self.bottom_price_limit_spin_box.value()
+        upper_price_limit = self.upper_price_limit_spin_box.value()
+        multiplier = self.multiplier_double_spin_box.value()
+        resulted_products_list = []
+
+        # Get all products from self.final_products_table_view model
+        fptv_tabel = self.final_products_table_view
+        fptv_model: QStandardItemModel = fptv_tabel.model().sourceModel()
+        column_index = None
+        column_count = fptv_model.columnCount()
+        for row_index in range(column_count):
+            column_index = fptv_model.horizontalHeaderItem(row_index)
+            if column_index.text() == price_category:
+                column_index = row_index
+                break
+        # print(index)
+        row_count = fptv_model.rowCount()
+        for row in range(row_count):
+            price = fptv_model.data(fptv_model.index(row, column_index))
+            if bottom_price_limit <= price <= upper_price_limit:
+                product_markup = multiplier * price
+                fptv_model.setData(fptv_model.index(row, column_index + 1), product_markup)
+            print(price)
 
 
     def add_products_to_src_products_table(self):

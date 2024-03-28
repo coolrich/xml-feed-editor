@@ -308,23 +308,6 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_6)
 
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.label_5 = QLabel(self.groupBox_6)
-        self.label_5.setObjectName(u"label_5")
-        self.label_5.setMaximumSize(QSize(73, 16777215))
-
-        self.horizontalLayout_5.addWidget(self.label_5)
-
-        self.upper_price_limit_spin_box = QSpinBox(self.groupBox_6)
-        self.upper_price_limit_spin_box.setObjectName(u"upper_price_limit_spin_box")
-        self.upper_price_limit_spin_box.setMaximumSize(QSize(70, 16777215))
-
-        self.horizontalLayout_5.addWidget(self.upper_price_limit_spin_box)
-
-
-        self.horizontalLayout_16.addLayout(self.horizontalLayout_5)
-
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setSpacing(0)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -338,11 +321,30 @@ class Ui_MainWindow(object):
         self.bottom_price_limit_spin_box.setObjectName(u"bottom_price_limit_spin_box")
         self.bottom_price_limit_spin_box.setMinimumSize(QSize(55, 0))
         self.bottom_price_limit_spin_box.setMaximumSize(QSize(69, 16777215))
+        self.bottom_price_limit_spin_box.setMaximum(999999999)
 
         self.horizontalLayout_4.addWidget(self.bottom_price_limit_spin_box)
 
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_4)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.label_5 = QLabel(self.groupBox_6)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setMaximumSize(QSize(73, 16777215))
+
+        self.horizontalLayout_5.addWidget(self.label_5)
+
+        self.upper_price_limit_spin_box = QSpinBox(self.groupBox_6)
+        self.upper_price_limit_spin_box.setObjectName(u"upper_price_limit_spin_box")
+        self.upper_price_limit_spin_box.setMaximumSize(QSize(70, 16777215))
+        self.upper_price_limit_spin_box.setMaximum(999999999)
+
+        self.horizontalLayout_5.addWidget(self.upper_price_limit_spin_box)
+
+
+        self.horizontalLayout_16.addLayout(self.horizontalLayout_5)
 
         self.apply_multiplier_push_button = QPushButton(self.groupBox_6)
         self.apply_multiplier_push_button.setObjectName(u"apply_multiplier_push_button")
@@ -447,7 +449,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.exit_action.triggered.connect(MainWindow.close)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -483,14 +485,14 @@ class Ui_MainWindow(object):
         self.remove_prod_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
 "XML", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0446\u0456\u043d", None))
-        self.price_category_combo_box.setItemText(0, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
-        self.price_category_combo_box.setItemText(1, QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0442", None))
+        self.price_category_combo_box.setItemText(0, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f \u0426\u0456\u043d\u0430", None))
+        self.price_category_combo_box.setItemText(1, QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0442. \u0426\u0456\u043d\u0430", None))
 
-        self.price_category_combo_box.setCurrentText(QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
+        self.price_category_combo_box.setCurrentText(QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f \u0426\u0456\u043d\u0430", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"\u041c\u043d\u043e\u0436\u043d\u0438\u043a", None))
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0435\u0440\u0445\u043d\u044f \u043c\u0435\u0436\u0430\n"
-"(\u0432\u043a\u043b\u044e\u0447\u043d\u043e)", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0438\u0436\u043d\u044f \u043c\u0435\u0436\u0430\n"
+"(\u0432\u043a\u043b\u044e\u0447\u043d\u043e)", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0435\u0440\u0445\u043d\u044f \u043c\u0435\u0436\u0430\n"
 "(\u0432\u043a\u043b\u044e\u0447\u043d\u043e)", None))
         self.apply_multiplier_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u0441\u0442\u043e\u0441\u0443\u0432\u0430\u0442\u0438 \u043c\u043d\u043e\u0436\u043d\u0438\u043a", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"\u0422\u043e\u0432\u0430\u0440\u0438", None))

@@ -21,7 +21,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -351,16 +351,16 @@ XML</string>
                         </size>
                        </property>
                        <property name="currentText">
-                        <string>Дроп</string>
+                        <string>Дроп Ціна</string>
                        </property>
                        <item>
                         <property name="text">
-                         <string>Дроп</string>
+                         <string>Дроп Ціна</string>
                         </property>
                        </item>
                        <item>
                         <property name="text">
-                         <string>Опт</string>
+                         <string>Опт. Ціна</string>
                         </property>
                        </item>
                       </widget>
@@ -390,34 +390,6 @@ XML</string>
                        <property name="maximumSize">
                         <size>
                          <width>77</width>
-                         <height>16777215</height>
-                        </size>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_5">
-                     <item>
-                      <widget class="QLabel" name="label_5">
-                       <property name="maximumSize">
-                        <size>
-                         <width>73</width>
-                         <height>16777215</height>
-                        </size>
-                       </property>
-                       <property name="text">
-                        <string>Верхня межа
-(включно)</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QSpinBox" name="upper_price_limit_spin_box">
-                       <property name="maximumSize">
-                        <size>
-                         <width>70</width>
                          <height>16777215</height>
                         </size>
                        </property>
@@ -457,6 +429,40 @@ XML</string>
                          <width>69</width>
                          <height>16777215</height>
                         </size>
+                       </property>
+                       <property name="maximum">
+                        <number>999999999</number>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_5">
+                     <item>
+                      <widget class="QLabel" name="label_5">
+                       <property name="maximumSize">
+                        <size>
+                         <width>73</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Верхня межа
+(включно)</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="upper_price_limit_spin_box">
+                       <property name="maximumSize">
+                        <size>
+                         <width>70</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                       <property name="maximum">
+                        <number>999999999</number>
                        </property>
                       </widget>
                      </item>
