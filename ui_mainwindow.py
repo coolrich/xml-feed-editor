@@ -19,14 +19,15 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QGroupBox,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QListView, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSpinBox, QStatusBar,
-    QTabWidget, QTableView, QVBoxLayout, QWidget)
+    QPushButton, QScrollArea, QSizePolicy, QSpinBox,
+    QStatusBar, QTabWidget, QTableView, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(820, 678)
+        MainWindow.resize(820, 719)
         MainWindow.setLayoutDirection(Qt.LeftToRight)
         self.open_action = QAction(MainWindow)
         self.open_action.setObjectName(u"open_action")
@@ -151,8 +152,18 @@ class Ui_MainWindow(object):
         self.tab_2.setObjectName(u"tab_2")
         self.verticalLayout_10 = QVBoxLayout(self.tab_2)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
-        self.groupBox_5 = QGroupBox(self.tab_2)
+        self.scrollArea = QScrollArea(self.tab_2)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 759, 738))
+        self.verticalLayout_12 = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_12.setObjectName(u"verticalLayout_12")
+        self.groupBox_5 = QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox_5.setObjectName(u"groupBox_5")
+        self.groupBox_5.setMinimumSize(QSize(0, 325))
         self.groupBox_5.setMaximumSize(QSize(16777215, 10000))
         self.verticalLayout_8 = QVBoxLayout(self.groupBox_5)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
@@ -204,10 +215,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.addLayout(self.verticalLayout)
 
 
-        self.verticalLayout_10.addWidget(self.groupBox_5)
+        self.verticalLayout_12.addWidget(self.groupBox_5)
 
-        self.groupBox_6 = QGroupBox(self.tab_2)
+        self.groupBox_6 = QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox_6.setObjectName(u"groupBox_6")
+        self.groupBox_6.setMinimumSize(QSize(0, 389))
         self.verticalLayout_9 = QVBoxLayout(self.groupBox_6)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
         self.horizontalLayout_15 = QHBoxLayout()
@@ -240,10 +252,10 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_7.addWidget(self.pushButton_8)
 
-        self.delete_prod_push_button = QPushButton(self.groupBox_6)
-        self.delete_prod_push_button.setObjectName(u"delete_prod_push_button")
+        self.remove_prod_push_button = QPushButton(self.groupBox_6)
+        self.remove_prod_push_button.setObjectName(u"remove_prod_push_button")
 
-        self.horizontalLayout_7.addWidget(self.delete_prod_push_button)
+        self.horizontalLayout_7.addWidget(self.remove_prod_push_button)
 
 
         self.verticalLayout_6.addLayout(self.horizontalLayout_7)
@@ -283,13 +295,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.label_7 = QLabel(self.groupBox_6)
         self.label_7.setObjectName(u"label_7")
-        self.label_7.setMaximumSize(QSize(49, 16777215))
+        self.label_7.setMaximumSize(QSize(54, 16777215))
 
         self.horizontalLayout_6.addWidget(self.label_7)
 
         self.doubleSpinBox = QDoubleSpinBox(self.groupBox_6)
         self.doubleSpinBox.setObjectName(u"doubleSpinBox")
-        self.doubleSpinBox.setMaximumSize(QSize(84, 16777215))
+        self.doubleSpinBox.setMaximumSize(QSize(77, 16777215))
 
         self.horizontalLayout_6.addWidget(self.doubleSpinBox)
 
@@ -300,7 +312,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.label_5 = QLabel(self.groupBox_6)
         self.label_5.setObjectName(u"label_5")
-        self.label_5.setMaximumSize(QSize(68, 16777215))
+        self.label_5.setMaximumSize(QSize(73, 16777215))
 
         self.horizontalLayout_5.addWidget(self.label_5)
 
@@ -345,7 +357,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_9.addLayout(self.verticalLayout_6)
 
 
-        self.verticalLayout_10.addWidget(self.groupBox_6)
+        self.verticalLayout_12.addWidget(self.groupBox_6)
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
+        self.verticalLayout_10.addWidget(self.scrollArea)
 
         self.tabWidget.addTab(self.tab_2, "")
         self.tab_3 = QWidget()
@@ -431,7 +447,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.exit_action.triggered.connect(MainWindow.close)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -464,7 +480,7 @@ class Ui_MainWindow(object):
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
         self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
         self.pushButton_8.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
-        self.delete_prod_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
+        self.remove_prod_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
 "XML", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0446\u0456\u043d", None))
         self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f", None))
