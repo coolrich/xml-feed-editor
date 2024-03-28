@@ -283,7 +283,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             source_table_view (QtWidgets.QTableView): The source table view.
             destination_table_view (QtWidgets.QTableView): The destination table view.
         """
+        """     # More simplified version of the method using Q Models 
+                # Get source and destination models
 
+                if not source_model or not destination_model:
+                    print("Error: Invalid table view models.")
+                    return
+
+                for row in range(source_model.rowCount()):
+                    item = source_model.item(row, 0)
+                    if item.checkState() == Qt.Checked:
+                        destination_model.appendRow(item)
+                        source_model.removeRow(row)
+"""
         # Get source and destination models
         source_model = source_table_view.model()
         destination_model = destination_table_view.model()
