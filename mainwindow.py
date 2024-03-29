@@ -16,7 +16,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.app = app
 
-        self.categories_products_dict = None
+        self.all_categories_products_dict = None
+        self.choosed_categories_products_dict = None
 
         # Init of source_category_table_view
         category_header_name = ["Категорія"]
@@ -44,7 +45,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.final_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of products_table_view
-        product_header_name = ["Товар", "Дроп Ціна"]
+        product_header_name = ["Товар", "Початкова Ціна"]
         self.source_products_model = QStandardItemModel()
         self.source_products_model.setHorizontalHeaderLabels(product_header_name)
         self.source_products_proxy_model = QSortFilterProxyModel()
@@ -67,7 +68,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else:
                     return False
 
-        fin_product_header_name = ["Товар", "Дроп Ціна", "Націнка", "Опт. Ціна", "Опт. Націнка"]
+        fin_product_header_name = ["Товар", "Початкова Ціна", "Оптова Ціна", "Дроп Ціна"]
         self.fin_products_model = QStandardItemModel()
         self.fin_products_model.setHorizontalHeaderLabels(fin_product_header_name)
         self.fin_products_proxy_model = QSortFilterProxyModel()
@@ -103,7 +104,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.fin_cat_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
+        self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.xml_data = None
+
+    def get_new_xml(self):
+        final_category_model = self.final_category_table_view.model().sourceModel()
+        final_prod_model = self.final_products_table_view.model().sourceModel()
+        old_categories_products_dict = self.all_categories_products_dict
+        choosed_categories_products_dict = {}
+
+        choosed_categories_list = []
+        for row in range(final_category_model.rowCount()):
+            choosed_category = final_category_model.data(final_category_model.index(row, 0))
+            choosed_categories_list.append(choosed_category)
+
+        choosed_products_list = []
+        for row in range(final_prod_model.rowCount()):
+            new_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
+            new_wholesale_price = final_prod_model.data(final_prod_model.index(row, 2))
+            new_drop_price = final_prod_model.data(final_prod_model.index(row, 3))
+            new_prod = {"name": new_prod_name, "wholesale_price": new_wholesale_price, "drop_price": new_drop_price}
+            choosed_products_list.append(new_prod)
+
+        for choosed_category in choosed_categories_list:
+            all_products = old_categories_products_dict[choosed_category]
+            choosed_categories_products_dict[choosed_category] = []
+            for product in all_products:
+                for choosed_product in choosed_products_list:
+                    if product[0] == choosed_product["name"]:
+                        choosed_categories_products_dict[choosed_category].append(choosed_product)
+        pprint.pprint(choosed_categories_products_dict)
+
+
 
     def apply_multiplier(self):
         """ Get value from price_category_combo_box
@@ -127,21 +159,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Get all products from self.final_products_table_view model
         fptv_tabel = self.final_products_table_view
         fptv_model: QStandardItemModel = fptv_tabel.model().sourceModel()
-        column_index = None
+        column_index_target_price = None
         column_count = fptv_model.columnCount()
         for row_index in range(column_count):
-            column_index = fptv_model.horizontalHeaderItem(row_index)
-            if column_index.text() == price_category:
-                column_index = row_index
+            column_index_target_price = fptv_model.horizontalHeaderItem(row_index)
+            if column_index_target_price.text() == price_category:
+                column_index_target_price = row_index
                 break
         # print(index)
         row_count = fptv_model.rowCount()
         for row in range(row_count):
-            price = fptv_model.data(fptv_model.index(row, column_index))
-            if bottom_price_limit <= price <= upper_price_limit:
-                product_markup = multiplier * price
-                fptv_model.setData(fptv_model.index(row, column_index + 1), product_markup)
-            print(price)
+            source_price = fptv_model.data(fptv_model.index(row, 1))
+            final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
+            if bottom_price_limit <= source_price <= upper_price_limit:
+                product_markup = multiplier * source_price
+                fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
+            print(source_price)
 
 
     def add_products_to_src_products_table(self):
@@ -160,7 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             source_products_set.add(item)
 
         for category in categories:
-            products_list = self.categories_products_dict[category]
+            products_list = self.all_categories_products_dict[category]
             for product_price_tuple in products_list:
                 product_name = product_price_tuple[0]
                 if product_name in source_products_set:
@@ -343,12 +376,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # open xml file
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
-        categories = self.parse(file_path)
-        if not categories:
+        categories_products_dict = self.parse(file_path)
+        if not categories_products_dict:
             return
-        self.categories_products_dict = categories
+        self.all_categories_products_dict = categories_products_dict
         self.reset_tables_data()
-        self.populate_source_cat_table(categories)
+        self.populate_source_cat_table(categories_products_dict)
         print("File closed")
 
     def reset_tables_data(self):

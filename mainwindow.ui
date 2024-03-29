@@ -350,17 +350,14 @@ XML</string>
                          <height>16777215</height>
                         </size>
                        </property>
-                       <property name="currentText">
-                        <string>Дроп Ціна</string>
-                       </property>
                        <item>
                         <property name="text">
-                         <string>Дроп Ціна</string>
+                         <string>Оптова Ціна</string>
                         </property>
                        </item>
                        <item>
                         <property name="text">
-                         <string>Опт. Ціна</string>
+                         <string>Дроп Ціна</string>
                         </property>
                        </item>
                       </widget>
@@ -592,7 +589,7 @@ XML</string>
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="get_new_xml_push_button">
       <property name="text">
        <string>Отримати XML</string>
       </property>

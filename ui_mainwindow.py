@@ -426,10 +426,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.tabWidget)
 
-        self.pushButton = QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(u"pushButton")
+        self.get_new_xml_push_button = QPushButton(self.centralwidget)
+        self.get_new_xml_push_button.setObjectName(u"get_new_xml_push_button")
 
-        self.verticalLayout_2.addWidget(self.pushButton)
+        self.verticalLayout_2.addWidget(self.get_new_xml_push_button)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -485,10 +485,9 @@ class Ui_MainWindow(object):
         self.remove_prod_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
 "XML", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0446\u0456\u043d", None))
-        self.price_category_combo_box.setItemText(0, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f \u0426\u0456\u043d\u0430", None))
-        self.price_category_combo_box.setItemText(1, QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0442. \u0426\u0456\u043d\u0430", None))
+        self.price_category_combo_box.setItemText(0, QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0442\u043e\u0432\u0430 \u0426\u0456\u043d\u0430", None))
+        self.price_category_combo_box.setItemText(1, QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f \u0426\u0456\u043d\u0430", None))
 
-        self.price_category_combo_box.setCurrentText(QCoreApplication.translate("MainWindow", u"\u0414\u0440\u043e\u043f \u0426\u0456\u043d\u0430", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"\u041c\u043d\u043e\u0436\u043d\u0438\u043a", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0438\u0436\u043d\u044f \u043c\u0435\u0436\u0430\n"
 "(\u0432\u043a\u043b\u044e\u0447\u043d\u043e)", None))
@@ -501,7 +500,7 @@ class Ui_MainWindow(object):
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"\u0422\u043e\u0432\u0430\u0440\u0438", None))
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0430 \u0441\u043b\u0456\u0432", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
+        self.get_new_xml_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))
     # retranslateUi
 
