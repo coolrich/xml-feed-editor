@@ -1,11 +1,14 @@
+import copy
 import gc
 import pprint
+import re
 
-from PySide6.QtCore import QSortFilterProxyModel, QRegularExpression
+from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QItemDelegate
 from lxml import etree
+from lxml.etree import ElementTree
 
 from ui_mainwindow import Ui_MainWindow
 
@@ -16,8 +19,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.app = app
 
+        self.categoryid_name_dict = None
         self.all_categories_products_dict = None
         self.choosed_categories_products_dict = None
+        self.source_xml_tree = None
+        self.final_xml_tree = None
 
         # Init of source_category_table_view
         category_header_name = ["Категорія"]
@@ -113,29 +119,91 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         old_categories_products_dict = self.all_categories_products_dict
         choosed_categories_products_dict = {}
 
-        choosed_categories_list = []
+        choosen_categories_list = []
         for row in range(final_category_model.rowCount()):
-            choosed_category = final_category_model.data(final_category_model.index(row, 0))
-            choosed_categories_list.append(choosed_category)
+            choosed_products = final_category_model.data(final_category_model.index(row, 0))
+            choosen_categories_list.append(choosed_products)
 
-        choosed_products_list = []
+        choosen_products_dict = {}
         for row in range(final_prod_model.rowCount()):
-            new_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
-            new_wholesale_price = final_prod_model.data(final_prod_model.index(row, 2))
-            new_drop_price = final_prod_model.data(final_prod_model.index(row, 3))
-            new_prod = {"name": new_prod_name, "wholesale_price": new_wholesale_price, "drop_price": new_drop_price}
-            choosed_products_list.append(new_prod)
+            choosed_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
+            wholesale_price = final_prod_model.data(final_prod_model.index(row, 2))
+            drop_price = final_prod_model.data(final_prod_model.index(row, 3))
+            choosen_products_dict[choosed_prod_name] = {"wholesale_price": wholesale_price, "drop_price": drop_price}
 
-        for choosed_category in choosed_categories_list:
-            all_products = old_categories_products_dict[choosed_category]
-            choosed_categories_products_dict[choosed_category] = []
-            for product in all_products:
-                for choosed_product in choosed_products_list:
-                    if product[0] == choosed_product["name"]:
-                        choosed_categories_products_dict[choosed_category].append(choosed_product)
-        pprint.pprint(choosed_categories_products_dict)
+        # Filtering categories and products that were not choosen by user
+        # for choosed_category in choosen_categories_list:
+        #     old_products = old_categories_products_dict[choosed_category]
+        #     choosed_categories_products_dict[choosed_category] = []
+        #     for old_product in old_products:
+        #         if old_product in choosen_products_dict.keys():
+        #             choosed_categories_products_dict[choosed_category].append(old_product)
+        # pprint.pprint(choosed_categories_products_dict)
 
+        # Create a copy of self.source_xml_tree
+        self.final_xml_tree: ElementTree = copy.deepcopy(self.source_xml_tree)
+        output_xml_tree = self.final_xml_tree
+        if output_xml_tree is None:
+            return
 
+        # Remove unselected categories
+        categories = output_xml_tree.xpath("//category")
+        for category in categories:
+            category_name = category.text.strip()
+            if category_name not in choosen_categories_list:
+                category.getparent().remove(category)
+
+        # Remove products of unselected categories
+        offers = output_xml_tree.xpath("//offer")
+        categories_id_list = self.categoryid_name_dict.keys()
+        for offer in offers:
+            category_id = offer.xpath("categoryId")[0].text.strip()
+            if category_id not in categories_id_list:
+                offer.getparent().remove(offer)
+                continue
+            category_name = self.categoryid_name_dict[category_id]
+            if category_name not in choosen_categories_list:
+                offer.getparent().remove(offer)
+                continue
+
+        # Remove unselected products
+        offers = output_xml_tree.xpath("//offer")
+        for offer in offers:
+            product_name = offer.xpath("name")[0].text.strip()
+            if product_name not in choosen_products_dict.keys():
+                offer.getparent().remove(offer)
+            else:
+                # Change price to new
+                wholesale_price = choosen_products_dict[product_name]["wholesale_price"]
+                drop_price = choosen_products_dict[product_name]["drop_price"]
+                price = offer.xpath("price")[0]
+                price.text = str(wholesale_price)
+                # Create a new xml element after the price element
+                new_element = etree.Element("price_drop")
+                new_element.text = str(drop_price)
+                price.addnext(new_element)
+
+        self.final_xml_tree.write("new_products_catalog.xml", encoding='windows-1251')
+        self.change_encoding_letter_case_in_output_xml()
+        self.correction_of_the_xml_elements()
+        print(f"XML {"new_products_catalog.xml"} created")
+
+    def correction_of_the_xml_elements(self):
+        with open("new_products_catalog.xml", "r") as f:
+            text = f.read()
+        pattern = r"</price_drop>"
+        new_text = r"</price_drop>\n"
+        new_content = re.sub(rf"{pattern}", new_text, text, flags=re.MULTILINE)
+        with open("new_products_catalog.xml", "w") as f:
+            f.write(new_content)
+
+    @staticmethod
+    def change_encoding_letter_case_in_output_xml():
+        with open("new_products_catalog.xml", "r") as f:
+            text = f.read()
+        text = text.replace(r"'WINDOWS-1251'", r'"windows-1251"')
+        with open("new_products_catalog.xml", "w") as f:
+            f.write(text)
 
     def apply_multiplier(self):
         """ Get value from price_category_combo_box
@@ -175,7 +243,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 product_markup = multiplier * source_price
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
             print(source_price)
-
 
     def add_products_to_src_products_table(self):
         sptv_model = self.source_products_table_view.model()
@@ -275,7 +342,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         destination_tabel.resizeColumnToContents(0)
         source_tabel.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
-
         print("Data has been added to table")
 
     def refresh_products_in_product_tables(self):
@@ -316,19 +382,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             source_table_view (QtWidgets.QTableView): The source table view.
             destination_table_view (QtWidgets.QTableView): The destination table view.
         """
-        """     # More simplified version of the method using Q Models 
-                # Get source and destination models
-
-                if not source_model or not destination_model:
-                    print("Error: Invalid table view models.")
-                    return
-
-                for row in range(source_model.rowCount()):
-                    item = source_model.item(row, 0)
-                    if item.checkState() == Qt.Checked:
-                        destination_model.appendRow(item)
-                        source_model.removeRow(row)
-"""
         # Get source and destination models
         source_model = source_table_view.model()
         destination_model = destination_table_view.model()
@@ -395,27 +448,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_item.setData(category, Qt.DisplayRole)
             self.source_cat_model.appendRow(category_item)
 
-    @staticmethod
-    def parse(file_path):
+    def parse(self, file_path):
         if not file_path:
             return None
         parser = etree.XMLParser(encoding="windows-1251")
-        tree = etree.parse(file_path, parser=parser)
-        category_elems = tree.xpath("//category")
-        category_id_name_dict = {}
+        self.source_xml_tree = etree.parse(file_path, parser=parser)
+        category_elems = self.source_xml_tree.xpath("//category")
+        categoryid_name_dict = {}
 
         categories = set()
         for category in category_elems:
             category_id = category.get("id").strip()
             category_name = category.text.strip()
             categories.add(category_name)
-            category_id_name_dict[category_id] = category_name
+            categoryid_name_dict[category_id] = category_name
+        self.categoryid_name_dict = categoryid_name_dict
 
         category_products_dict = {}
         for category in categories:
             category_products_dict[category] = []
 
-        offer_tags = tree.xpath("//offer")
+        offer_tags = self.source_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id = offer_tag.xpath("categoryId")
             product_name = offer_tag.xpath("name")[0].text.strip()
@@ -423,9 +476,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_price = int(product_price)
             cid = category_id[0].text.strip()
             print(cid)
-            if cid not in category_id_name_dict:
+            if cid not in categoryid_name_dict:
                 continue
-            category_name = category_id_name_dict[cid]
+            category_name = categoryid_name_dict[cid]
             category_products_dict[category_name].append((product_name, product_price))
         pprint.pp(category_products_dict)
 
