@@ -6,7 +6,7 @@ import re
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QItemDelegate
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QItemDelegate, QMessageBox
 from lxml import etree
 from lxml.etree import ElementTree
 
@@ -111,7 +111,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.fin_cat_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
+        # self.bottom_price_limit = self.bottom_price_limit_spin_box.value()
+        # self.upper_price_limit = self.upper_price_limit_spin_box.value()
+        self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
+        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValu)
         self.xml_data = None
+
+    def checkForBottomPriceValue(self, value):
+        if value > self.upper_price_limit_spin_box.value():
+            self.bottom_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value() - 1)
+            # Show a warning window with message Нижня межа не може перевищувати верхню
+            # QMessageBox.warning(QMessageBox(None, "Попередження"), "Нижня межа не може перевищувати верхню", QMessageBox.Ok | QMessageBox.Cancel)
+
+    def checkForUpperPriceValu(self, value):
+        if value < self.bottom_price_limit_spin_box.value():
+            self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
+            # QMessageBox.warning(QMessageBox(None, "Попередження"), "Нижня межа не може перевищувати верхню", QMessageBox.Ok | QMessageBox.Cancel)
 
     def get_new_xml(self):
         final_category_model = self.final_category_table_view.model().sourceModel()
