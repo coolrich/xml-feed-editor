@@ -121,12 +121,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if value > self.upper_price_limit_spin_box.value():
             self.bottom_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value() - 1)
             # Show a warning window with message Нижня межа не може перевищувати верхню
-            # QMessageBox.warning(QMessageBox(None, "Попередження"), "Нижня межа не може перевищувати верхню", QMessageBox.Ok | QMessageBox.Cancel)
+            QMessageBox.warning(self, "Попередження",
+                                "Нижня межа не може перевищувати верхню",
+                                QMessageBox.Ok)
 
     def checkForUpperPriceValu(self, value):
         if value < self.bottom_price_limit_spin_box.value():
             self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
-            # QMessageBox.warning(QMessageBox(None, "Попередження"), "Нижня межа не може перевищувати верхню", QMessageBox.Ok | QMessageBox.Cancel)
+            QMessageBox.warning(self, "Попередження",
+                                "Верхня межа не може бути менше за нижню!",
+                                QMessageBox.Ok)
 
     def get_new_xml(self):
         final_category_model = self.final_category_table_view.model().sourceModel()
@@ -205,9 +209,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
 
-        self.final_xml_tree.write("new_products_catalog.xml", encoding='windows-1251')
-        self.change_encoding_letter_case_in_output_xml()
-        self.correction_of_the_xml_elements()
+        # Create a window for saving a new xml file
+        save_dialog = QFileDialog()
+        save_dialog.setFileMode(QFileDialog.AnyFile)
+        save_dialog.setAcceptMode(QFileDialog.AcceptSave)
+        save_dialog.setNameFilter("XML Files (*.xml)")
+        if save_dialog.exec_():
+            save_path = save_dialog.selectedFiles()[0]
+            self.final_xml_tree.write(save_path, encoding='windows-1251')
+            self.change_encoding_letter_case_in_output_xml()
+            self.correction_of_the_xml_elements()
+            print(f"XML {save_path} created")
+            return
+
+        # self.final_xml_tree.write("new_products_catalog.xml", encoding='windows-1251')
+        # self.change_encoding_letter_case_in_output_xml()
+        # self.correction_of_the_xml_elements()
         print(f"XML {"new_products_catalog.xml"} created")
 
     def correction_of_the_xml_elements(self):
