@@ -126,10 +126,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         choosen_products_dict = {}
         for row in range(final_prod_model.rowCount()):
-            choosed_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
+            choosen_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
             wholesale_price = final_prod_model.data(final_prod_model.index(row, 2))
             drop_price = final_prod_model.data(final_prod_model.index(row, 3))
-            choosen_products_dict[choosed_prod_name] = {"wholesale_price": wholesale_price, "drop_price": drop_price}
+            choosen_products_dict[choosen_prod_name] = {}
+            if wholesale_price != 0:
+                choosen_products_dict[choosen_prod_name]["wholesale_price"] = wholesale_price
+            if drop_price != 0:
+                choosen_products_dict[choosen_prod_name]["drop_price"] = drop_price
 
         # Filtering categories and products that were not choosen by user
         # for choosed_category in choosen_categories_list:
@@ -174,14 +178,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 offer.getparent().remove(offer)
             else:
                 # Change price to new
-                wholesale_price = choosen_products_dict[product_name]["wholesale_price"]
-                drop_price = choosen_products_dict[product_name]["drop_price"]
-                price = offer.xpath("price")[0]
-                price.text = str(wholesale_price)
-                # Create a new xml element after the price element
-                new_element = etree.Element("price_drop")
-                new_element.text = str(drop_price)
-                price.addnext(new_element)
+                price = None
+                if "wholesale_price" in choosen_products_dict[product_name].keys():
+                    wholesale_price = choosen_products_dict[product_name]["wholesale_price"]
+                    price = offer.xpath("price")[0]
+                    price.text = str(wholesale_price)
+
+                if price is not None and "drop_price" in choosen_products_dict[product_name].keys():
+                    drop_price = choosen_products_dict[product_name]["drop_price"]
+                    price_drop = etree.Element("price_drop")
+                    price_drop.text = str(drop_price)
+                    price.addnext(price_drop)
 
         self.final_xml_tree.write("new_products_catalog.xml", encoding='windows-1251')
         self.change_encoding_letter_case_in_output_xml()
