@@ -18,10 +18,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.app = app
+        self.setWindowTitle("XML parser")
 
         self.categoryid_name_dict = None
         self.all_categories_products_dict = None
-        self.choosed_categories_products_dict = None
+        self.chosed_categories_products_dict = None
         self.source_xml_tree = None
         self.final_xml_tree = None
 
@@ -63,17 +64,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.source_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.source_products_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        class NoEditDelegate(QItemDelegate):
-            def editorEvent(self, event, model, index, *args, **kwargs):
-                # Дозволити редагування лише в 2-му та 4-му стовпчиках
-                src_model = model.sourceModel()
-                # Get index of the table from src_model
-                # print(type(index.index))
-                if index.column() not in (2, 4):
-                    return super().editorEvent(event, model, index, *args, **kwargs)
-                else:
-                    return False
-
         fin_product_header_name = ["Товар", "Початкова Ціна", "Оптова Ціна", "Дроп Ціна"]
         self.fin_products_model = QStandardItemModel()
         self.fin_products_model.setHorizontalHeaderLabels(fin_product_header_name)
@@ -82,9 +72,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.fin_products_proxy_model.setFilterKeyColumn(0)
         self.final_products_table_view.setModel(self.fin_products_proxy_model)
         self.final_products_table_view.resizeColumnsToContents()
-        # self.final_products_table_view.setEditTriggers(QTableView.NoEditTriggers)
         self.final_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
-        # self.final_products_table_view.setItemDelegate(NoEditDelegate())
 
         self.search_src_category_line_edit.textChanged.connect(self.find_in_src_categories)
         self.search_fin_category_line_edit.textChanged.connect(self.find_in_fin_categories)
@@ -95,7 +83,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_cat_push_button.clicked.connect(
             lambda: self.move_categories_between_tables(self.source_category_table_view,
                                                         self.final_category_table_view))
-        # self.delete_cat_push_button.clicked.connect(self.remove_category_from_table)
         self.delete_cat_push_button.clicked.connect(
             lambda: self.move_categories_between_tables(self.final_category_table_view,
                                                         self.source_category_table_view))
@@ -111,10 +98,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.fin_cat_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
-        # self.bottom_price_limit = self.bottom_price_limit_spin_box.value()
-        # self.upper_price_limit = self.upper_price_limit_spin_box.value()
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
         self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValu)
+        # self.
         self.xml_data = None
 
     def checkForBottomPriceValue(self, value):
@@ -135,33 +121,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def get_new_xml(self):
         final_category_model = self.final_category_table_view.model().sourceModel()
         final_prod_model = self.final_products_table_view.model().sourceModel()
-        old_categories_products_dict = self.all_categories_products_dict
-        choosed_categories_products_dict = {}
 
-        choosen_categories_list = []
+        chosen_categories_list = []
         for row in range(final_category_model.rowCount()):
-            choosed_products = final_category_model.data(final_category_model.index(row, 0))
-            choosen_categories_list.append(choosed_products)
+            chosed_products = final_category_model.data(final_category_model.index(row, 0))
+            chosen_categories_list.append(chosed_products)
 
-        choosen_products_dict = {}
+        chosen_products_dict = {}
         for row in range(final_prod_model.rowCount()):
-            choosen_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
+            chosen_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
             wholesale_price = final_prod_model.data(final_prod_model.index(row, 2))
             drop_price = final_prod_model.data(final_prod_model.index(row, 3))
-            choosen_products_dict[choosen_prod_name] = {}
+            chosen_products_dict[chosen_prod_name] = {}
             if wholesale_price != 0:
-                choosen_products_dict[choosen_prod_name]["wholesale_price"] = wholesale_price
+                chosen_products_dict[chosen_prod_name]["wholesale_price"] = wholesale_price
             if drop_price != 0:
-                choosen_products_dict[choosen_prod_name]["drop_price"] = drop_price
-
-        # Filtering categories and products that were not choosen by user
-        # for choosed_category in choosen_categories_list:
-        #     old_products = old_categories_products_dict[choosed_category]
-        #     choosed_categories_products_dict[choosed_category] = []
-        #     for old_product in old_products:
-        #         if old_product in choosen_products_dict.keys():
-        #             choosed_categories_products_dict[choosed_category].append(old_product)
-        # pprint.pprint(choosed_categories_products_dict)
+                chosen_products_dict[chosen_prod_name]["drop_price"] = drop_price
 
         # Create a copy of self.source_xml_tree
         self.final_xml_tree: ElementTree = copy.deepcopy(self.source_xml_tree)
@@ -173,7 +148,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         categories = output_xml_tree.xpath("//category")
         for category in categories:
             category_name = category.text.strip()
-            if category_name not in choosen_categories_list:
+            if category_name not in chosen_categories_list:
                 category.getparent().remove(category)
 
         # Remove products of unselected categories
@@ -185,7 +160,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 offer.getparent().remove(offer)
                 continue
             category_name = self.categoryid_name_dict[category_id]
-            if category_name not in choosen_categories_list:
+            if category_name not in chosen_categories_list:
                 offer.getparent().remove(offer)
                 continue
 
@@ -193,18 +168,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
             product_name = offer.xpath("name")[0].text.strip()
-            if product_name not in choosen_products_dict.keys():
+            if product_name not in chosen_products_dict.keys():
                 offer.getparent().remove(offer)
             else:
                 # Change price to new
                 price = None
-                if "wholesale_price" in choosen_products_dict[product_name].keys():
-                    wholesale_price = choosen_products_dict[product_name]["wholesale_price"]
+                if "wholesale_price" in chosen_products_dict[product_name].keys():
+                    wholesale_price = chosen_products_dict[product_name]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if price is not None and "drop_price" in choosen_products_dict[product_name].keys():
-                    drop_price = choosen_products_dict[product_name]["drop_price"]
+                if price is not None and "drop_price" in chosen_products_dict[product_name].keys():
+                    drop_price = chosen_products_dict[product_name]["drop_price"]
                     price_drop = etree.Element("price_drop")
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
@@ -217,31 +192,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if save_dialog.exec_():
             save_path = save_dialog.selectedFiles()[0]
             self.final_xml_tree.write(save_path, encoding='windows-1251')
-            self.change_encoding_letter_case_in_output_xml()
-            self.correction_of_the_xml_elements()
+            self.change_encoding_letter_case_in_output_xml(save_path)
+            self.correction_of_the_xml_elements(save_path)
             print(f"XML {save_path} created")
             return
 
-        # self.final_xml_tree.write("new_products_catalog.xml", encoding='windows-1251')
-        # self.change_encoding_letter_case_in_output_xml()
-        # self.correction_of_the_xml_elements()
-        print(f"XML {"new_products_catalog.xml"} created")
-
-    def correction_of_the_xml_elements(self):
-        with open("new_products_catalog.xml", "r") as f:
+    @staticmethod
+    def correction_of_the_xml_elements(filename: str):
+        with open(filename, "r") as f:
             text = f.read()
         pattern = r"</price_drop>"
         new_text = r"</price_drop>\n"
         new_content = re.sub(rf"{pattern}", new_text, text, flags=re.MULTILINE)
-        with open("new_products_catalog.xml", "w") as f:
+        with open(filename, "w") as f:
             f.write(new_content)
 
     @staticmethod
-    def change_encoding_letter_case_in_output_xml():
-        with open("new_products_catalog.xml", "r") as f:
+    def change_encoding_letter_case_in_output_xml(filename: str):
+        with open(filename, "r") as f:
             text = f.read()
         text = text.replace(r"'WINDOWS-1251'", r'"windows-1251"')
-        with open("new_products_catalog.xml", "w") as f:
+        with open(filename, "w") as f:
             f.write(text)
 
     def apply_multiplier(self):
@@ -367,10 +338,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     else:
                         column_item.setData(item_data[col_num], Qt.DisplayRole)
                     column_item.setCheckable(True if col_num == 0 else False)  # Set checkable only for the first column
-                    if col_num == 3:
-                        column_item.setEditable(True)
-                    else:
-                        column_item.setEditable(False)
+                    column_item.setEditable(False)
                     new_item.append(column_item)
 
                 if destination_model.__class__ == QStandardItemModel:
