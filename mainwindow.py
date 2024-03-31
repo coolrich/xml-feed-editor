@@ -14,7 +14,8 @@ from ui_mainwindow import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    DEFAULT_CATEGORY = "Без категорії"
+    DEFAULT_CATEGORY_NAME = "Без категорії"
+    DEFAULT_CATEGORY_ID = -1
 
     def __init__(self, app):
         super().__init__()
@@ -23,7 +24,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("XML parser")
 
         self.categoryid_name_dict = None
-        self.all_categories_products_dict = None
+        self.categoryname_id_dict = None
+        self.all_categories_products_dict: dict[str, list[tuple[str, int]]] = {}
+        self.all_products_replacement_dict: dict[str, str] = {}
+        self.all_categories_replacement_dict: dict[str, str] = {}
         self.chosed_categories_products_dict = None
         self.input_xml_tree = None
         self.output_xml_tree = None
@@ -153,7 +157,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
-        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValu)
+        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
 
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
@@ -210,11 +214,86 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def replace_input_category_names(self):
         rows_count = self.input_category_names_proxy_model.rowCount()
-        for row in range(rows_count):
-            item = self.input_category_names_proxy_model.data(self.input_category_names_proxy_model.index(row, 0),
-                                                              Qt.DisplayRole)
-            print(item)
+        words_for_replacement = []
+        old_substring = self.search_category_for_replace_line_edit.text()
+        new_substring = self.replace_category_name_line_edit.text()
 
+        for row in range(rows_count):
+            input_item_substring = self.input_category_names_proxy_model.data(
+                self.input_category_names_proxy_model.index(row, 0),
+                Qt.DisplayRole)
+            print(input_item_substring)
+            words_for_replacement.append(input_item_substring)
+
+        # Make search in self.all_categories_products_dict, and insert new values for appropriate keys
+        for word_for_replacement in words_for_replacement:
+            for old_category_name in self.all_categories_replacement_dict.keys():
+                # Check if the found_category_substring_for_replacement is a substring of the string in the category
+                new_category_name = old_category_name
+                while word_for_replacement in new_category_name:
+                    new_category_name = old_category_name.replace(old_substring, new_substring)
+                if old_category_name != new_category_name:
+                    self.all_categories_replacement_dict[old_category_name] = new_category_name
+        print(self.all_categories_replacement_dict)
+
+        # replace all category names in each table with categories
+        rows_count = self.input_category_model.rowCount()
+        for row in range(rows_count):
+            item = self.input_category_model.data(self.input_category_model.index(row, 0), Qt.DisplayRole)
+            # if item is in self.all_categories_replacement_dict.keys() then replace the item with
+            new_item = self.all_categories_replacement_dict[item]
+            if new_item != "":
+                self.input_category_model.setData(self.input_category_model.index(row, 0),
+                                                  new_item)
+        # the same for other models: self.output_category_model, self.input_category_names_model
+        rows_count = self.output_category_model.rowCount()
+        for row in range(rows_count):
+            item = self.output_category_model.data(self.output_category_model.index(row, 0), Qt.DisplayRole)
+            new_item = self.all_categories_replacement_dict[item]
+            if new_item != "":
+                self.output_category_model.setData(self.output_category_model.index(row, 0),
+                                                   new_item)
+
+        # the same for other models: self.input_category_names_model
+        rows_count = self.input_category_names_model.rowCount()
+        for row in range(rows_count):
+            item = self.input_category_names_model.data(self.input_category_names_model.index(row, 0),
+                                                        Qt.DisplayRole)
+            new_item = self.all_categories_replacement_dict[item]
+            if new_item != "":
+                self.input_category_names_model.setData(self.input_category_names_model.index(row, 0),
+                                                        new_item)
+
+        # change keys in self.all_categories_products_dict from old to new
+        for key, value in self.all_categories_replacement_dict.items():
+            if value == "":
+                continue
+            self.all_categories_products_dict[self.all_categories_replacement_dict[key]] = self.all_categories_products_dict.pop(key)
+        print(self.all_categories_products_dict)
+
+        # make the replacement in values of self.categoryid_name_dict
+        for category_id, value in self.categoryid_name_dict.items():
+            if self.all_categories_replacement_dict[value] != "":
+                self.categoryid_name_dict[category_id] = self.all_categories_replacement_dict[value]
+        print(self.categoryid_name_dict)
+
+        # TODO: make replacement in xml tree
+        self.output_xml_tree = copy.deepcopy(self.input_xml_tree)
+        output_xml_tree = self.output_xml_tree
+        categories = output_xml_tree.xpath("//category")
+        for category in categories:
+            category_name = category.text.strip()
+            new_category_name = self.all_categories_replacement_dict[category_name]
+            if new_category_name != "":
+                category.text = new_category_name
+
+        # TODO: make replacement in self.categoryname_id_dict
+        for category_name in self.all_categories_replacement_dict.keys():
+            new_category_name = self.all_categories_replacement_dict[category_name]
+            if new_category_name != "":
+                self.categoryname_id_dict[new_category_name] = self.categoryname_id_dict.pop(category_name)
+
+    # TODO: need to be implemented
     def replace_input_product_names(self):
         rows_count = self.input_product_names_proxy_model.rowCount()
         for row in range(rows_count):
@@ -250,7 +329,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 "Нижня межа не може перевищувати верхню",
                                 QMessageBox.Ok)
 
-    def checkForUpperPriceValu(self, value):
+    def checkForUpperPriceValue(self, value):
         if value < self.bottom_price_limit_spin_box.value():
             self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
             # noinspection PyUnresolvedReferences
@@ -262,10 +341,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         final_category_model = self.output_category_table_view.model().sourceModel()
         final_prod_model = self.output_products_table_view.model().sourceModel()
 
-        chosen_categories_list = []
+        chosen_categories_ids_list = []
         for row in range(final_category_model.rowCount()):
-            chosed_products = final_category_model.data(final_category_model.index(row, 0))
-            chosen_categories_list.append(chosed_products)
+            chosen_category = final_category_model.data(final_category_model.index(row, 0))
+            chosen_categories_ids_list.append(self.categoryname_id_dict[chosen_category])
 
         chosen_products_dict = {}
         for row in range(final_prod_model.rowCount()):
@@ -279,7 +358,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 chosen_products_dict[chosen_prod_name]["drop_price"] = drop_price
 
         # Create a copy of self.input_xml_tree
-        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+        if self.output_xml_tree is None:
+            self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
         output_xml_tree = self.output_xml_tree
         if output_xml_tree is None:
             return
@@ -287,8 +367,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Remove unselected categories
         categories = output_xml_tree.xpath("//category")
         for category in categories:
-            category_name = category.text.strip()
-            if category_name not in chosen_categories_list:
+            category_id = category.get("id").strip()
+            if category_id not in chosen_categories_ids_list:
                 category.getparent().remove(category)
 
         # Remove products of unselected categories
@@ -296,12 +376,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         categories_id_list = self.categoryid_name_dict.keys()
         for offer in offers:
             category_id = offer.xpath("categoryId")[0].text.strip()
-            if category_id in categories_id_list:
-                category_name = self.categoryid_name_dict[category_id]
-            else:
-                category_name = MainWindow.DEFAULT_CATEGORY
-
-            if category_name not in chosen_categories_list:
+            print(category_id)
+            if category_id not in chosen_categories_ids_list:
                 offer.getparent().remove(offer)
                 continue
 
@@ -568,6 +644,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not categories_products_dict:
             return
         self.all_categories_products_dict = categories_products_dict
+        self.init_replacement_dicts()
         self.reset_tables_data()
         self.populate_input_tables(categories_products_dict)
         print("File closed")
@@ -596,13 +673,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_name_item.setData(product_name[0], Qt.DisplayRole)
             self.input_product_names_model.appendRow(product_name_item)
 
-    def parse(self, file_path):
+    def parse(self, file_path) -> dict[str, list[tuple[str, int]]]:
         if not file_path:
             return None
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
         category_elems = self.input_xml_tree.xpath("//category")
         categoryid_name_dict = {}
+        categoryname_id_dict = {}
 
         categories = set()
         for category in category_elems:
@@ -610,14 +688,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_name = category.text.strip()
             categories.add(category_name)
             categoryid_name_dict[category_id] = category_name
+            categoryname_id_dict[category_name] = category_id
         self.categoryid_name_dict = categoryid_name_dict
+        self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = MainWindow.DEFAULT_CATEGORY_NAME
+        self.categoryname_id_dict = categoryname_id_dict
+        self.categoryname_id_dict[MainWindow.DEFAULT_CATEGORY_NAME] = MainWindow.DEFAULT_CATEGORY_ID
+
 
         category_products_dict = {}
         for category in categories:
             category_products_dict[category] = []
 
         # Add the category MainWindow.DEFAULT_CATEGORY for products without category
-        category_products_dict[MainWindow.DEFAULT_CATEGORY] = []
+        category_products_dict[MainWindow.DEFAULT_CATEGORY_NAME] = []
 
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
@@ -629,7 +712,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(cid)
             if cid not in categoryid_name_dict:
                 # Add product to the category MainWindow.DEFAULT_CATEGORY
-                category_products_dict[MainWindow.DEFAULT_CATEGORY].append((product_name, product_price))
+                category_products_dict[MainWindow.DEFAULT_CATEGORY_NAME].append((product_name, product_price))
                 continue
             category_name = categoryid_name_dict[cid]
             category_products_dict[category_name].append((product_name, product_price))
@@ -638,3 +721,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # del tree, categories, offer_tags
         gc.collect()
         return category_products_dict
+
+    def init_replacement_dicts(self):
+        self.all_categories_replacement_dict = {category: "" for category in self.all_categories_products_dict.keys()}
+        self.all_products_replacement_dict = {}
+        for product in self.all_categories_products_dict.values():
+            if len(product) > 0:
+                self.all_products_replacement_dict[product[0]] = ""
