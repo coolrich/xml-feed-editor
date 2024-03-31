@@ -6,7 +6,7 @@ import re
 from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QItemDelegate, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox
 from lxml import etree
 from lxml.etree import ElementTree
 
@@ -23,90 +23,199 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.categoryid_name_dict = None
         self.all_categories_products_dict = None
         self.chosed_categories_products_dict = None
-        self.source_xml_tree = None
-        self.final_xml_tree = None
+        self.input_xml_tree = None
+        self.output_xml_tree = None
 
-        # Init of source_category_table_view
+        # Init of input_category_table_view
         category_header_name = ["Категорія"]
-        self.source_cat_model = QStandardItemModel()
-        self.source_cat_model.setHorizontalHeaderLabels(category_header_name)
-        self.source_cat_proxy_model = QSortFilterProxyModel()
-        self.source_cat_proxy_model.setSourceModel(self.source_cat_model)
-        self.source_cat_proxy_model.setFilterKeyColumn(0)
-        self.source_category_table_view.setModel(self.source_cat_proxy_model)
-        self.source_category_table_view.resizeColumnsToContents()
-        self.source_category_table_view.horizontalHeader().setStretchLastSection(True)
-        self.source_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
-        self.source_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.input_category_model = QStandardItemModel()
+        self.input_category_model.setHorizontalHeaderLabels(category_header_name)
+        self.input_category_proxy_model = QSortFilterProxyModel()
+        self.input_category_proxy_model.setSourceModel(self.input_category_model)
+        self.input_category_proxy_model.setFilterKeyColumn(0)
+        self.input_category_table_view.setModel(self.input_category_proxy_model)
+        self.input_category_table_view.resizeColumnsToContents()
+        self.input_category_table_view.horizontalHeader().setStretchLastSection(True)
+        self.input_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # noinspection PyUnresolvedReferences
+        self.input_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
-        # Init of final_category_table_view
-        self.fin_cat_model = QStandardItemModel()
-        self.fin_cat_model.setHorizontalHeaderLabels(category_header_name)
-        self.fin_cat_proxy_model = QSortFilterProxyModel()
-        self.fin_cat_proxy_model.setSourceModel(self.fin_cat_model)
-        self.fin_cat_proxy_model.setFilterKeyColumn(0)
-        self.final_category_table_view.setModel(self.fin_cat_proxy_model)
-        self.final_category_table_view.resizeColumnsToContents()
-        self.final_category_table_view.horizontalHeader().setStretchLastSection(True)
-        self.final_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
-        self.final_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        # Init of output_category_table_view
+        self.output_category_model = QStandardItemModel()
+        self.output_category_model.setHorizontalHeaderLabels(category_header_name)
+        self.output_category_proxy_model = QSortFilterProxyModel()
+        self.output_category_proxy_model.setSourceModel(self.output_category_model)
+        self.output_category_proxy_model.setFilterKeyColumn(0)
+        self.output_category_table_view.setModel(self.output_category_proxy_model)
+        self.output_category_table_view.resizeColumnsToContents()
+        self.output_category_table_view.horizontalHeader().setStretchLastSection(True)
+        self.output_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # noinspection PyUnresolvedReferences
+        self.output_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of products_table_view
         product_header_name = ["Товар", "Початкова Ціна"]
-        self.source_products_model = QStandardItemModel()
-        self.source_products_model.setHorizontalHeaderLabels(product_header_name)
-        self.source_products_proxy_model = QSortFilterProxyModel()
-        self.source_products_proxy_model.setSourceModel(self.source_products_model)
-        self.source_products_proxy_model.setFilterKeyColumn(0)
-        self.source_products_table_view.setModel(self.source_products_proxy_model)
-        self.source_products_table_view.resizeColumnsToContents()
-        self.source_products_table_view.setEditTriggers(QTableView.NoEditTriggers)
-        self.source_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
-        self.source_products_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.input_products_model = QStandardItemModel()
+        self.input_products_model.setHorizontalHeaderLabels(product_header_name)
+        self.input_products_proxy_model = QSortFilterProxyModel()
+        self.input_products_proxy_model.setSourceModel(self.input_products_model)
+        self.input_products_proxy_model.setFilterKeyColumn(0)
+        self.input_products_table_view.setModel(self.input_products_proxy_model)
+        self.input_products_table_view.resizeColumnsToContents()
+        # noinspection PyUnresolvedReferences
+        self.input_products_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.input_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # noinspection PyUnresolvedReferences
+        self.input_products_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        fin_product_header_name = ["Товар", "Початкова Ціна", "Оптова Ціна", "Дроп Ціна"]
-        self.fin_products_model = QStandardItemModel()
-        self.fin_products_model.setHorizontalHeaderLabels(fin_product_header_name)
-        self.fin_products_proxy_model = QSortFilterProxyModel()
-        self.fin_products_proxy_model.setSourceModel(self.fin_products_model)
-        self.fin_products_proxy_model.setFilterKeyColumn(0)
-        self.final_products_table_view.setModel(self.fin_products_proxy_model)
-        self.final_products_table_view.resizeColumnsToContents()
-        self.final_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        output_product_header_name = ["Товар", "Початкова Ціна", "Оптова Ціна", "Дроп Ціна"]
+        self.output_products_model = QStandardItemModel()
+        self.output_products_model.setHorizontalHeaderLabels(output_product_header_name)
+        self.output_products_proxy_model = QSortFilterProxyModel()
+        self.output_products_proxy_model.setSourceModel(self.output_products_model)
+        self.output_products_proxy_model.setFilterKeyColumn(0)
+        self.output_products_table_view.setModel(self.output_products_proxy_model)
+        self.output_products_table_view.resizeColumnsToContents()
+        self.output_products_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
-        self.search_src_category_line_edit.textChanged.connect(self.find_in_src_categories)
-        self.search_fin_category_line_edit.textChanged.connect(self.find_in_fin_categories)
-        self.search_src_product_line_edit.textChanged.connect(self.find_in_src_products)
-        self.search_fin_product_line_edit.textChanged.connect(self.find_in_fin_products)
+        # Init of input_category_names_table_view
+        input_category_header_name = ["Категорія"]
+        self.input_category_names_model = QStandardItemModel()
+        self.input_category_names_model.setHorizontalHeaderLabels(input_category_header_name)
+        self.input_category_names_proxy_model = QSortFilterProxyModel()
+        self.input_category_names_proxy_model.setSourceModel(self.input_category_names_model)
+        self.input_category_names_proxy_model.setFilterKeyColumn(0)
+        self.input_category_names_table_view.setModel(self.input_category_names_proxy_model)
+        self.input_category_names_table_view.resizeColumnsToContents()
+        self.input_category_names_table_view.horizontalHeader().setStretchLastSection(True)
+        self.input_category_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # noinspection PyUnresolvedReferences
+        self.input_category_names_table_view.setEditTriggers(QTableView.NoEditTriggers)
+
+        # Init of search output_category_names_table_view
+        output_category_header_name = ["Початкова назва", "Нова назва"]
+        self.output_category_names_model = QStandardItemModel()
+        self.output_category_names_model.setHorizontalHeaderLabels(output_category_header_name)
+        self.output_category_names_proxy_model = QSortFilterProxyModel()
+        self.output_category_names_proxy_model.setSourceModel(self.output_category_names_model)
+        self.output_category_names_proxy_model.setFilterKeyColumn(0)
+        self.output_category_names_table_view.setModel(self.output_category_names_proxy_model)
+        self.output_category_names_table_view.resizeColumnsToContents()
+        self.output_category_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+
+        # Init of input_category_names_table_view
+        input_product_header_name = ["Товар"]
+        self.input_product_names_model = QStandardItemModel()
+        self.input_product_names_model.setHorizontalHeaderLabels(input_product_header_name)
+        self.input_product_proxy_model = QSortFilterProxyModel()
+        self.input_product_proxy_model.setSourceModel(self.input_product_names_model)
+        self.input_product_proxy_model.setFilterKeyColumn(0)
+        self.input_product_names_table_view.setModel(self.input_product_proxy_model)
+        self.input_product_names_table_view.resizeColumnsToContents()
+        self.input_product_names_table_view.horizontalHeader().setStretchLastSection(True)
+        self.input_product_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+
+        # Init of search output_category_names_table_view
+        output_product_header_name = ["Початкова назва", "Нова назва"]
+        self.output_product_names_model = QStandardItemModel()
+        self.output_product_names_model.setHorizontalHeaderLabels(output_product_header_name)
+        self.output_product_proxy_model = QSortFilterProxyModel()
+        self.output_product_proxy_model.setSourceModel(self.output_product_names_model)
+        self.output_product_proxy_model.setFilterKeyColumn(0)
+        self.output_product_names_table_view.setModel(self.output_product_proxy_model)
+        self.output_product_names_table_view.resizeColumnsToContents()
+        self.output_product_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+
+        self.search_input_category_line_edit.textChanged.connect(self.find_in_input_categories)
+        self.search_output_category_line_edit.textChanged.connect(self.find_in_output_categories)
+        self.search_input_product_line_edit.textChanged.connect(self.find_in_input_products)
+        self.search_output_product_line_edit.textChanged.connect(self.find_in_output_products)
         self.open_action.triggered.connect(self.open_file)
 
-        self.add_cat_push_button.clicked.connect(
-            lambda: self.move_categories_between_tables(self.source_category_table_view,
-                                                        self.final_category_table_view))
-        self.delete_cat_push_button.clicked.connect(
-            lambda: self.move_categories_between_tables(self.final_category_table_view,
-                                                        self.source_category_table_view))
-        self.fin_cat_model.rowsInserted.connect(self.add_products_to_src_products_table)
-        self.add_prod_push_button.clicked.connect(
-            lambda: self.move_products_from_source_to_destination_table(
-                self.source_products_table_view, self.final_products_table_view)
+        self.add_category_push_button.clicked.connect(
+            lambda: self.move_categories_between_tables(self.input_category_table_view,
+                                                        self.output_category_table_view))
+        self.delete_category_push_button.clicked.connect(
+            lambda: self.move_categories_between_tables(self.output_category_table_view,
+                                                        self.input_category_table_view))
+        self.output_category_model.rowsInserted.connect(self.add_products_to_src_products_table)
+        self.add_product_push_button.clicked.connect(
+            lambda: self.move_products_from_input_to_destination_table(
+                self.input_products_table_view, self.output_products_table_view)
         )
-        self.remove_prod_push_button.clicked.connect(
-            lambda: self.move_products_from_source_to_destination_table(
-                self.final_products_table_view, self.source_products_table_view)
+        self.remove_product_push_button.clicked.connect(
+            lambda: self.move_products_from_input_to_destination_table(
+                self.output_products_table_view, self.input_products_table_view)
         )
-        self.fin_cat_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
+        self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
         self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValu)
-        # self.
+        self.action_about_qt.triggered.connect(self.about_qt)
+
+        self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
+        self.replace_category_name_line_edit.textChanged.connect(self.replace_category_name_line_edit_text_change)
+        self.replace_category_name_push_button.setEnabled(False)
+        self.replace_category_name_push_button.clicked.connect(self.replace_input_category_names)
+
         self.xml_data = None
+
+    def find_category_names_for_replace(self, text):
+        self.input_category_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.input_category_names_proxy_model.setFilterRegularExpression(text)
+        input_category_names_count = self.input_category_names_proxy_model.rowCount()
+        if (input_category_names_count == 0
+                or text == ""
+                or self.replace_category_name_line_edit.text() == ""):
+            self.replace_category_name_push_button.setEnabled(False)
+        else:
+            self.replace_category_name_push_button.setEnabled(True)
+
+    def replace_category_name_line_edit_text_change(self, text):
+        if (self.input_category_names_proxy_model.rowCount() == 0
+                or text == ""
+                or self.replace_category_name_line_edit.text() == ""):
+            self.replace_category_name_push_button.setEnabled(False)
+        else:
+            self.replace_category_name_push_button.setEnabled(True)
+
+    def replace_input_category_names(self):
+        rows_count = self.input_category_names_proxy_model.rowCount()
+        for row in range(rows_count):
+            item = self.input_category_names_proxy_model.data(self.input_category_names_proxy_model.index(row, 0), Qt.DisplayRole)
+            print(item)
+
+    def find_product_names_for_replace(self, text):
+        pass
+
+    def replace_product_names(self):
+        pass
+
+    def find_in_input_categories(self, text):
+        self.input_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.input_category_proxy_model.setFilterRegularExpression(text)
+
+    def find_in_output_categories(self, text):
+        self.output_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.output_category_proxy_model.setFilterFixedString(text)
+
+    def find_in_input_products(self, text):
+        self.input_products_table_view.model().setFilterFixedString(text)
+        self.input_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
+
+    def find_in_output_products(self, text):
+        self.output_products_table_view.model().setFilterFixedString(text)
+        self.output_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
+
+    def about_qt(self):
+        QMessageBox.aboutQt(self)
 
     def checkForBottomPriceValue(self, value):
         if value > self.upper_price_limit_spin_box.value():
             self.bottom_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value() - 1)
             # Show a warning window with message Нижня межа не може перевищувати верхню
+            # noinspection PyUnresolvedReferences
             QMessageBox.warning(self, "Попередження",
                                 "Нижня межа не може перевищувати верхню",
                                 QMessageBox.Ok)
@@ -114,13 +223,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def checkForUpperPriceValu(self, value):
         if value < self.bottom_price_limit_spin_box.value():
             self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
+            # noinspection PyUnresolvedReferences
             QMessageBox.warning(self, "Попередження",
                                 "Верхня межа не може бути менше за нижню!",
                                 QMessageBox.Ok)
 
     def get_new_xml(self):
-        final_category_model = self.final_category_table_view.model().sourceModel()
-        final_prod_model = self.final_products_table_view.model().sourceModel()
+        final_category_model = self.output_category_table_view.model().sourceModel()
+        final_prod_model = self.output_products_table_view.model().sourceModel()
 
         chosen_categories_list = []
         for row in range(final_category_model.rowCount()):
@@ -138,9 +248,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if drop_price != 0:
                 chosen_products_dict[chosen_prod_name]["drop_price"] = drop_price
 
-        # Create a copy of self.source_xml_tree
-        self.final_xml_tree: ElementTree = copy.deepcopy(self.source_xml_tree)
-        output_xml_tree = self.final_xml_tree
+        # Create a copy of self.input_xml_tree
+        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+        output_xml_tree = self.output_xml_tree
         if output_xml_tree is None:
             return
 
@@ -186,12 +296,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Create a window for saving a new xml file
         save_dialog = QFileDialog()
+        # noinspection PyUnresolvedReferences
         save_dialog.setFileMode(QFileDialog.AnyFile)
+        # noinspection PyUnresolvedReferences
         save_dialog.setAcceptMode(QFileDialog.AcceptSave)
         save_dialog.setNameFilter("XML Files (*.xml)")
         if save_dialog.exec_():
             save_path = save_dialog.selectedFiles()[0]
-            self.final_xml_tree.write(save_path, encoding='windows-1251')
+            self.output_xml_tree.write(save_path, encoding='windows-1251')
             self.change_encoding_letter_case_in_output_xml(save_path)
             self.correction_of_the_xml_elements(save_path)
             print(f"XML {save_path} created")
@@ -221,12 +333,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
          Get value from upper_price_limit_spin_box
          Get value from multiplier_double_spin_box
          Save them in variables
-         Find all products in the final_products_table_view
+         Find all products in the output_products_table_view
          by column using valu from price_category_combo_box
          then filter them by range from bottom_price_limit_spin_box
          to upper_price_limit_spin_box. Save found products in resulted_products_list.
          Then apply value from multiplier_double_spin_box to each product price and save them in the next column.
-         Then save and back products and their prices to final_products_table_view.
+         Then save and back products and their prices to output_products_table_view.
          """
         price_category = self.price_category_combo_box.currentText()
         bottom_price_limit = self.bottom_price_limit_spin_box.value()
@@ -234,8 +346,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         multiplier = self.multiplier_double_spin_box.value()
         resulted_products_list = []
 
-        # Get all products from self.final_products_table_view model
-        fptv_tabel = self.final_products_table_view
+        # Get all products from self.output_products_table_view model
+        fptv_tabel = self.output_products_table_view
         fptv_model: QStandardItemModel = fptv_tabel.model().sourceModel()
         column_index_target_price = None
         column_count = fptv_model.columnCount()
@@ -247,33 +359,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # print(index)
         row_count = fptv_model.rowCount()
         for row in range(row_count):
-            source_price = fptv_model.data(fptv_model.index(row, 1))
+            input_price = fptv_model.data(fptv_model.index(row, 1))
             final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
-            if bottom_price_limit <= source_price <= upper_price_limit:
-                product_markup = multiplier * source_price
+            if bottom_price_limit <= input_price <= upper_price_limit:
+                product_markup = multiplier * input_price
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
-            print(source_price)
+            print(input_price)
 
     def add_products_to_src_products_table(self):
-        sptv_model = self.source_products_table_view.model()
-        # Get all categories from self.final_category_table_view
-        fin_cat_model = self.final_category_table_view.model()
+        sptv_model = self.input_products_table_view.model()
+        # Get all categories from self.output_category_table_view
+        output_category_model = self.output_category_table_view.model()
         categories = set()
-        for row in range(fin_cat_model.rowCount()):
-            item = fin_cat_model.data(fin_cat_model.index(row, 0))
+        for row in range(output_category_model.rowCount()):
+            item = output_category_model.data(output_category_model.index(row, 0))
             categories.add(item)
 
-        # Gather all products names from sptv_model in source_products_list
-        source_products_set = set()
+        # Gather all products names from sptv_model in input_products_list
+        input_products_set = set()
         for row in range(sptv_model.rowCount()):
             item = sptv_model.data(sptv_model.index(row, 0))
-            source_products_set.add(item)
+            input_products_set.add(item)
 
         for category in categories:
             products_list = self.all_categories_products_dict[category]
             for product_price_tuple in products_list:
                 product_name = product_price_tuple[0]
-                if product_name in source_products_set:
+                if product_name in input_products_set:
                     continue
                 product_price = product_price_tuple[1]
                 product_item = QStandardItem()
@@ -282,32 +394,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 price_item = QStandardItem()
                 price_item.setData(product_price, Qt.DisplayRole)
                 sptv_model.sourceModel().appendRow([product_item, price_item])
-        self.source_products_table_view.resizeColumnsToContents()
-        # self.source_products_table_view.horizontalHeader().setStretchLastSection(True)
+        self.input_products_table_view.resizeColumnsToContents()
+        # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
         print("Data has been added to table")
 
     @staticmethod
-    def move_products_from_source_to_destination_table(source_tabel, destination_tabel):
-        source_model = source_tabel.model()
+    def move_products_from_input_to_destination_table(input_tabel, destination_tabel):
+        input_model = input_tabel.model()
         destination_model = destination_tabel.model()
 
-        if not source_model or not destination_model:
+        if not input_model or not destination_model:
             print("Error: Invalid table view models.")
             return
 
         # Collect checked items in source model
-        source_results = set()
-        row_count = source_model.rowCount()
+        input_results = set()
+        row_count = input_model.rowCount()
         row = 0
         while row < row_count:
-            checked = source_model.data(source_model.index(row, 0), Qt.CheckStateRole)
+            checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
             if checked == 2:
                 # Collect all 5 columns of data
                 data = []
-                for col in range(source_model.columnCount()):
-                    data.append(source_model.data(source_model.index(row, col)))
-                source_results.add(tuple(data))
-                source_model.removeRow(row)
+                for col in range(input_model.columnCount()):
+                    data.append(input_model.data(input_model.index(row, col)))
+                input_results.add(tuple(data))
+                input_model.removeRow(row)
             else:
                 row += 1
 
@@ -325,7 +437,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 data.append(destination_model.data(destination_model.index(row, col)))
             destination_results.append(data)
         # Add unique items from source to destination (considering all columns)
-        for item_data in source_results:
+        for item_data in input_results:
             # Check if item already exists based on a unique identifier (e.g., "Товар")
             if item_data[0] not in [result[0] for result in destination_results]:
                 new_item = []
@@ -347,66 +459,53 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     destination_model.sourceModel().appendRow(new_item)
                 print("Item", new_item, "has been removed")
         destination_tabel.resizeColumnToContents(0)
-        source_tabel.resizeColumnToContents(0)
+        input_tabel.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
         print("Data has been added to table")
 
     def refresh_products_in_product_tables(self):
-        sptv_model = self.source_products_table_view.model()
-        fptv_model = self.final_products_table_view.model()
+        sptv_model = self.input_products_table_view.model()
+        fptv_model = self.output_products_table_view.model()
         sptv_model.removeRows(0, sptv_model.rowCount())
         fptv_model.removeRows(0, fptv_model.rowCount())
         self.add_products_to_src_products_table()
-        self.move_products_from_source_to_destination_table(
-            self.source_products_table_view,
-            self.final_products_table_view
+        self.move_products_from_input_to_destination_table(
+            self.input_products_table_view,
+            self.output_products_table_view
         )
 
         print("Data has been removed from table")
 
-    def find_in_src_categories(self, text):
-        self.source_cat_proxy_model.setFilterFixedString(text)
-        self.source_cat_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
-    def find_in_fin_categories(self, text):
-        self.fin_cat_proxy_model.setFilterFixedString(text)
-        self.fin_cat_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
-    def find_in_src_products(self, text):
-        self.source_products_table_view.model().setFilterFixedString(text)
-        self.source_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
-
-    def find_in_fin_products(self, text):
-        self.final_products_table_view.model().setFilterFixedString(text)
-        self.final_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
-
-    def move_categories_between_tables(self, source_table_view: QTableView,
+    @staticmethod
+    def move_categories_between_tables(input_table_view: QTableView,
                                        destination_table_view: QTableView):
         """
         Moves checked items from the source table view to the destination table view.
 
         Args:
-            source_table_view (QtWidgets.QTableView): The source table view.
+            input_table_view (QtWidgets.QTableView): The source table view.
             destination_table_view (QtWidgets.QTableView): The destination table view.
         """
         # Get source and destination models
-        source_model = source_table_view.model()
+        input_model = input_table_view.model()
         destination_model = destination_table_view.model()
 
-        if not source_model or not destination_model:
+        if not input_model or not destination_model:
             print("Error: Invalid table view models.")
             return
 
         # Collect checked items in source model
-        source_results = []
-        row_count = source_model.rowCount()
+        input_results = []
+        row_count = input_model.rowCount()
         row = 0
         while row < row_count:
-            checked = source_model.data(source_model.index(row, 0), Qt.CheckStateRole)
+            checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
             if checked == 2:
-                item = source_model.data(source_model.index(row, 0))
-                source_results.append(item)
-                source_model.removeRow(row)
+                item = input_model.data(input_model.index(row, 0))
+                input_results.append(item)
+                input_model.removeRow(row)
             else:
                 row += 1
 
@@ -422,7 +521,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             destination_results.append(item)
 
         # Add unique items from source to destination
-        for category in source_results:
+        for category in input_results:
             category_item = QStandardItem()
             category_item.setData(category, Qt.DisplayRole)
             category_item.setCheckable(True)
@@ -441,26 +540,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         self.all_categories_products_dict = categories_products_dict
         self.reset_tables_data()
-        self.populate_source_cat_table(categories_products_dict)
+        self.populate_input_tables(categories_products_dict)
         print("File closed")
 
     def reset_tables_data(self):
-        self.source_cat_model.removeRows(0, self.source_cat_model.rowCount())
-        self.fin_cat_model.removeRows(0, self.fin_cat_model.rowCount())
+        self.input_category_model.removeRows(0, self.input_category_model.rowCount())
+        self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
-    def populate_source_cat_table(self, categories):
+    def populate_input_tables(self, categories):
         for category in categories:
             category_item = QStandardItem()
             category_item.setCheckable(True)
             category_item.setData(category, Qt.DisplayRole)
-            self.source_cat_model.appendRow(category_item)
+            self.input_category_model.appendRow(category_item)
+
+            category_name_item = QStandardItem()
+            category_name_item.setData(category, Qt.DisplayRole)
+            self.input_category_names_model.appendRow(category_name_item)
+
+        all_products_list = []
+        for product_names_list in self.all_categories_products_dict.values():
+            all_products_list.extend(product_names_list)
+
+        for product_name in all_products_list:
+            product_name_item = QStandardItem()
+            product_name_item.setData(product_name[0], Qt.DisplayRole)
+            self.input_product_names_model.appendRow(product_name_item)
+
+
+
+
 
     def parse(self, file_path):
         if not file_path:
             return None
         parser = etree.XMLParser(encoding="windows-1251")
-        self.source_xml_tree = etree.parse(file_path, parser=parser)
-        category_elems = self.source_xml_tree.xpath("//category")
+        self.input_xml_tree = etree.parse(file_path, parser=parser)
+        category_elems = self.input_xml_tree.xpath("//category")
         categoryid_name_dict = {}
 
         categories = set()
@@ -475,7 +591,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for category in categories:
             category_products_dict[category] = []
 
-        offer_tags = self.source_xml_tree.xpath("//offer")
+        offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id = offer_tag.xpath("categoryId")
             product_name = offer_tag.xpath("name")[0].text.strip()

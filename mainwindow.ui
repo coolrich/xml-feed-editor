@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -46,7 +46,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="search_src_category_line_edit"/>
+                <widget class="QLineEdit" name="search_input_category_line_edit"/>
                </item>
               </layout>
              </item>
@@ -69,7 +69,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="add_cat_push_button">
+                  <widget class="QPushButton" name="add_category_push_button">
                    <property name="text">
                     <string>Додати до
 XML</string>
@@ -79,7 +79,7 @@ XML</string>
                 </layout>
                </item>
                <item>
-                <widget class="QTableView" name="source_category_table_view"/>
+                <widget class="QTableView" name="input_category_table_view"/>
                </item>
               </layout>
              </item>
@@ -102,7 +102,7 @@ XML</string>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="search_fin_category_line_edit"/>
+                <widget class="QLineEdit" name="search_output_category_line_edit"/>
                </item>
               </layout>
              </item>
@@ -125,7 +125,7 @@ XML</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="delete_cat_push_button">
+                  <widget class="QPushButton" name="delete_category_push_button">
                    <property name="text">
                     <string>Убрати з
 XML</string>
@@ -135,7 +135,7 @@ XML</string>
                 </layout>
                </item>
                <item>
-                <widget class="QTableView" name="final_category_table_view"/>
+                <widget class="QTableView" name="output_category_table_view"/>
                </item>
               </layout>
              </item>
@@ -161,7 +161,7 @@ XML</string>
              <property name="geometry">
               <rect>
                <x>0</x>
-               <y>-139</y>
+               <y>0</y>
                <width>757</width>
                <height>738</height>
               </rect>
@@ -197,7 +197,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLineEdit" name="search_src_product_line_edit"/>
+                      <widget class="QLineEdit" name="search_input_product_line_edit"/>
                      </item>
                     </layout>
                    </item>
@@ -221,7 +221,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QPushButton" name="add_prod_push_button">
+                      <widget class="QPushButton" name="add_product_push_button">
                        <property name="text">
                         <string>Додати до
 XML</string>
@@ -231,7 +231,7 @@ XML</string>
                     </layout>
                    </item>
                    <item>
-                    <widget class="QTableView" name="source_products_table_view">
+                    <widget class="QTableView" name="input_products_table_view">
                      <property name="maximumSize">
                       <size>
                        <width>16777215</width>
@@ -267,7 +267,7 @@ XML</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="search_fin_product_line_edit"/>
+                    <widget class="QLineEdit" name="search_output_product_line_edit"/>
                    </item>
                   </layout>
                  </item>
@@ -293,7 +293,7 @@ XML</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QPushButton" name="remove_prod_push_button">
+                      <widget class="QPushButton" name="remove_product_push_button">
                        <property name="text">
                         <string>Убрати з
 XML</string>
@@ -303,7 +303,7 @@ XML</string>
                     </layout>
                    </item>
                    <item>
-                    <widget class="QTableView" name="final_products_table_view">
+                    <widget class="QTableView" name="output_products_table_view">
                      <property name="minimumSize">
                       <size>
                        <width>0</width>
@@ -515,30 +515,74 @@ XML</string>
                      <item>
                       <widget class="QLabel" name="label_10">
                        <property name="text">
-                        <string>Пошук:</string>
+                        <string>Фраза для заміни:</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLineEdit" name="search_product_line_edit_2"/>
+                      <widget class="QLineEdit" name="search_category_for_replace_line_edit">
+                       <property name="maximumSize">
+                        <size>
+                         <width>260</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                      </widget>
                      </item>
                     </layout>
                    </item>
                    <item>
-                    <widget class="QListView" name="listView"/>
+                    <layout class="QHBoxLayout" name="horizontalLayout_20">
+                     <item>
+                      <widget class="QLabel" name="label">
+                       <property name="text">
+                        <string>Замінити на:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLineEdit" name="replace_category_name_line_edit">
+                       <property name="maximumSize">
+                        <size>
+                         <width>260</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
                    </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_17">
                    <item>
-                    <widget class="QPushButton" name="pushButton">
+                    <widget class="QPushButton" name="replace_category_name_push_button">
                      <property name="text">
                       <string>Замінити</string>
                      </property>
                     </widget>
                    </item>
+                   <item>
+                    <widget class="QLabel" name="label_9">
+                     <property name="text">
+                      <string>Всі назви категорій товарів</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableView" name="input_category_names_table_view"/>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Виконані заміни назв категорій</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableView" name="output_category_names_table_view"/>
+                   </item>
                   </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_17"/>
                  </item>
                 </layout>
                </item>
@@ -560,30 +604,74 @@ XML</string>
                      <item>
                       <widget class="QLabel" name="label_11">
                        <property name="text">
-                        <string>Пошук:</string>
+                        <string>Фраза для заміни:</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLineEdit" name="search_product_line_edit_3"/>
+                      <widget class="QLineEdit" name="search_product_for_replace_line_edit">
+                       <property name="maximumSize">
+                        <size>
+                         <width>260</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                      </widget>
                      </item>
                     </layout>
                    </item>
                    <item>
-                    <widget class="QListView" name="listView_2"/>
+                    <layout class="QHBoxLayout" name="horizontalLayout_21">
+                     <item>
+                      <widget class="QLabel" name="label_2">
+                       <property name="text">
+                        <string>Замінити на:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLineEdit" name="replace_product_name_line_edit">
+                       <property name="maximumSize">
+                        <size>
+                         <width>260</width>
+                         <height>16777215</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
                    </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_18">
                    <item>
-                    <widget class="QPushButton" name="pushButton_11">
+                    <widget class="QPushButton" name="replace_product_name_push_button">
                      <property name="text">
                       <string>Замінити</string>
                      </property>
                     </widget>
                    </item>
+                   <item>
+                    <widget class="QLabel" name="label_15">
+                     <property name="text">
+                      <string>Всі назви товарів</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableView" name="input_product_names_table_view"/>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_16">
+                     <property name="text">
+                      <string>Виконані заміни назв товарів</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableView" name="output_product_names_table_view"/>
+                   </item>
                   </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_18"/>
                  </item>
                 </layout>
                </item>
@@ -606,7 +694,7 @@ XML</string>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="get_new_xml_push_button_2">
+         <widget class="QPushButton" name="get_csv_push_button">
           <property name="text">
            <string>Отримати CSV</string>
           </property>
@@ -636,7 +724,14 @@ XML</string>
     <addaction name="action_2"/>
     <addaction name="exit_action"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Довідка</string>
+    </property>
+    <addaction name="action_about_qt"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="open_action">
@@ -657,6 +752,11 @@ XML</string>
   <action name="action_2">
    <property name="text">
     <string>Зберегти проект</string>
+   </property>
+  </action>
+  <action name="action_about_qt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>
