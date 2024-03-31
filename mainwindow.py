@@ -183,7 +183,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def replace_input_category_names(self):
         rows_count = self.input_category_names_proxy_model.rowCount()
         for row in range(rows_count):
-            item = self.input_category_names_proxy_model.data(self.input_category_names_proxy_model.index(row, 0), Qt.DisplayRole)
+            item = self.input_category_names_proxy_model.data(self.input_category_names_proxy_model.index(row, 0),
+                                                              Qt.DisplayRole)
             print(item)
 
     def find_product_names_for_replace(self, text):
@@ -476,8 +477,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         print("Data has been removed from table")
 
-
-
     @staticmethod
     def move_categories_between_tables(input_table_view: QTableView,
                                        destination_table_view: QTableView):
@@ -566,10 +565,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_name_item = QStandardItem()
             product_name_item.setData(product_name[0], Qt.DisplayRole)
             self.input_product_names_model.appendRow(product_name_item)
-
-
-
-
 
     def parse(self, file_path):
         if not file_path:
