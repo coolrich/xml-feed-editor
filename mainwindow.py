@@ -14,6 +14,8 @@ from ui_mainwindow import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+
+    DEFAULT_CATEGORY = "Без категорії"
     def __init__(self, app):
         super().__init__()
         self.setupUi(self)
@@ -267,10 +269,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         categories_id_list = self.categoryid_name_dict.keys()
         for offer in offers:
             category_id = offer.xpath("categoryId")[0].text.strip()
-            if category_id not in categories_id_list:
-                offer.getparent().remove(offer)
-                continue
-            category_name = self.categoryid_name_dict[category_id]
+            if category_id in categories_id_list:
+                category_name = self.categoryid_name_dict[category_id]
+            else:
+                category_name = MainWindow.DEFAULT_CATEGORY
+
             if category_name not in chosen_categories_list:
                 offer.getparent().remove(offer)
                 continue
@@ -586,6 +589,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for category in categories:
             category_products_dict[category] = []
 
+        # Add the category MainWindow.DEFAULT_CATEGORY for products without category
+        category_products_dict[MainWindow.DEFAULT_CATEGORY] = []
+
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id = offer_tag.xpath("categoryId")
@@ -595,6 +601,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             cid = category_id[0].text.strip()
             print(cid)
             if cid not in categoryid_name_dict:
+                # Add product to the category MainWindow.DEFAULT_CATEGORY
+                category_products_dict[MainWindow.DEFAULT_CATEGORY].append((product_name, product_price))
                 continue
             category_name = categoryid_name_dict[cid]
             category_products_dict[category_name].append((product_name, product_price))
