@@ -414,7 +414,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # Collect checked items in source model
-        input_results = set()
+        input_results = []
         input_table_row_count = input_model.rowCount()
         input_col_count = input_model.columnCount()
         row = 0
@@ -425,7 +425,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 data = []
                 for col in range(input_col_count):
                     data.append(input_model.data(input_model.index(row, col)))
-                input_results.add(tuple(data))
+                input_results.append(tuple(data))
                 input_model.removeRow(row)
             else:
                 row += 1
@@ -454,7 +454,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # Check if columns count of the destination model is greater than the source model
                 if output_col_count > input_col_count:
                     new_item = MainWindow.from_input_to_output_table(destination_model, input_col_count, item_data)
-                elif output_col_count < input_col_count:
+                else:
                     new_item = MainWindow.from_output_to_input_table(destination_model, output_col_count, item_data)
                 destination_model.sourceModel().appendRow(new_item)
                 print("Item", new_item, "has been removed")
