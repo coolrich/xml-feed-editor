@@ -233,12 +233,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 QMessageBox.Ok)
 
     def get_new_xml(self):
-        final_category_model = self.output_category_table_view.model().sourceModel()
+        output_category_model = self.output_category_table_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
 
         selected_categories_ids_list = []
-        for row in range(final_category_model.rowCount()):
-            chosen_category_id = final_category_model.data(final_category_model.index(row, 1))
+        for row in range(output_category_model.rowCount()):
+            chosen_category_id = output_category_model.data(output_category_model.index(row, 1))
             selected_categories_ids_list.append(chosen_category_id)
 
         chosen_products_ids_dict = {}
@@ -573,8 +573,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_name_item = QStandardItem()
             product_name = product["product_name"]
             product_name_item.setData(product_name, Qt.DisplayRole)
-            self.input_product_names_model.appendRow(product_name_item)
+            product_id_item = QStandardItem()
+            product_id = product["product_id"]
+            product_id_item.setData(product_id, Qt.DisplayRole)
+            self.input_product_names_model.appendRow([product_name_item, product_id_item])
+        self.input_product_names_table_view.resizeColumnsToContents()
 
+        # Make the same for the self.input_category_names_model
+        for category_id, category_name in self.categoryid_name_dict.items():
+            category_name_item = QStandardItem()
+            category_name_item.setData(category_name, Qt.DisplayRole)
+            category_id_item = QStandardItem()
+            category_id_item.setData(category_id, Qt.DisplayRole)
+            self.input_category_names_model.appendRow([category_name_item, category_id_item])
+        self.input_category_names_table_view.resizeColumnsToContents()
         self.input_category_table_view.resizeColumnsToContents()
 
     def parse(self, file_path):
