@@ -39,7 +39,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_proxy_model.setFilterKeyColumn(0)
         self.input_category_table_view.setModel(self.input_category_proxy_model)
         self.input_category_table_view.resizeColumnsToContents()
-        self.input_category_table_view.horizontalHeader().setStretchLastSection(True)
+        # self.input_category_table_view.horizontalHeader().setStretchLastSection(True)
         self.input_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         # noinspection PyUnresolvedReferences
         self.input_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
@@ -567,7 +567,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_name_item.setData(category_name, Qt.DisplayRole)
             category_id_item = QStandardItem()
             category_id_item.setData(category_id, Qt.DisplayRole)
-
             self.input_category_model.appendRow([category_name_item, category_id_item])
 
         all_products_list = []
@@ -579,6 +578,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_name = product["product_name"]
             product_name_item.setData(product_name, Qt.DisplayRole)
             self.input_product_names_model.appendRow(product_name_item)
+
+        self.input_category_table_view.resizeColumnsToContents()
 
     def parse(self, file_path):
         if not file_path:
