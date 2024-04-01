@@ -110,10 +110,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         input_product_header_name = ["Товар", "ID"]
         self.input_product_names_model = QStandardItemModel()
         self.input_product_names_model.setHorizontalHeaderLabels(input_product_header_name)
-        self.input_product_proxy_model = QSortFilterProxyModel()
-        self.input_product_proxy_model.setSourceModel(self.input_product_names_model)
-        self.input_product_proxy_model.setFilterKeyColumn(0)
-        self.input_product_names_table_view.setModel(self.input_product_proxy_model)
+        self.input_product_names_proxy_model = QSortFilterProxyModel()
+        self.input_product_names_proxy_model.setSourceModel(self.input_product_names_model)
+        self.input_product_names_proxy_model.setFilterKeyColumn(0)
+        self.input_product_names_table_view.setModel(self.input_product_names_proxy_model)
         self.input_product_names_table_view.resizeColumnsToContents()
         self.input_product_names_table_view.horizontalHeader().setStretchLastSection(True)
         self.input_product_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.search_product_for_replace_line_edit.textChanged.connect(self.find_product_names_for_replace)
         self.replace_product_name_line_edit.textChanged.connect(self.replace_product_name_line_edit_text_change)
         self.replace_product_name_push_button.setEnabled(False)
-        # self.replace_product_name_push_button.clicked.connect(self.replace_input_product_names)
+        self.replace_product_name_push_button.clicked.connect(self.replace_input_product_names)
 
         self.xml_data = None
 
@@ -181,9 +181,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.replace_category_name_push_button.setEnabled(True)
 
     def find_product_names_for_replace(self, text):
-        self.input_product_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_product_proxy_model.setFilterRegularExpression(text)
-        input_product_count = self.input_product_proxy_model.rowCount()
+        self.input_product_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.input_product_names_proxy_model.setFilterRegularExpression(text)
+        input_product_count = self.input_product_names_proxy_model.rowCount()
         if (input_product_count == 0
                 or text == ""
                 or self.replace_product_name_line_edit.text() == ""):
@@ -200,7 +200,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.replace_category_name_push_button.setEnabled(True)
 
     def replace_product_name_line_edit_text_change(self, text):
-        if (self.input_product_proxy_model.rowCount() == 0
+        if (self.input_product_names_proxy_model.rowCount() == 0
                 or text == ""
                 or self.replace_product_name_line_edit.text() == ""):
             self.replace_product_name_push_button.setEnabled(False)
@@ -214,11 +214,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                               Qt.DisplayRole)
             print(item)
 
-    def find_product_names_for_replace(self, text):
-        pass
-
-    def replace_product_names(self):
-        pass
+    def replace_input_product_names(self):
+        rows_count = self.input_product_names_proxy_model.rowCount()
+        for row in range(rows_count):
+            item = self.input_product_names_proxy_model.data(self.input_product_names_proxy_model.index(row, 0),
+                                                              Qt.DisplayRole)
+            print(item)
 
     def find_in_input_categories(self, text):
         self.input_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
