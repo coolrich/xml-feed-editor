@@ -438,16 +438,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Collect existing items in destination model
         destination_results = []
         output_col_count = destination_model.columnCount()
+
         for row in range(output_col_count):
+
             # Collect all columns from destination model (assuming same structure)
             data = []
             for col in range(destination_model.columnCount()):
                 data.append(destination_model.data(destination_model.index(row, col)))
             destination_results.append(data)
+
         # Add unique items from source to destination (considering all columns)
         for item_data in input_results:
             # Check if items id is existing in the destination model
             if item_data[-1] not in [result[-1] for result in destination_results]:
+                # Check if columns count of the destination model is greater than the source model
                 if output_col_count > input_col_count:
                     new_item = MainWindow.from_input_to_output_table(destination_model, input_col_count, item_data)
                 elif output_col_count < input_col_count:
