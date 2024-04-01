@@ -3,7 +3,7 @@ import gc
 import pprint
 import re
 
-from PySide6.QtCore import QSortFilterProxyModel
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox
@@ -162,6 +162,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.replace_category_name_push_button.setEnabled(False)
         self.replace_category_name_push_button.clicked.connect(self.replace_input_category_names)
 
+        self.search_product_for_replace_line_edit.textChanged.connect(self.find_product_names_for_replace)
+        self.replace_product_name_line_edit.textChanged.connect(self.replace_product_name_line_edit_text_change)
+        self.replace_product_name_push_button.setEnabled(False)
+        # self.replace_product_name_push_button.clicked.connect(self.replace_input_product_names)
+
         self.xml_data = None
 
     def find_category_names_for_replace(self, text):
@@ -175,6 +180,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.replace_category_name_push_button.setEnabled(True)
 
+    def find_product_names_for_replace(self, text):
+        self.input_product_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.input_product_proxy_model.setFilterRegularExpression(text)
+        input_product_count = self.input_product_proxy_model.rowCount()
+        if (input_product_count == 0
+                or text == ""
+                or self.replace_product_name_line_edit.text() == ""):
+            self.replace_product_name_push_button.setEnabled(False)
+        else:
+            self.replace_product_name_push_button.setEnabled(True)
+
     def replace_category_name_line_edit_text_change(self, text):
         if (self.input_category_names_proxy_model.rowCount() == 0
                 or text == ""
@@ -182,6 +198,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.replace_category_name_push_button.setEnabled(False)
         else:
             self.replace_category_name_push_button.setEnabled(True)
+
+    def replace_product_name_line_edit_text_change(self, text):
+        if (self.input_product_proxy_model.rowCount() == 0
+                or text == ""
+                or self.replace_product_name_line_edit.text() == ""):
+            self.replace_product_name_push_button.setEnabled(False)
+        else:
+            self.replace_product_name_push_button.setEnabled(True)
 
     def replace_input_category_names(self):
         rows_count = self.input_category_names_proxy_model.rowCount()
@@ -405,62 +429,60 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("Data has been added to table")
 
     @staticmethod
-    def move_products_from_input_to_destination_table(input_tabel, destination_tabel):
+    def move_products_from_input_to_destination_table(input_tabel, output_tabel):
         input_model = input_tabel.model()
-        destination_model = destination_tabel.model()
-
-        if not input_model or not destination_model:
+        output_model = output_tabel.model()
+        # Check for destination model existence (improved error handling)
+        if not input_model or not output_model:
             print("Error: Invalid table view models.")
             return
 
         # Collect checked items in source model
-        input_results = []
         input_table_row_count = input_model.rowCount()
         input_col_count = input_model.columnCount()
+        input_table_dict: dict[str, list[QModelIndex]] = dict()
+
+        for col in range(input_col_count):
+            input_table_dict[input_model.headerData(col, Qt.Horizontal)] = []
+
         row = 0
+        checked_number = 0
         while row < input_table_row_count:
             checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
             if checked == 2:
-                # Collect all 5 columns of data
-                data = []
+                checked_number += 1
                 for col in range(input_col_count):
-                    data.append(input_model.data(input_model.index(row, col)))
-                input_results.append(tuple(data))
+                    index = input_model.index(row, col)
+                    data_item = input_model.data(index)
+                    header_name = input_model.headerData(col, Qt.Horizontal)
+                    input_table_dict[header_name].append(data_item)
                 input_model.removeRow(row)
             else:
                 row += 1
 
-        # Check for destination model existence (improved error handling)
-        if not destination_model:
-            print("Error: Destination table view has no model.")
-            return
+        output_table_col_count = output_model.columnCount()
+        output_table_dict: dict[int, str] = dict()
+        for col in range(output_table_col_count):
+            output_table_dict[col] = output_model.headerData(col, Qt.Horizontal)
 
-        # Collect existing items in destination model
-        destination_results = []
-        output_col_count = destination_model.columnCount()
-
-        for row in range(output_col_count):
-
-            # Collect all columns from destination model (assuming same structure)
-            data = []
-            for col in range(destination_model.columnCount()):
-                data.append(destination_model.data(destination_model.index(row, col)))
-            destination_results.append(data)
-
-        # Add unique items from source to destination (considering all columns)
-        for item_data in input_results:
-            # Check if items id is existing in the destination model
-            if item_data[-1] not in [result[-1] for result in destination_results]:
-                # Check if columns count of the destination model is greater than the source model
-                if output_col_count > input_col_count:
-                    new_item = MainWindow.from_input_to_output_table(destination_model, input_col_count, item_data)
+        for row in range(checked_number):
+            out_table_row_items = []
+            for col in range(output_table_col_count):
+                out_col_name = output_table_dict[col]
+                new_item = QStandardItem()
+                if out_col_name in input_table_dict:
+                    new_item.setData(input_table_dict[out_col_name][row], Qt.DisplayRole)
+                    new_item.setCheckable(True if col == 0 else False)
+                    new_item.setEditable(False)
                 else:
-                    new_item = MainWindow.from_output_to_input_table(destination_model, output_col_count, item_data)
-                destination_model.sourceModel().appendRow(new_item)
-                print("Item", new_item, "has been removed")
+                    new_item.setData(0, Qt.DisplayRole)
+                    new_item.setCheckable(True if col == 0 else False)
+                    new_item.setEditable(False)
+                out_table_row_items.append(new_item)
+            output_model.sourceModel().appendRow(out_table_row_items)
 
-        destination_tabel.resizeColumnsToContents()
         input_tabel.resizeColumnsToContents()
+        output_tabel.resizeColumnsToContents()
         print("The process of moving items has been completed.")
         print("Data has been added to table")
 
