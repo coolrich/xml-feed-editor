@@ -51,8 +51,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_proxy_model.setSourceModel(self.output_category_model)
         self.output_category_proxy_model.setFilterKeyColumn(0)
         self.output_category_table_view.setModel(self.output_category_proxy_model)
-        self.output_category_table_view.resizeColumnsToContents()
-        self.output_category_table_view.horizontalHeader().setStretchLastSection(True)
+        # self.output_category_table_view.horizontalHeader().setStretchLastSection(True)
         self.output_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         # noinspection PyUnresolvedReferences
         self.output_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
@@ -235,23 +234,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_new_xml(self):
         final_category_model = self.output_category_table_view.model().sourceModel()
-        final_prod_model = self.output_products_table_view.model().sourceModel()
+        final_product_model = self.output_products_table_view.model().sourceModel()
 
-        chosen_categories_list = []
+        selected_categories_ids_list = []
         for row in range(final_category_model.rowCount()):
-            chosed_products = final_category_model.data(final_category_model.index(row, 0))
-            chosen_categories_list.append(chosed_products)
+            chosen_category_id = final_category_model.data(final_category_model.index(row, 1))
+            selected_categories_ids_list.append(chosen_category_id)
 
-        chosen_products_dict = {}
-        for row in range(final_prod_model.rowCount()):
-            chosen_prod_name = final_prod_model.data(final_prod_model.index(row, 0))
-            wholesale_price = final_prod_model.data(final_prod_model.index(row, 2))
-            drop_price = final_prod_model.data(final_prod_model.index(row, 3))
-            chosen_products_dict[chosen_prod_name] = {}
+        chosen_products_ids_dict = {}
+        for row in range(final_product_model.rowCount()):
+            product_name = final_product_model.data(final_product_model.index(row, 0))
+            wholesale_price = final_product_model.data(final_product_model.index(row, 2))
+            drop_price = final_product_model.data(final_product_model.index(row, 3))
+            product_id = final_product_model.data(final_product_model.index(row, 4))
+            chosen_products_ids_dict[product_id] = {}
+            chosen_products_ids_dict[product_id]["product_name"] = product_name
             if wholesale_price != 0:
-                chosen_products_dict[chosen_prod_name]["wholesale_price"] = wholesale_price
+                chosen_products_ids_dict[product_id]["wholesale_price"] = wholesale_price
             if drop_price != 0:
-                chosen_products_dict[chosen_prod_name]["drop_price"] = drop_price
+                chosen_products_ids_dict[product_id]["drop_price"] = drop_price
 
         # Create a copy of self.input_xml_tree
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
@@ -260,42 +261,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # Remove unselected categories
-        categories = output_xml_tree.xpath("//category")
-        for category in categories:
-            category_name = category.text.strip()
-            if category_name not in chosen_categories_list:
+        categories_elements_list = output_xml_tree.xpath("//category")
+        for category in categories_elements_list:
+            category_id = category.get("id").strip()
+            if category_id not in selected_categories_ids_list:
                 category.getparent().remove(category)
 
         # Remove products of unselected categories
         offers = output_xml_tree.xpath("//offer")
-        categories_id_list = self.categoryid_name_dict.keys()
         for offer in offers:
             category_id = offer.xpath("categoryId")[0].text.strip()
-            if category_id in categories_id_list:
-                category_name = self.categoryid_name_dict[category_id]
-            else:
-                category_name = MainWindow.DEFAULT_CATEGORY_NAME
-
-            if category_name not in chosen_categories_list:
+            if category_id not in selected_categories_ids_list:
                 offer.getparent().remove(offer)
                 continue
 
         # Remove unselected products
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
-            product_name = offer.xpath("name")[0].text.strip()
-            if product_name not in chosen_products_dict.keys():
+            product_id = offer.get("id").strip()
+            if product_id not in chosen_products_ids_dict.keys():
                 offer.getparent().remove(offer)
             else:
                 # Change price to new
-                price = None
-                if "wholesale_price" in chosen_products_dict[product_name].keys():
-                    wholesale_price = chosen_products_dict[product_name]["wholesale_price"]
+                price = offer.xpath("url")[0]
+                if "wholesale_price" in chosen_products_ids_dict[product_id].keys():
+                    wholesale_price = chosen_products_ids_dict[product_id]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if price is not None and "drop_price" in chosen_products_dict[product_name].keys():
-                    drop_price = chosen_products_dict[product_name]["drop_price"]
+                if "drop_price" in chosen_products_ids_dict[product_id].keys():
+                    drop_price = chosen_products_ids_dict[product_id]["drop_price"]
                     price_drop = etree.Element("price_drop")
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
@@ -307,7 +302,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # noinspection PyUnresolvedReferences
         save_dialog.setAcceptMode(QFileDialog.AcceptSave)
         save_dialog.setNameFilter("XML Files (*.xml)")
-        if save_dialog.exec_():
+        if save_dialog.exec():
             save_path = save_dialog.selectedFiles()[0]
             self.output_xml_tree.write(save_path, encoding='windows-1251')
             self.change_encoding_letter_case_in_output_xml(save_path)
@@ -456,7 +451,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # for value in item_data:
                 for col_num in range(dst_col_count):
                     column_item = QStandardItem()
-                    if col_num > input_table_row_count - 1:
+                    if col_num > input_table_row_count:
                         if col_num == dst_col_count - 1:
                             column_item.setData(item_data[-1], Qt.DisplayRole)
                         else:
@@ -542,6 +537,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             if category_id not in destination_results:
                 destination_model.sourceModel().appendRow([categoryname_item, categoryid_item])
+        destination_table_view.resizeColumnsToContents()
         print("The process of moving items has been completed.")
 
     # open xml file
