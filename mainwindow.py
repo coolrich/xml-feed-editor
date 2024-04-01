@@ -416,13 +416,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Collect checked items in source model
         input_results = set()
         input_table_row_count = input_model.rowCount()
+        input_col_count = input_model.columnCount()
         row = 0
         while row < input_table_row_count:
             checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
             if checked == 2:
                 # Collect all 5 columns of data
                 data = []
-                for col in range(input_model.columnCount()):
+                for col in range(input_col_count):
                     data.append(input_model.data(input_model.index(row, col)))
                 input_results.add(tuple(data))
                 input_model.removeRow(row)
@@ -436,7 +437,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Collect existing items in destination model
         destination_results = []
-        for row in range(destination_model.rowCount()):
+        output_col_count = destination_model.columnCount()
+        for row in range(output_col_count):
             # Collect all columns from destination model (assuming same structure)
             data = []
             for col in range(destination_model.columnCount()):
@@ -446,21 +448,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for item_data in input_results:
             # Check if items id is existing in the destination model
             if item_data[-1] not in [result[-1] for result in destination_results]:
-                new_item = []
-                dst_col_count = destination_model.columnCount()
-                # for value in item_data:
-                for col_num in range(dst_col_count):
-                    column_item = QStandardItem()
-                    if col_num > input_table_row_count:
-                        if col_num == dst_col_count - 1:
-                            column_item.setData(item_data[-1], Qt.DisplayRole)
-                        else:
-                            column_item.setData(0, Qt.DisplayRole)
-                    else:
-                        column_item.setData(item_data[col_num], Qt.DisplayRole)
-                    column_item.setCheckable(True if col_num == 0 else False)  # Set checkable only for the first column
-                    column_item.setEditable(False)
-                    new_item.append(column_item)
+                if output_col_count > input_col_count:
+                    new_item = MainWindow.from_input_to_output_table(destination_model, input_col_count, item_data)
+                elif output_col_count < input_col_count:
+                    new_item = MainWindow.from_output_to_input_table(destination_model, output_col_count, item_data)
                 destination_model.sourceModel().appendRow(new_item)
                 print("Item", new_item, "has been removed")
 
@@ -468,6 +459,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         input_tabel.resizeColumnsToContents()
         print("The process of moving items has been completed.")
         print("Data has been added to table")
+
+    @staticmethod
+    def from_output_to_input_table(destination_model, input_col_count, item_data):
+        new_item = []
+        dst_col_count = destination_model.columnCount()
+        for dst_col_num in range(dst_col_count):
+            column_item = QStandardItem()
+            if dst_col_num < dst_col_count - 1:
+                column_item.setData(item_data[dst_col_num], Qt.DisplayRole)
+            else:
+                column_item.setData(item_data[-1], Qt.DisplayRole)
+            column_item.setCheckable(True if dst_col_num == 0 else False)
+            column_item.setEditable(False)
+            new_item.append(column_item)
+        return new_item
+
+    @staticmethod
+    def from_input_to_output_table(destination_model, input_col_count, item_data):
+        new_item = []
+        dst_col_count = destination_model.columnCount()
+        # for value in item_data:
+        for dst_col_num in range(dst_col_count):
+            column_item = QStandardItem()
+            if dst_col_num < input_col_count - 1:
+                column_item.setData(item_data[dst_col_num], Qt.DisplayRole)
+            else:
+                if dst_col_num != dst_col_count - 1:
+                    column_item.setData(0, Qt.DisplayRole)
+                else:
+                    column_item.setData(item_data[-1], Qt.DisplayRole)
+            column_item.setCheckable(True if dst_col_num == 0 else False)
+            column_item.setEditable(False)
+            new_item.append(column_item)
+        return new_item
 
     def refresh_products_in_product_tables(self):
         sptv_model = self.input_products_table_view.model()
