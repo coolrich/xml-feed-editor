@@ -626,7 +626,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_category_name_item.setData(MainWindow.DEFAULT_CATEGORY_NAME, Qt.DisplayRole)
         self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = default_category_name_item
 
-        category_products_dict = {}
+        category_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
         # TODO: change category names to category ids
         for category_id in categoryid_name_dict.keys():
             category_products_dict[category_id] = []
