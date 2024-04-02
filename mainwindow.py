@@ -618,9 +618,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for category in category_elems:
             category_id = category.get("id").strip()
             category_name = category.text.strip()
-            categoryid_name_dict[category_id] = category_name
+            category_name_item = QStandardItem()
+            category_name_item.setData(category_name, Qt.DisplayRole)
+            categoryid_name_dict[category_id] = category_name_item
         self.categoryid_name_dict = categoryid_name_dict
-        self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = MainWindow.DEFAULT_CATEGORY_NAME
+        default_category_name_item = QStandardItem()
+        default_category_name_item.setData(MainWindow.DEFAULT_CATEGORY_NAME, Qt.DisplayRole)
+        self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = default_category_name_item
 
         category_products_dict = {}
         # TODO: change category names to category ids
