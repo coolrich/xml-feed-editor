@@ -23,10 +23,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app = app
         self.setWindowTitle("XML parser")
 
-        self.categoryid_name_item_dict: dict[str, QStandardItem] = {}
-        # key:cid value: {"product_id": product_id_item, "product_name": product_name_item, "product_price": product_price_item}
-        self.all_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
-        self.chosed_categories_products_dict = None
+        # dict[category_id] = category_name_item
+        self.input_categories_dict: dict[str, QStandardItem] = {}
+        # dict[category_id] = category_name_item
+        self.output_categories_dict: dict[str, QStandardItem] = {}
+        # self.input_products_dict[cid].append({"product_id": product_id_item,
+        #                                       "product_name": product_name_item,
+        #                                       "product_price": product_price_item}
+        self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+        self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+        self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
+        self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+        self.input_products_replacement_dict: dict[str, QStandardItem] = {}
+        self.output_products_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+
+        # self.input_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
+        # self.output_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
         self.input_xml_tree = None
         self.output_xml_tree = None
 
@@ -218,7 +230,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         rows_count = self.input_product_names_proxy_model.rowCount()
         for row in range(rows_count):
             item = self.input_product_names_proxy_model.data(self.input_product_names_proxy_model.index(row, 0),
-                                                              Qt.DisplayRole)
+                                                             Qt.DisplayRole)
             print(item)
 
     def find_in_input_categories(self, text):
@@ -410,7 +422,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             input_products_ids_list.append(item)
 
         for category_id in categories_ids:
-            products_list = self.all_category_ids_products_dict[category_id]
+            products_list = self.input_category_ids_products_dict[category_id]
             for products_dict in products_list:
                 product_name = products_dict["product_name"]
                 if product_name in input_products_ids_list:
@@ -565,10 +577,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("File closed")
 
     def init_tables(self, file_path):
-        category_ids_products_dict = self.parse(file_path)
-        # if not category_ids_products_dict:
-        #     return
-        self.all_category_ids_products_dict = category_ids_products_dict
+        if not self.parse(file_path):
+            return
         self.reset_tables_data()
         self.populate_input_tables()
 
@@ -577,27 +587,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        for category_id_item in self.categoryid_name_item_dict:
+        for category_id, category_name_item in self.input_categories_dict.items():
+            category_id_item = QStandardItem()
+            category_id_item.setData(category_id, Qt.DisplayRole)
             self.input_category_model.appendRow([category_name_item, category_id_item])
 
         all_products_list = []
-        for product_names_list in self.all_category_ids_products_dict.values():
-            all_products_list.extend(product_names_list)
+        for product_name in self.input_products_dict.values():
+            all_products_list.extend(product_name)
 
         for product in all_products_list:
-            product_name_item = QStandardItem()
-            product_name = product["product_name"]
-            product_name_item.setData(product_name, Qt.DisplayRole)
-            product_id_item = QStandardItem()
-            product_id = product["product_id"]
-            product_id_item.setData(product_id, Qt.DisplayRole)
+            product_name_item = product["product_name"]
+            product_id_item = product["product_id"]
             self.input_product_names_model.appendRow([product_name_item, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
         # Make the same for the self.input_category_names_model
-        for category_id, category_name in self.categoryid_name_dict.items():
-            category_name_item = QStandardItem()
-            category_name_item.setData(category_name, Qt.DisplayRole)
+        for category_id, category_name_item in self.input_categories_dict.items():
             category_id_item = QStandardItem()
             category_id_item.setData(category_id, Qt.DisplayRole)
             self.input_category_names_model.appendRow([category_name_item, category_id_item])
@@ -606,31 +612,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def parse(self, file_path):
         if not file_path:
-            return None
+            return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
 
         # Gather category ids and names from xml
         category_elems = self.input_xml_tree.xpath("//category")
-        categoryid_name_dict: dict[str, QStandardItem] = {}
         for category in category_elems:
-            category_id = category.get("id").strip()
-            category_name = category.text.strip()
-            category_name_item = QStandardItem()
-            category_name_item.setData(category_name, Qt.DisplayRole)
-            categoryid_name_dict[category_id] = category_name_item
-        self.categoryid_name_item_dict = categoryid_name_dict
-        default_category_name_item = QStandardItem()
-        default_category_name_item.setData(MainWindow.DEFAULT_CATEGORY_NAME, Qt.DisplayRole)
-        self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = default_category_name_item
+            category_id, category_name_item = self.create_category_item(category)
+            self.input_categories_dict[category_id] = category_name_item
+            category_id, category_name_item = self.create_category_item(category)
+            self.input_categories_replacement_dict[category_id] = category_name_item
+        default_category_name_item = self.create_default_category()
+        self.input_categories_dict[MainWindow.DEFAULT_CATEGORY_ID] = default_category_name_item
 
-        category_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
-        for category_id in categoryid_name_dict.keys():
-            category_products_dict[category_id] = []
+        for category_id in self.input_categories_dict.keys():
+            self.input_products_dict[category_id] = []
 
         # Add the category MainWindow.DEFAULT_CATEGORY for products without category
-        category_products_dict[MainWindow.DEFAULT_CATEGORY_ID] = []
+        self.input_products_dict[MainWindow.DEFAULT_CATEGORY_ID] = []
 
+        input_category_ids_tuple = tuple(self.input_products_dict.keys())
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id = offer_tag.xpath("categoryId")
@@ -645,18 +647,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_price = int(offer_tag.xpath("price")[0].text.strip())
             product_price_item = QStandardItem()
             product_price_item.setData(product_price, Qt.DisplayRole)
-            print(cid)
-            if cid not in categoryid_name_dict:
+            print("cid: ", cid)
+            if cid not in input_category_ids_tuple:
                 # Add product to the category MainWindow.DEFAULT_CATEGORY
-                category_products_dict[MainWindow.DEFAULT_CATEGORY_ID].append(
-                    {"product_id": product_id_item, "product_name": product_name_item, "product_price": product_price_item}
+                self.input_products_dict[MainWindow.DEFAULT_CATEGORY_ID].append(
+                    {"product_id": product_id_item,
+                     "product_name": product_name_item,
+                     "product_price": product_price_item}
                 )
-                continue
-            category_products_dict[cid].append(
-                {"product_id": product_id_item, "product_name": product_name_item, "product_price": product_price_item}
-            )
-        pprint.pp(category_products_dict)
-
-        # del tree, categories, offer_tags
+            else:
+                self.input_products_dict[cid].append(
+                    {"product_id": product_id_item,
+                     "product_name": product_name_item,
+                     "product_price": product_price_item}
+                )
         gc.collect()
-        return category_products_dict
+        pprint.pp(f"input_category_ids_products_dict: {self.input_products_dict}")
+        return True
+
+    def create_default_category(self):
+        default_category_name_item = QStandardItem()
+        default_category_name_item.setCheckable(True)
+        default_category_name_item.setData(MainWindow.DEFAULT_CATEGORY_NAME, Qt.DisplayRole)
+        return default_category_name_item
+
+    @staticmethod
+    def create_category_item(category):
+        category_id = category.get("id").strip()
+        category_name = category.text.strip()
+        category_name_item: QStandardItem = QStandardItem()
+        category_name_item.setCheckable(True)
+        category_name_item.setData(category_name, Qt.DisplayRole)
+        return category_id, category_name_item
