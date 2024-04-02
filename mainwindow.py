@@ -23,8 +23,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app = app
         self.setWindowTitle("XML parser")
 
-        self.categoryid_name_dict: dict[str, str] = {}
-        # key:cid value: [{"product_id": product_id, "product_name": product_name, "product_price": product_price}]
+        self.categoryid_name_item_dict: dict[str, QStandardItem] = {}
+        # key:cid value: {"product_id": product_id_item, "product_name": product_name_item, "product_price": product_price_item}
         self.all_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
         self.chosed_categories_products_dict = None
         self.input_xml_tree = None
@@ -561,26 +561,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # open xml file
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
+        self.init_tables(file_path)
+        print("File closed")
+
+    def init_tables(self, file_path):
         category_ids_products_dict = self.parse(file_path)
-        if not category_ids_products_dict:
-            return
+        # if not category_ids_products_dict:
+        #     return
         self.all_category_ids_products_dict = category_ids_products_dict
         self.reset_tables_data()
         self.populate_input_tables()
-        print("File closed")
 
     def reset_tables_data(self):
         self.input_category_model.removeRows(0, self.input_category_model.rowCount())
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        for category_id in self.all_category_ids_products_dict.keys():
-            category_name = self.categoryid_name_dict[category_id]
-            category_name_item = QStandardItem()
-            category_name_item.setCheckable(True)
-            category_name_item.setData(category_name, Qt.DisplayRole)
-            category_id_item = QStandardItem()
-            category_id_item.setData(category_id, Qt.DisplayRole)
+        for category_id_item in self.categoryid_name_item_dict:
             self.input_category_model.appendRow([category_name_item, category_id_item])
 
         all_products_list = []
@@ -612,16 +609,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return None
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
+
+        # Gather category ids and names from xml
         category_elems = self.input_xml_tree.xpath("//category")
         categoryid_name_dict: dict[str, QStandardItem] = {}
-
         for category in category_elems:
             category_id = category.get("id").strip()
             category_name = category.text.strip()
             category_name_item = QStandardItem()
             category_name_item.setData(category_name, Qt.DisplayRole)
             categoryid_name_dict[category_id] = category_name_item
-        self.categoryid_name_dict = categoryid_name_dict
+        self.categoryid_name_item_dict = categoryid_name_dict
         default_category_name_item = QStandardItem()
         default_category_name_item.setData(MainWindow.DEFAULT_CATEGORY_NAME, Qt.DisplayRole)
         self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = default_category_name_item
