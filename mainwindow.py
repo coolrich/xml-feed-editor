@@ -471,14 +471,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for col in range(output_table_col_count):
                 out_col_name = output_table_dict[col]
                 new_item = QStandardItem()
+
                 if out_col_name in input_table_dict:
                     new_item.setData(input_table_dict[out_col_name][row], Qt.DisplayRole)
-                    new_item.setCheckable(True if col == 0 else False)
-                    new_item.setEditable(False)
                 else:
                     new_item.setData(0, Qt.DisplayRole)
-                    new_item.setCheckable(True if col == 0 else False)
-                    new_item.setEditable(False)
+
+                new_item.setCheckable(True if col == 0 else False)
+                new_item.setEditable(False)
                 out_table_row_items.append(new_item)
             output_model.sourceModel().appendRow(out_table_row_items)
 
@@ -486,40 +486,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         output_tabel.resizeColumnsToContents()
         print("The process of moving items has been completed.")
         print("Data has been added to table")
-
-    @staticmethod
-    def from_output_to_input_table(destination_model, input_col_count, item_data):
-        new_item = []
-        dst_col_count = destination_model.columnCount()
-        for dst_col_num in range(dst_col_count):
-            column_item = QStandardItem()
-            if dst_col_num < dst_col_count - 1:
-                column_item.setData(item_data[dst_col_num], Qt.DisplayRole)
-            else:
-                column_item.setData(item_data[-1], Qt.DisplayRole)
-            column_item.setCheckable(True if dst_col_num == 0 else False)
-            column_item.setEditable(False)
-            new_item.append(column_item)
-        return new_item
-
-    @staticmethod
-    def from_input_to_output_table(destination_model, input_col_count, item_data):
-        new_item = []
-        dst_col_count = destination_model.columnCount()
-        # for value in item_data:
-        for dst_col_num in range(dst_col_count):
-            column_item = QStandardItem()
-            if dst_col_num < input_col_count - 1:
-                column_item.setData(item_data[dst_col_num], Qt.DisplayRole)
-            else:
-                if dst_col_num != dst_col_count - 1:
-                    column_item.setData(0, Qt.DisplayRole)
-                else:
-                    column_item.setData(item_data[-1], Qt.DisplayRole)
-            column_item.setCheckable(True if dst_col_num == 0 else False)
-            column_item.setEditable(False)
-            new_item.append(column_item)
-        return new_item
 
     def refresh_products_in_product_tables(self):
         sptv_model = self.input_products_table_view.model()
