@@ -25,7 +25,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.categoryid_name_dict: dict[str, str] = {}
         # key:cid value: [{"product_id": product_id, "product_name": product_name, "product_price": product_price}]
-        self.all_category_ids_products_dict: dict[str, list[dict[str:str, str:str, str:int]]] = {}
+        self.all_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
         self.chosed_categories_products_dict = None
         self.input_xml_tree = None
         self.output_xml_tree = None
@@ -266,18 +266,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             chosen_category_id = output_category_model.data(output_category_model.index(row, 1))
             selected_categories_ids_list.append(chosen_category_id)
 
-        chosen_products_ids_dict = {}
+        chosen_id_products_dict = {}
         for row in range(final_product_model.rowCount()):
             product_name = final_product_model.data(final_product_model.index(row, 0))
             wholesale_price = final_product_model.data(final_product_model.index(row, 2))
             drop_price = final_product_model.data(final_product_model.index(row, 3))
             product_id = final_product_model.data(final_product_model.index(row, 4))
-            chosen_products_ids_dict[product_id] = {}
-            chosen_products_ids_dict[product_id]["product_name"] = product_name
+            chosen_id_products_dict[product_id] = {}
+            chosen_id_products_dict[product_id]["product_name"] = product_name
             if wholesale_price != 0:
-                chosen_products_ids_dict[product_id]["wholesale_price"] = wholesale_price
+                chosen_id_products_dict[product_id]["wholesale_price"] = wholesale_price
             if drop_price != 0:
-                chosen_products_ids_dict[product_id]["drop_price"] = drop_price
+                chosen_id_products_dict[product_id]["drop_price"] = drop_price
 
         # Create a copy of self.input_xml_tree
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
@@ -304,18 +304,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
             product_id = offer.get("id").strip()
-            if product_id not in chosen_products_ids_dict.keys():
+            if product_id not in chosen_id_products_dict.keys():
                 offer.getparent().remove(offer)
             else:
                 # Change price to new
                 price = offer.xpath("url")[0]
-                if "wholesale_price" in chosen_products_ids_dict[product_id].keys():
-                    wholesale_price = chosen_products_ids_dict[product_id]["wholesale_price"]
+                if "wholesale_price" in chosen_id_products_dict[product_id].keys():
+                    wholesale_price = chosen_id_products_dict[product_id]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if "drop_price" in chosen_products_ids_dict[product_id].keys():
-                    drop_price = chosen_products_ids_dict[product_id]["drop_price"]
+                if "drop_price" in chosen_id_products_dict[product_id].keys():
+                    drop_price = chosen_id_products_dict[product_id]["drop_price"]
                     price_drop = etree.Element("price_drop")
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
@@ -627,7 +627,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = default_category_name_item
 
         category_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
-        # TODO: change category names to category ids
         for category_id in categoryid_name_dict.keys():
             category_products_dict[category_id] = []
 
@@ -637,19 +636,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id = offer_tag.xpath("categoryId")
-            product_id = offer_tag.get("id").strip()
-            product_name = offer_tag.xpath("name")[0].text.strip()
-            product_price = int(offer_tag.xpath("price")[0].text.strip())
             cid = category_id[0].text.strip()
+            product_id = offer_tag.get("id").strip()
+            product_id_item = QStandardItem()
+            product_id_item.setData(product_id, Qt.DisplayRole)
+            product_name = offer_tag.xpath("name")[0].text.strip()
+            product_name_item = QStandardItem()
+            product_name_item.setData(product_name, Qt.DisplayRole)
+            product_name_item.setCheckable(True)
+            product_price = int(offer_tag.xpath("price")[0].text.strip())
+            product_price_item = QStandardItem()
+            product_price_item.setData(product_price, Qt.DisplayRole)
             print(cid)
             if cid not in categoryid_name_dict:
                 # Add product to the category MainWindow.DEFAULT_CATEGORY
                 category_products_dict[MainWindow.DEFAULT_CATEGORY_ID].append(
-                    {"product_id": product_id, "product_name": product_name, "product_price": product_price}
+                    {"product_id": product_id_item, "product_name": product_name_item, "product_price": product_price_item}
                 )
                 continue
             category_products_dict[cid].append(
-                {"product_id": product_id, "product_name": product_name, "product_price": product_price}
+                {"product_id": product_id_item, "product_name": product_name_item, "product_price": product_price_item}
             )
         pprint.pp(category_products_dict)
 
