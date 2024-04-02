@@ -433,7 +433,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def move_products_from_input_to_destination_table(input_tabel, output_tabel):
         input_model = input_tabel.model()
         output_model = output_tabel.model()
-        # Check for destination model existence (improved error handling)
+        # Check for destination model existence
         if not input_model or not output_model:
             print("Error: Invalid table view models.")
             return
