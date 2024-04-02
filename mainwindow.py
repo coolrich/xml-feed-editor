@@ -423,10 +423,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for product_id, product_items in self.input_products_dict.items():
             product_category_id_item = product_items["category_id"]
-            product_name_item = product_items["category_id"]
+            product_name_item = product_items["product_name"]
             product_price_item = product_items["product_price"]
-            if product_category_id_item.data() in selected_categories_ids:
-                sptv_model.appendRow([product_name_item, product_price_item, product_id])
+            category_id = product_category_id_item.data(Qt.DisplayRole)
+            if category_id in selected_categories_ids:
+                sptv_model.appendRow([product_name_item, product_price_item, product_category_id_item])
         self.input_products_table_view.resizeColumnsToContents()
         # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
         print("Data has been added to table")
