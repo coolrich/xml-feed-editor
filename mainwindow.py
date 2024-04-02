@@ -613,7 +613,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
         category_elems = self.input_xml_tree.xpath("//category")
-        categoryid_name_dict = {}
+        categoryid_name_dict: dict[str, QStandardItem] = {}
 
         for category in category_elems:
             category_id = category.get("id").strip()
