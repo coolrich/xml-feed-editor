@@ -153,7 +153,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delete_category_push_button.clicked.connect(
             lambda: self.move_categories_between_tables(self.output_category_table_view,
                                                         self.input_category_table_view))
-        self.output_category_model.rowsInserted.connect(self.add_products_to_src_products_table)
+        self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
             lambda: self.move_products_from_input_to_destination_table(
                 self.input_products_table_view, self.output_products_table_view)
@@ -404,7 +404,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
             print(input_price)
 
-    def add_products_to_src_products_table(self):
+    def populate_input_products_table(self):
         sptv_model = self.input_products_table_view.model().sourceModel()
         output_category_model = self.output_category_table_view.model()
 
@@ -427,7 +427,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_price_item = product_items["product_price"]
             category_id = product_category_id_item.data(Qt.DisplayRole)
             if category_id in selected_categories_ids:
-                sptv_model.appendRow([product_name_item, product_price_item, product_category_id_item])
+                sptv_model.appendRow([product_name_item.clone(), product_price_item.clone(), product_category_id_item.clone()])
         self.input_products_table_view.resizeColumnsToContents()
         # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
         print("Data has been added to table")
@@ -495,7 +495,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         fptv_model = self.output_products_table_view.model()
         sptv_model.removeRows(0, sptv_model.rowCount())
         fptv_model.removeRows(0, fptv_model.rowCount())
-        self.add_products_to_src_products_table()
+        self.populate_input_products_table()
         self.move_products_from_input_to_destination_table(
             self.input_products_table_view,
             self.output_products_table_view
@@ -546,10 +546,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def init_tables(self, file_path):
         if not self.parse(file_path):
             return
-        self.reset_tables_data()
+        self.reset_input_categories_tables_data()
         self.populate_input_tables()
 
-    def reset_tables_data(self):
+    def reset_input_categories_tables_data(self):
         self.input_category_model.removeRows(0, self.input_category_model.rowCount())
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
