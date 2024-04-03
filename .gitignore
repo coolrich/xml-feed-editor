@@ -22,4 +22,5 @@
 /build/main/warn-main.txt
 /build/main/xref-main.html
 /XML_parser/
-/test.py
+/test_tree_view.py
+/build_categories_tree.py

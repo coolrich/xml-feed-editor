@@ -626,6 +626,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_id, category_name_item = self.create_category_item(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
 
+        # create a method that builds a tree of categories and subcategories
+        self.build_categories_tree()
+
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id_item, product_id, product_name_item, product_price_item = self.create_product(offer_tag)
@@ -667,3 +670,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_name_item.setCheckable(True)
         category_name_item.setData(category_name, Qt.DisplayRole)
         return category_id, category_name_item
+
+    def build_categories_tree(self):
+        pass
