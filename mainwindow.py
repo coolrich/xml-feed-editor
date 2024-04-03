@@ -685,18 +685,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 graph.add_node(child_id)
                 graph.add_node(parent_id)
                 graph.add_edge(parent_id, child_id)
-        # self.iterate_tree(reversed_category_pairs_dict)
+
         for parent_id in parents_list:
-            # item = self.input_categories_dict[parent_id]
-            # self.input_category_model.appendRow([item, QStandardItem(parent_id)])
-            self.dfs(graph, parent_id)
+            item = self.input_categories_dict[parent_id]
+            self.input_category_model.appendRow([item, QStandardItem(parent_id)])
+            self.dfs(graph, parent_id, item)
         pprint.pp(f"reversed_category_pairs_dict: {graph}")
 
-    def dfs(self, G, start_node, indent=0):
-        # Do something with the start node
-        item = self.input_categories_dict[start_node]
-        item.appendRow([item, QStandardItem(start_node)])
-        print(" " * indent, item.data(Qt.DisplayRole))
-
-        for neighbor in G.neighbors(start_node):
-            self.dfs(G, neighbor, indent + 2)
+    def dfs(self, graph, child_id, parent_item, indent=0):
+        print(" " * indent, parent_item.data(Qt.DisplayRole))
+        for child_id in graph.neighbors(child_id):
+            item = self.input_categories_dict[child_id]
+            parent_item.appendRow([item, QStandardItem(child_id)])
+            self.dfs(graph, child_id, item, indent + 2)
