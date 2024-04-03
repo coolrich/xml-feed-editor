@@ -162,7 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.move_products_between_tables(
                 self.output_products_table_view, self.input_products_table_view)
         )
-        self.output_category_model.rowsRemoved.connect(self.refresh_products_tables)
+        self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_tables)
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
@@ -457,6 +457,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 checked_number += 1
                 for col in range(input_col_count):
                     item_data = input_model.takeItem(row, col)
+                    item_data.setCheckState(Qt.Unchecked)
                     header_name = input_model.headerData(col, Qt.Horizontal)
                     input_table_dict[header_name].append(item_data.data(Qt.DisplayRole))
                 input_model.removeRow(row)
@@ -492,27 +493,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def refresh_products_tables(self):
         output_categories_table_model = self.output_category_table_view.model().sourceModel()
-
         row_count = output_categories_table_model.rowCount()
         output_category_id_list = []
-        if row_count > 0:
-            for row in range(row_count):
-                category_id = output_categories_table_model.item(row, 1).data(Qt.DisplayRole)
-                output_category_id_list.append(category_id)
+        for row in range(row_count - 1):
+            category_id = output_categories_table_model.item(row, 1).data(Qt.DisplayRole)
+            output_category_id_list.append(category_id)
 
         input_products_model = self.input_products_table_view.model().sourceModel()
         input_table_col_count = input_products_model.columnCount()
         input_table_row_count = input_products_model.rowCount()
         row = 0
         while row < input_table_row_count:
-            product_id = input_products_model.item(row, input_table_col_count - 1).data(Qt.DisplayRole)
+            product_item = input_products_model.item(row, input_table_col_count - 1)
+            product_id = product_item.data(Qt.DisplayRole)
             product_category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
             if product_category_id not in output_category_id_list:
-                input_products_model.takeRow(row)
+                row_items = input_products_model.takeRow(row)
+                name_item = row_items[0]
+                name_item.setCheckState(Qt.Unchecked)
                 input_table_row_count -= 1
-                input_products_model.removeRow(row)
+            else:
+                row += 1
 
-        output_products_model = self.output_products_table_view.model()
+        output_products_model = self.output_products_table_view.model().sourceModel()
+        output_table_col_count = output_products_model.columnCount()
+        output_table_row_count = output_products_model.rowCount()
+        row = 0
+        while row < output_table_row_count:
+            product_id = output_products_model.item(row, output_table_col_count - 1).data(Qt.DisplayRole)
+            product_category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+            if product_category_id not in output_category_id_list:
+                row_items = output_products_model.takeRow(row)
+                name_item = row_items[0]
+                name_item.setCheckState(Qt.Unchecked)
+                output_table_row_count -= 1
+            else:
+                row += 1
 
         # input_products_model.removeRows(0, input_products_model.rowCount())
         # output_products_model.removeRows(0, output_products_model.rowCount())
@@ -548,6 +564,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         while row < row_count:
             check_state = input_model.item(row, 0).checkState()
             if check_state == Qt.Checked:
+                input_model.item(row, 0).setCheckState(Qt.Unchecked)
                 category_name_item = input_model.takeItem(row, 0)
                 category_item_id = input_model.takeItem(row, 1)
                 destination_model.appendRow([category_name_item, category_item_id])
