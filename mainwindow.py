@@ -2,6 +2,7 @@ import copy
 import gc
 import pprint
 import re
+import networkx as nx
 
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
@@ -23,11 +24,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.app = app
         self.setWindowTitle("XML parser")
 
-        # dict[category_id] = category_name_item
+        self.categoryid_parent_ids_dict = {}
+        # hint: dict[category_id] = category_name_item
         self.input_categories_dict: dict[str, QStandardItem] = {}
-        # dict[category_id] = category_name_item
+        # hint: dict[category_id] = category_name_item
         self.output_categories_dict: dict[str, QStandardItem] = {}
-        # self.input_products_dict[product_id].append({"category_id": product_id_item,
+        # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
         #                                       "product_name": product_name_item,
         #                                       "product_price": product_price_item}
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
@@ -593,10 +595,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        for category_id, category_name_item in self.input_categories_dict.items():
-            category_id_item = QStandardItem()
-            category_id_item.setData(category_id, Qt.DisplayRole)
-            self.input_category_model.appendRow([category_name_item, category_id_item])
+        # for category_id, category_name_item in self.input_categories_dict.items():
+        #     category_id_item = QStandardItem()
+        #     category_id_item.setData(category_id, Qt.DisplayRole)
+        #     self.input_category_model.appendRow([category_name_item, category_id_item])
+        self.build_categories_tree()
         self.input_category_tree_view.resizeColumnToContents(0)
         self.input_category_names_table_view.resizeColumnToContents(0)
 
@@ -622,12 +625,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_elems = self.input_xml_tree.xpath("//category")
         for category in category_elems:
             category_id, category_name_item = self.create_category_item(category)
+            self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
             self.input_categories_dict[category_id] = category_name_item
             category_id, category_name_item = self.create_category_item(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
 
-        # create a method that builds a tree of categories and subcategories
-        self.build_categories_tree()
 
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
@@ -672,4 +674,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return category_id, category_name_item
 
     def build_categories_tree(self):
-        pass
+        # create a method that builds a tree of categories and subcategories from self.input_categories_dict
+        graph = nx.DiGraph()
+        parents_list = []
+        for child_id, parent_id in self.categoryid_parent_ids_dict.items():
+            if parent_id is None:
+                graph.add_node(child_id)
+                parents_list.append(child_id)
+            else:
+                graph.add_node(child_id)
+                graph.add_node(parent_id)
+                graph.add_edge(parent_id, child_id)
+        # self.iterate_tree(reversed_category_pairs_dict)
+        for parent_id in parents_list:
+            # item = self.input_categories_dict[parent_id]
+            # self.input_category_model.appendRow([item, QStandardItem(parent_id)])
+            self.dfs(graph, parent_id)
+        pprint.pp(f"reversed_category_pairs_dict: {graph}")
+
+    def dfs(self, G, start_node, indent=0):
+        # Do something with the start node
+        item = self.input_categories_dict[start_node]
+        item.appendRow([item, QStandardItem(start_node)])
+        print(" " * indent, item.data(Qt.DisplayRole))
+
+        for neighbor in G.neighbors(start_node):
+            self.dfs(G, neighbor, indent + 2)
