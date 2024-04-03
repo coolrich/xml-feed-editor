@@ -6,7 +6,7 @@ import re
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
 from lxml import etree
 from lxml.etree import ElementTree
 
@@ -49,12 +49,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_proxy_model = QSortFilterProxyModel()
         self.input_category_proxy_model.setSourceModel(self.input_category_model)
         self.input_category_proxy_model.setFilterKeyColumn(0)
-        self.input_category_table_view.setModel(self.input_category_proxy_model)
-        self.input_category_table_view.resizeColumnsToContents()
+        self.input_category_tree_view.setModel(self.input_category_proxy_model)
+        self.input_category_tree_view.resizeColumnToContents(0)
         # self.input_category_table_view.horizontalHeader().setStretchLastSection(True)
-        self.input_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # self.input_category_tree_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         # noinspection PyUnresolvedReferences
-        self.input_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.input_category_tree_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of output_category_table_view
         self.output_category_model = QStandardItemModel()
@@ -62,11 +62,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_proxy_model = QSortFilterProxyModel()
         self.output_category_proxy_model.setSourceModel(self.output_category_model)
         self.output_category_proxy_model.setFilterKeyColumn(0)
-        self.output_category_table_view.setModel(self.output_category_proxy_model)
+        self.output_category_tree_view.setModel(self.output_category_proxy_model)
         # self.output_category_table_view.horizontalHeader().setStretchLastSection(True)
-        self.output_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # self.output_category_tree_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         # noinspection PyUnresolvedReferences
-        self.output_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.output_category_tree_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of products_table_view
         product_header_name = ["Товар", "Початкова Ціна", "ID"]
@@ -148,11 +148,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.open_action.triggered.connect(self.open_file)
 
         self.add_category_push_button.clicked.connect(
-            lambda: self.move_categories_between_tables(self.input_category_table_view,
-                                                        self.output_category_table_view))
+            lambda: self.move_categories_between_tables(self.input_category_tree_view,
+                                                        self.output_category_tree_view))
         self.delete_category_push_button.clicked.connect(
-            lambda: self.move_categories_between_tables(self.output_category_table_view,
-                                                        self.input_category_table_view))
+            lambda: self.move_categories_between_tables(self.output_category_tree_view,
+                                                        self.input_category_tree_view))
         self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
             lambda: self.move_products_between_tables(
@@ -270,7 +270,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 QMessageBox.Ok)
 
     def get_new_xml(self):
-        output_category_model = self.output_category_table_view.model().sourceModel()
+        output_category_model = self.output_category_tree_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
 
         selected_categories_ids_list = []
@@ -406,7 +406,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def populate_input_products_table(self):
         sptv_model = self.input_products_table_view.model().sourceModel()
-        output_category_model = self.output_category_table_view.model()
+        output_category_model = self.output_category_tree_view.model()
 
         selected_categories_ids = list()
         row_count = output_category_model.rowCount()
@@ -455,9 +455,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             check_state = input_model.item(row, 0).checkState()
             if check_state == Qt.Checked:
                 checked_number += 1
+                item_data = input_model.item(row, 0)
+                item_data.setCheckState(Qt.Unchecked)
                 for col in range(input_col_count):
                     item_data = input_model.takeItem(row, col)
-                    item_data.setCheckState(Qt.Unchecked)
                     header_name = input_model.headerData(col, Qt.Horizontal)
                     input_table_dict[header_name].append(item_data.data(Qt.DisplayRole))
                 input_model.removeRow(row)
@@ -492,7 +493,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("Data has been added to table")
 
     def refresh_products_tables(self):
-        output_categories_table_model = self.output_category_table_view.model().sourceModel()
+        output_categories_table_model = self.output_category_tree_view.model().sourceModel()
         row_count = output_categories_table_model.rowCount()
         output_category_id_list = []
         for row in range(row_count - 1):
@@ -541,8 +542,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("Data has been removed from table")
 
     @staticmethod
-    def move_categories_between_tables(input_table_view: QTableView,
-                                       destination_table_view: QTableView):
+    def move_categories_between_tables(input_table_view: QTreeView,
+                                       destination_table_view: QTreeView):
         """
         Moves checked items from the source table view to the destination table view.
 
@@ -572,7 +573,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 row_count -= 1
             else:
                 row += 1
-        destination_table_view.resizeColumnsToContents()
+        destination_table_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
 
     # open xml file
@@ -596,13 +597,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_id_item = QStandardItem()
             category_id_item.setData(category_id, Qt.DisplayRole)
             self.input_category_model.appendRow([category_name_item, category_id_item])
+        self.input_category_tree_view.resizeColumnToContents(0)
+        self.input_category_names_table_view.resizeColumnToContents(0)
 
         for category_id, category_name_item in self.input_categories_replacement_dict.items():
             category_id_item = QStandardItem()
             category_id_item.setData(category_id, Qt.DisplayRole)
             self.input_category_names_model.appendRow([category_name_item, category_id_item])
         self.input_category_names_table_view.resizeColumnsToContents()
-        self.input_category_table_view.resizeColumnsToContents()
 
         for product_id_item, product_data in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()

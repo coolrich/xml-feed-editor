@@ -17,9 +17,9 @@
    <enum>Qt::LeftToRight</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_20">
+   <layout class="QVBoxLayout" name="verticalLayout_21">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_20">
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
@@ -31,116 +31,120 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
-           <widget class="QGroupBox" name="groupBox_4">
-            <property name="title">
-             <string>Всі категорії товарів</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QGroupBox" name="groupBox_4">
+              <property name="title">
+               <string>Всі категорії товарів</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
                <item>
-                <widget class="QLabel" name="label_3">
-                 <property name="text">
-                  <string>Пошук:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="search_input_category_line_edit"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_4">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout">
+                <layout class="QVBoxLayout" name="verticalLayout_3">
                  <item>
-                  <widget class="QPushButton" name="check_all_source_categories_push_button">
-                   <property name="text">
-                    <string>Вибрати всі</string>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_2">
+                   <item>
+                    <widget class="QLabel" name="label_3">
+                     <property name="text">
+                      <string>Пошук:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="search_input_category_line_edit"/>
+                   </item>
+                  </layout>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="uncheck_all_source_categories_push_button">
-                   <property name="text">
-                    <string>Зняти вибір з усіх</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="add_category_push_button">
-                   <property name="text">
-                    <string>Додати до
+                  <layout class="QHBoxLayout" name="horizontalLayout">
+                   <item>
+                    <widget class="QPushButton" name="check_all_source_categories_push_button">
+                     <property name="text">
+                      <string>Вибрати всі</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="uncheck_all_source_categories_push_button">
+                     <property name="text">
+                      <string>Зняти вибір з усіх</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="add_category_push_button">
+                     <property name="text">
+                      <string>Додати до
 XML</string>
-                   </property>
-                  </widget>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="QTreeView" name="input_category_tree_view"/>
                  </item>
                 </layout>
                </item>
-               <item>
-                <widget class="QTableView" name="input_category_table_view"/>
-               </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="groupBox_3">
-            <property name="title">
-             <string>Обрані категорії товарів для вивантаження до XML файлу</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_14">
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string>Обрані категорії товарів для вивантаження до XML файлу</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_7">
                <item>
-                <widget class="QLabel" name="label_13">
-                 <property name="text">
-                  <string>Пошук:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="search_output_category_line_edit"/>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_13">
+                <layout class="QVBoxLayout" name="verticalLayout_5">
                  <item>
-                  <widget class="QPushButton" name="check_all_chosen_categories_push_button">
-                   <property name="text">
-                    <string>Вибрати всі</string>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_14">
+                   <item>
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Пошук:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="search_output_category_line_edit"/>
+                   </item>
+                  </layout>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="uncheck_all_chosen_categories_push_button">
-                   <property name="text">
-                    <string>Зняти вибір з усіх</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="delete_category_push_button">
-                   <property name="text">
-                    <string>Убрати з
+                  <layout class="QHBoxLayout" name="horizontalLayout_13">
+                   <item>
+                    <widget class="QPushButton" name="check_all_chosen_categories_push_button">
+                     <property name="text">
+                      <string>Вибрати всі</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="uncheck_all_chosen_categories_push_button">
+                     <property name="text">
+                      <string>Зняти вибір з усіх</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="delete_category_push_button">
+                     <property name="text">
+                      <string>Убрати з
 XML</string>
-                   </property>
-                  </widget>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="QTreeView" name="output_category_tree_view"/>
                  </item>
                 </layout>
                </item>
-               <item>
-                <widget class="QTableView" name="output_category_table_view"/>
-               </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -162,7 +166,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>757</width>
+               <width>759</width>
                <height>738</height>
               </rect>
              </property>
