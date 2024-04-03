@@ -166,7 +166,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
-        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValu)
+        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
 
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
@@ -261,7 +261,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 "Нижня межа не може перевищувати верхню",
                                 QMessageBox.Ok)
 
-    def checkForUpperPriceValu(self, value):
+    def checkForUpperPriceValue(self, value):
         if value < self.bottom_price_limit_spin_box.value():
             self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
             # noinspection PyUnresolvedReferences
