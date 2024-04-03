@@ -595,13 +595,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        # for category_id, category_name_item in self.input_categories_dict.items():
-        #     category_id_item = QStandardItem()
-        #     category_id_item.setData(category_id, Qt.DisplayRole)
-        #     self.input_category_model.appendRow([category_name_item, category_id_item])
-        self.build_categories_tree()
-        self.input_category_tree_view.resizeColumnToContents(0)
-        self.input_category_names_table_view.resizeColumnToContents(0)
+        self.populate_input_category_table()
 
         for category_id, category_name_item in self.input_categories_replacement_dict.items():
             category_id_item = QStandardItem()
@@ -673,7 +667,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_name_item.setData(category_name, Qt.DisplayRole)
         return category_id, category_name_item
 
-    def build_categories_tree(self):
+    def populate_input_category_table(self):
         # create a method that builds a tree of categories and subcategories from self.input_categories_dict
         graph = nx.DiGraph()
         parents_list = []
@@ -690,7 +684,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             item = self.input_categories_dict[parent_id]
             self.input_category_model.appendRow([item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, item)
-        pprint.pp(f"reversed_category_pairs_dict: {graph}")
+        # pprint.pp(f"reversed_category_pairs_dict: {graph}")
+        self.input_category_tree_view.resizeColumnToContents(0)
+        self.input_category_names_table_view.resizeColumnToContents(0)
 
     def dfs(self, graph, child_id, parent_item, indent=0):
         print(" " * indent, parent_item.data(Qt.DisplayRole))
