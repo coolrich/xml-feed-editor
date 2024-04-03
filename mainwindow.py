@@ -596,35 +596,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def populate_input_tables(self):
         self.populate_input_category_table()
+        self.populate_input_categories_replacement_table()
+        self.populate_input_products_replacement_table()
 
-        for category_id, category_name_item in self.input_categories_replacement_dict.items():
-            category_id_item = QStandardItem()
-            category_id_item.setData(category_id, Qt.DisplayRole)
-            self.input_category_names_model.appendRow([category_name_item, category_id_item])
-        self.input_category_names_table_view.resizeColumnsToContents()
-
+    def populate_input_products_replacement_table(self):
         for product_id_item, product_data in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
             product_id_item.setData(product_id_item, Qt.DisplayRole)
             self.input_product_names_model.appendRow([product_data, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
+    def populate_input_categories_replacement_table(self):
+        for category_id, category_name_item in self.input_categories_replacement_dict.items():
+            category_id_item = QStandardItem()
+            category_id_item.setData(category_id, Qt.DisplayRole)
+            self.input_category_names_model.appendRow([category_name_item, category_id_item])
+        self.input_category_names_table_view.resizeColumnsToContents()
+
     def parse(self, file_path):
         if not file_path:
             return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
+        self.get_category_ids_and_names_from_xml()
+        self.get_offers_from_xml()
+        gc.collect()
+        pprint.pp(f"input_products_dict: {self.input_products_dict}")
+        return True
 
-        # Gather category ids and names from xml
-        category_elems = self.input_xml_tree.xpath("//category")
-        for category in category_elems:
-            category_id, category_name_item = self.create_category_item(category)
-            self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
-            self.input_categories_dict[category_id] = category_name_item
-            category_id, category_name_item = self.create_category_item(category)
-            self.input_categories_replacement_dict[category_id] = category_name_item
-
-
+    def get_offers_from_xml(self):
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             category_id_item, product_id, product_name_item, product_price_item = self.create_product(offer_tag)
@@ -635,9 +635,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_name_item = self.create_product_name_item(offer_tag)
             self.input_products_replacement_dict[product_id] = product_name_item
 
-        gc.collect()
-        pprint.pp(f"input_products_dict: {self.input_products_dict}")
-        return True
+    def get_category_ids_and_names_from_xml(self):
+        category_elems = self.input_xml_tree.xpath("//category")
+        for category in category_elems:
+            category_id, category_name_item = self.create_category_item(category)
+            self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
+            self.input_categories_dict[category_id] = category_name_item
+            category_id, category_name_item = self.create_category_item(category)
+            self.input_categories_replacement_dict[category_id] = category_name_item
 
     def create_product(self, offer_tag):
         product_id = offer_tag.get("id").strip()
