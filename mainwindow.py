@@ -155,14 +155,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                         self.input_category_table_view))
         self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
-            lambda: self.move_products_from_input_to_destination_table(
+            lambda: self.move_products_between_tables(
                 self.input_products_table_view, self.output_products_table_view)
         )
         self.remove_product_push_button.clicked.connect(
-            lambda: self.move_products_from_input_to_destination_table(
+            lambda: self.move_products_between_tables(
                 self.output_products_table_view, self.input_products_table_view)
         )
-        self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
+        self.output_category_model.rowsRemoved.connect(self.refresh_products_tables)
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
@@ -422,20 +422,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             input_products_ids_list.append(item)
 
         for product_id, product_items in self.input_products_dict.items():
-            product_category_id_item = product_items["category_id"]
+            product_id_item = QStandardItem(product_id)
             product_name_item = product_items["product_name"]
             product_price_item = product_items["product_price"]
-            category_id = product_category_id_item.data(Qt.DisplayRole)
+            category_id = product_items["category_id"].data(Qt.DisplayRole)
             if category_id in selected_categories_ids:
-                sptv_model.appendRow([product_name_item.clone(), product_price_item.clone(), product_category_id_item.clone()])
+                sptv_model.appendRow([product_name_item, product_price_item, product_id_item])
         self.input_products_table_view.resizeColumnsToContents()
         # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
         print("Data has been added to table")
 
     @staticmethod
-    def move_products_from_input_to_destination_table(input_tabel, output_tabel):
-        input_model = input_tabel.model()
-        output_model = output_tabel.model()
+    def move_products_between_tables(input_tabel, output_tabel):
+        input_model = input_tabel.model().sourceModel()
+        output_model = output_tabel.model().sourceModel()
         # Check for destination model existence
         if not input_model or not output_model:
             print("Error: Invalid table view models.")
@@ -452,15 +452,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         row = 0
         checked_number = 0
         while row < input_table_row_count:
-            checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
-            if checked == 2:
+            check_state = input_model.item(row, 0).checkState()
+            if check_state == Qt.Checked:
                 checked_number += 1
                 for col in range(input_col_count):
-                    index = input_model.index(row, col)
-                    data_item = input_model.data(index)
+                    item_data = input_model.takeItem(row, col)
                     header_name = input_model.headerData(col, Qt.Horizontal)
-                    input_table_dict[header_name].append(data_item)
+                    input_table_dict[header_name].append(item_data.data(Qt.DisplayRole))
                 input_model.removeRow(row)
+                input_table_row_count -= 1
             else:
                 row += 1
 
@@ -483,23 +483,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 new_item.setCheckable(True if col == 0 else False)
                 new_item.setEditable(False)
                 out_table_row_items.append(new_item)
-            output_model.sourceModel().appendRow(out_table_row_items)
+            output_model.appendRow(out_table_row_items)
 
         input_tabel.resizeColumnsToContents()
         output_tabel.resizeColumnsToContents()
         print("The process of moving items has been completed.")
         print("Data has been added to table")
 
-    def refresh_products_in_product_tables(self):
-        sptv_model = self.input_products_table_view.model()
-        fptv_model = self.output_products_table_view.model()
-        sptv_model.removeRows(0, sptv_model.rowCount())
-        fptv_model.removeRows(0, fptv_model.rowCount())
-        self.populate_input_products_table()
-        self.move_products_from_input_to_destination_table(
-            self.input_products_table_view,
-            self.output_products_table_view
-        )
+    def refresh_products_tables(self):
+        output_categories_table_model = self.output_category_table_view.model().sourceModel()
+
+        row_count = output_categories_table_model.rowCount()
+        output_category_id_list = []
+        if row_count > 0:
+            for row in range(row_count):
+                category_id = output_categories_table_model.item(row, 1).data(Qt.DisplayRole)
+                output_category_id_list.append(category_id)
+
+        input_products_model = self.input_products_table_view.model().sourceModel()
+        input_table_col_count = input_products_model.columnCount()
+        input_table_row_count = input_products_model.rowCount()
+        row = 0
+        while row < input_table_row_count:
+            product_id = input_products_model.item(row, input_table_col_count - 1).data(Qt.DisplayRole)
+            product_category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+            if product_category_id not in output_category_id_list:
+                input_products_model.takeRow(row)
+                input_table_row_count -= 1
+                input_products_model.removeRow(row)
+
+        output_products_model = self.output_products_table_view.model()
+
+        # input_products_model.removeRows(0, input_products_model.rowCount())
+        # output_products_model.removeRows(0, output_products_model.rowCount())
+        # self.populate_input_products_table()
+        # self.move_products_between_tables(
+        #     self.input_products_table_view,
+        #     self.output_products_table_view
+        # )
 
         print("Data has been removed from table")
 
@@ -527,9 +548,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         while row < row_count:
             check_state = input_model.item(row, 0).checkState()
             if check_state == Qt.Checked:
-                category_name_item = input_model.item(row, 0)
-                category_item_id = input_model.item(row, 1)
-                destination_model.appendRow([category_name_item.clone(), category_item_id.clone()])
+                category_name_item = input_model.takeItem(row, 0)
+                category_item_id = input_model.takeItem(row, 1)
+                destination_model.appendRow([category_name_item, category_item_id])
                 input_model.removeRow(row)
                 row_count -= 1
             else:
