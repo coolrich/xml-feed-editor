@@ -388,7 +388,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             input_price = fptv_model.data(fptv_model.index(row, 1))
             final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
             if bottom_price_limit <= input_price <= upper_price_limit:
-                product_markup = multiplier * input_price
+                product_markup = int(multiplier * input_price)
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
             print(input_price)
 
