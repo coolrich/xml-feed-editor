@@ -191,28 +191,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def on_clicked_check_for_subcategories(self, item):
         if self.block_parent_checkboxes_checking is False:
-            current_item_checkbox_state = item.checkState()
-            self.init_item = item
             self.block_parent_checkboxes_checking = True
+            current_item_checkbox_state = item.checkState()
             self.iterate_tree(current_item_checkbox_state, item)
             current_item = item.parent()
-            while current_item is not None:
-                current_item.setCheckState(current_item_checkbox_state)
+            # while current_item is not None:
+            #     current_item.setCheckState(current_item_checkbox_state)
+            #     current_item = current_item.parent()
+            ###########################################
+            current_item = item
+            while current_item.parent() is not None:
+                current_item_checkbox_state = current_item.checkState()
+                is_change_parent_checkboxes_state = True
+                sibling_count = current_item.parent().rowCount()
+                for row in range(sibling_count):
+                    sibling_item_checkbox_state = current_item.parent().child(row).checkState()
+                    if current_item_checkbox_state != sibling_item_checkbox_state:
+                        current_item.parent().setCheckState(Qt.CheckState.PartiallyChecked)
+                        is_change_parent_checkboxes_state = False
+                        break
+                if is_change_parent_checkboxes_state is True:
+                    current_item.parent().setCheckState(current_item_checkbox_state)
                 current_item = current_item.parent()
 
             self.block_parent_checkboxes_checking = False
 
-        # current_item_checkbox_state = item.checkState()
-        # is_change_parent_checkboxes_state = True
-        # if item.parent() is not None:
-        #     sibling_count = item.parent().rowCount()
-        #     for row in range(sibling_count):
-        #         sibling_item_checkbox_state = item.parent().child(row).checkState()
-        #         if current_item_checkbox_state != sibling_item_checkbox_state:
-        #             is_change_parent_checkboxes_state = False
-        #             break
-        #     if is_change_parent_checkboxes_state:
-        #         item.parent().setCheckState(current_item_checkbox_state)
 
     def iterate_tree(self, checkbox_state, item):
         if item.hasChildren():
