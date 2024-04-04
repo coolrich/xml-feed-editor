@@ -181,7 +181,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.replace_product_name_push_button.setEnabled(False)
         self.replace_product_name_push_button.clicked.connect(self.replace_input_product_names)
 
+        # self.input_category_tree_view.clicked.connect(self.on_clicked_check_for_subcategories)
+        self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
+
         self.xml_data = None
+
+    def on_clicked_check_for_subcategories(self, item):
+        checkbox_state = item.checkState()
+        self.iterate_tree(checkbox_state, item)
+        parent_item = item.parent()
+        while parent_item is not None:
+            parent_item.setCheckState(checkbox_state)
+            parent_item = parent_item.parent()
+
+    def iterate_tree(self, checkbox_state, item):
+        if item.hasChildren():
+            for row in range(item.rowCount()):
+                child_item = item.child(row)
+                self.iterate_tree(checkbox_state, child_item)
+        item.setCheckState(checkbox_state)
 
     def find_category_names_for_replace(self, text):
         self.input_category_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
@@ -402,7 +420,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             input_price = fptv_model.data(fptv_model.index(row, 1))
             final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
             if bottom_price_limit <= input_price <= upper_price_limit:
-                product_markup = multiplier * input_price
+                product_markup = int(multiplier * input_price)
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
             print(input_price)
 
