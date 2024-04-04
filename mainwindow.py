@@ -586,44 +586,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @staticmethod
     def move_categories_between_tables(input_table_view: QTreeView,
-                                       destination_table_view: QTreeView):
+                                       output_table_view: QTreeView):
         """
         Moves checked items from the source table view to the destination table view.
 
         Args:
             input_table_view (QtWidgets.QTableView): The source table view.
-            destination_table_view (QtWidgets.QTableView): The destination table view.
+            output_table_view (QtWidgets.QTableView): The destination table view.
         """
         # Get source and destination models
         input_model = input_table_view.model().sourceModel()
-        destination_model = destination_table_view.model().sourceModel()
+        destination_model = output_table_view.model().sourceModel()
 
         if not input_model or not destination_model:
             print("Error: Invalid table view models.")
             return
 
         # Collect checked items in source model
-        row_count = input_model.rowCount()
-        row = 0
-        while row < row_count:
-            check_state = input_model.item(row, 0).checkState()
-            row, row_count = MainWindow.take_row_from_input_category_table(check_state, destination_model, input_model,
-                                                                           row, row_count)
-        destination_table_view.resizeColumnToContents(0)
+        rows_count = input_model.rowCount()
+        for row in range(rows_count):
+            item = input_model.item(row, 0)
+            MainWindow.iterate_input_category_tree(item, destination_model)
+        output_table_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
 
     @staticmethod
-    def take_row_from_input_category_table(check_state, destination_model, input_model, row, row_count):
+    def iterate_input_category_tree(input_parent_item, output_parent_model):
+        check_state = input_parent_item.checkState()
         if check_state == Qt.Checked:
-            input_model.item(row, 0).setCheckState(Qt.Unchecked)
-            category_name_item = input_model.takeItem(row, 0)
-            category_item_id = input_model.takeItem(row, 1)
-            destination_model.appendRow([category_name_item, category_item_id])
-            input_model.removeRow(row)
-            row_count -= 1
-        else:
-            row += 1
-        return row, row_count
+            if input_parent_item.hasChildren():
+                for row in range(input_parent_item.rowCount()):
+                    child_item = input_parent_item.child(row)
+                    MainWindow.iterate_input_category_tree(child_item, output_parent_model)
+                    if child_item.checkState() == Qt.Checked:
+                        child_row = input_parent_item.takeRow(row)
+                        input_parent_item.removeRow(row)
+                        output_parent_model.appendRow(child_row)
+        elif check_state == Qt.PartiallyChecked:
+            MainWindow.iterate_input_category_tree(input_parent_item, output_parent_model)
+        elif check_state == Qt.Unchecked:
+            pass
+
 
     # open xml file
     def open_file(self):
