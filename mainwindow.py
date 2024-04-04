@@ -607,17 +607,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         row = 0
         while row < row_count:
             check_state = input_model.item(row, 0).checkState()
-            if check_state == Qt.Checked:
-                input_model.item(row, 0).setCheckState(Qt.Unchecked)
-                category_name_item = input_model.takeItem(row, 0)
-                category_item_id = input_model.takeItem(row, 1)
-                destination_model.appendRow([category_name_item, category_item_id])
-                input_model.removeRow(row)
-                row_count -= 1
-            else:
-                row += 1
+            row, row_count = MainWindow.take_row_from_input_category_table(check_state, destination_model, input_model,
+                                                                           row, row_count)
         destination_table_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
+
+    @staticmethod
+    def take_row_from_input_category_table(check_state, destination_model, input_model, row, row_count):
+        if check_state == Qt.Checked:
+            input_model.item(row, 0).setCheckState(Qt.Unchecked)
+            category_name_item = input_model.takeItem(row, 0)
+            category_item_id = input_model.takeItem(row, 1)
+            destination_model.appendRow([category_name_item, category_item_id])
+            input_model.removeRow(row)
+            row_count -= 1
+        else:
+            row += 1
+        return row, row_count
 
     # open xml file
     def open_file(self):
