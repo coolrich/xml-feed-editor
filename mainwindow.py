@@ -23,6 +23,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.app = app
         self.setWindowTitle("XML parser")
+        self.block_parent_checkboxes_checking = False
+        self.init_item = None
+        self.block_sibling_checkboxes_checking = False
 
         self.categoryid_parent_ids_dict = {}
         # hint: dict[category_id] = category_name_item
@@ -187,12 +190,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.xml_data = None
 
     def on_clicked_check_for_subcategories(self, item):
-        checkbox_state = item.checkState()
-        self.iterate_tree(checkbox_state, item)
-        parent_item = item.parent()
-        while parent_item is not None:
-            parent_item.setCheckState(checkbox_state)
-            parent_item = parent_item.parent()
+        if self.block_parent_checkboxes_checking is False:
+            current_item_checkbox_state = item.checkState()
+            self.init_item = item
+            self.block_parent_checkboxes_checking = True
+            self.iterate_tree(current_item_checkbox_state, item)
+            current_item = item.parent()
+            while current_item is not None:
+                current_item.setCheckState(current_item_checkbox_state)
+                current_item = current_item.parent()
+
+            self.block_parent_checkboxes_checking = False
+
+        # current_item_checkbox_state = item.checkState()
+        # is_change_parent_checkboxes_state = True
+        # if item.parent() is not None:
+        #     sibling_count = item.parent().rowCount()
+        #     for row in range(sibling_count):
+        #         sibling_item_checkbox_state = item.parent().child(row).checkState()
+        #         if current_item_checkbox_state != sibling_item_checkbox_state:
+        #             is_change_parent_checkboxes_state = False
+        #             break
+        #     if is_change_parent_checkboxes_state:
+        #         item.parent().setCheckState(current_item_checkbox_state)
 
     def iterate_tree(self, checkbox_state, item):
         if item.hasChildren():
@@ -418,7 +438,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         row_count = fptv_model.rowCount()
         for row in range(row_count):
             input_price = fptv_model.data(fptv_model.index(row, 1))
-            final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
+            # final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
             if bottom_price_limit <= input_price <= upper_price_limit:
                 product_markup = int(multiplier * input_price)
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
