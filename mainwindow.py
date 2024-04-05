@@ -612,11 +612,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         while row < input_model.rowCount():
             input_item = input_model.item(row, 0)
             cloned_item = MainWindow.iterate_input_category_tree_and_clone_and_delete(input_item)
-            if cloned_item is not None:
+            if cloned_item[0] is not None:
                 output_items.append(cloned_item)
-                if input_item.checkState() == Qt.Checked:
-                    input_model.removeRow(row)
-            row += 1
+            if input_item.checkState() == Qt.Checked:
+                input_model.removeRow(row)
+            else:
+                row += 1
 
         for item in output_items:
             output_model.appendRow(item)
@@ -643,12 +644,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     clone_child_name, clone_child_id_item = MainWindow.iterate_input_category_tree_and_clone_and_delete(child)
                     if clone_child_name is not None:
                         clone_name_item.appendRow([clone_child_name, clone_child_id_item])
-                        if child.checkState() == Qt.Checked:
-                            input_item.removeRow(row)
+                    if child.checkState() == Qt.Checked:
+                        input_item.removeRow(row)
                     else:
                         row += 1
             return clone_name_item, clone_id_item
-        return None
+        return None, None
 
     @staticmethod
     def iterate_output_category_tree_and_insert(input_item: QStandardItem):
