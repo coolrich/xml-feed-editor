@@ -168,6 +168,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.output_products_table_view, self.input_products_table_view)
         )
         self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_tables)
+        self.input_category_tree_view.expanded.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
+        self.output_category_tree_view.expanded.connect(lambda: self.output_category_tree_view.resizeColumnToContents(0))
+        self.input_category_tree_view.collapsed.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
+        self.output_category_tree_view.collapsed.connect(lambda: self.output_category_tree_view.resizeColumnToContents(0))
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
@@ -186,6 +190,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # self.input_category_tree_view.clicked.connect(self.on_clicked_check_for_subcategories)
         self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
+        self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
 
         self.xml_data = None
 
@@ -215,7 +220,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 current_item = current_item.parent()
 
             self.block_parent_checkboxes_checking = False
-
 
     def iterate_tree(self, checkbox_state, item):
         if item.hasChildren():
@@ -603,38 +607,62 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # Collect checked items in source model
-        rows_count = input_model.rowCount()
-        for row in range(rows_count):
-            input_row = input_model.takeRow(row)
-            output_row = output_model.takeRow(row)
-            if input_row.checkState() == Qt.Checked:
-                MainWindow.iterate_input_category_tree(input_row, output_row)
-            elif input_row.checkState() == Qt.Unchecked:
-                pass
+        output_items = []
+        row = 0
+        while row < input_model.rowCount():
+            input_item = input_model.item(row, 0)
+            cloned_item = MainWindow.iterate_input_category_tree_and_clone_and_delete(input_item)
+            if cloned_item is not None:
+                output_items.append(cloned_item)
+                if input_item.checkState() == Qt.Checked:
+                    input_model.removeRow(row)
+            row += 1
 
+        for item in output_items:
+            output_model.appendRow(item)
+            # MainWindow.iterate_output_category_tree_and_insert(item)
+
+        pprint.pp(f"output_items: {output_items}")
         output_table_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
 
     @staticmethod
-    def iterate_input_category_tree(input_parent_row, output_parent_row):
-        check_state = input_parent_row.checkState()
-        if check_state == Qt.Checked:
-            # output_parent_row.appendRow(input_parent_row)
-            if input_parent_row.hasChildren():
-                for row in range(input_parent_row.rowCount()):
-                    input_child_item = input_parent_row.child(row)
-                    output_child_item = output_parent_row.item(row, 0)
-                    MainWindow.iterate_input_category_tree(input_child_item, output_child_item)
-                    if input_child_item.checkState() == Qt.Checked:
-                        child_row = input_parent_row.takeRow(row)
-                        input_parent_row.removeRow(row)
-                        output_parent_row.appendRow(child_row)
-        elif check_state == Qt.PartiallyChecked:
-            output_parent_row.appendRow(input_parent_row.clone())
-            MainWindow.iterate_input_category_tree(input_parent_row, output_parent_row)
-        elif check_state == Qt.Unchecked:
-            pass
+    def iterate_input_category_tree_and_clone_and_delete(input_item: QStandardItem):
+        check_state: Qt.CheckState = input_item.checkState()
+        if check_state != Qt.Unchecked:
+            clone_name_item = QStandardItem()
+            clone_name_item.setText(input_item.text())
+            clone_name_item.setCheckable(True)
+            clone_id_item = QStandardItem()
+            clone_id_item.setText(input_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
+            clone_id_item.setCheckable(False)
+            if input_item.hasChildren():
+                row = 0
+                while row < input_item.rowCount():
+                    child = input_item.child(row)
+                    clone_child_name, clone_child_id_item = MainWindow.iterate_input_category_tree_and_clone_and_delete(child)
+                    if clone_child_name is not None:
+                        clone_name_item.appendRow([clone_child_name, clone_child_id_item])
+                        if child.checkState() == Qt.Checked:
+                            input_item.removeRow(row)
+                    else:
+                        row += 1
+            return clone_name_item, clone_id_item
+        return None
 
+    @staticmethod
+    def iterate_output_category_tree_and_insert(input_item: QStandardItem):
+        check_state: Qt.CheckState = input_item.checkState()
+        if check_state == Qt.PartiallyChecked or check_state == Qt.Checked:
+            clone = QStandardItem()
+            clone.setText(input_item.text())
+            clone.setCheckable(True)
+            if input_item.hasChildren():
+                for row in range(input_item.rowCount()):
+                    child = input_item.child(row)
+                    clone_child, row = MainWindow.iterate_input_category_tree_and_clone_and_delete(child)
+                    clone.appendRow(clone_child)
+            return clone
 
     # open xml file
     def open_file(self):
@@ -746,8 +774,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for parent_id in parents_list:
             input_item = self.input_categories_dict[parent_id]
             self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
-            output_item = QStandardItem(input_item)
-            self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
+            # output_item = QStandardItem(input_item)
+            # self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, input_item)
         self.input_category_tree_view.resizeColumnToContents(0)
         self.input_category_names_table_view.resizeColumnToContents(0)
