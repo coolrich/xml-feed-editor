@@ -20,7 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, app):
         super().__init__()
-        self.cloned_parentid_item_dict = {}
+        self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
         self.setupUi(self)
         self.app = app
@@ -651,9 +651,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         # clone_name_item.appendRow([clone_child_name, clone_child_id_item])
                         parent_id = self.categoryid_parent_ids_dict[clone_child_id_item.data(Qt.DisplayRole)]
                         if parent_id is not None:
-                            if parent_id not in self.cloned_parentid_item_dict:
-                                self.cloned_parentid_item_dict[parent_id] = []
-                            self.cloned_parentid_item_dict[parent_id].append({"name": clone_child_name,
+                            if parent_id not in self.cloned_parentid_items_dict:
+                                self.cloned_parentid_items_dict[parent_id] = []
+                            self.cloned_parentid_items_dict[parent_id].append({"name": clone_child_name,
                                                                               "id": clone_child_id_item})
                             print("Checkstate: ", clone_child_name.checkState())
                     if child.checkState() == Qt.Checked:
@@ -664,21 +664,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return None, None
 
     def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
-        # if output_item_name.hasChildren():
-        #     for row in range(output_item_name.rowCount()):
-        #         print("Child name:", output_item_name.child(row).data(Qt.DisplayRole))
-        #         self.iterate_output_category_tree_and_insert(output_item_name.child(row))
         output_item_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
         print("output_item_name: ", output_item_name.data(Qt.DisplayRole), "output_item_id: ",
               output_item_id)
-        if output_item_id in self.cloned_parentid_item_dict:
-            input_items_list = self.cloned_parentid_item_dict[output_item_id]
-            for input_item in input_items_list:
-                input_name_item = input_item["name"].clone()
-                input_id_item = input_item["id"].clone()
-                output_item_name.appendRow([input_name_item, input_id_item])
-                self.iterate_output_category_tree_and_insert(input_name_item)
-            self.cloned_parentid_item_dict[output_item_id] = []
+        if output_item_id in self.cloned_parentid_items_dict:
+            input_items_list = self.cloned_parentid_items_dict.pop(output_item_id)
+            for cloned_item in input_items_list:
+                cloned_name_item = cloned_item["name"].clone()
+                cloned_id_item = cloned_item["id"].clone()
+                output_item_name.appendRow([cloned_name_item, cloned_id_item])
+                for row in range(output_item_name.rowCount()):
+                    self.iterate_output_category_tree_and_insert(output_item_name.child(row, 0))
+            self.cloned_parentid_items_dict[output_item_id] = []
 
 
     # open xml file
