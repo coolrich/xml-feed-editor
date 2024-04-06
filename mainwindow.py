@@ -20,6 +20,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, app):
         super().__init__()
+        self.cloned_parentid_item_dict = {}
+        self.parentid_childid_dict = {}
         self.setupUi(self)
         self.app = app
         self.setWindowTitle("XML parser")
@@ -154,10 +156,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.add_category_push_button.clicked.connect(
             lambda: self.move_categories_between_tables(self.input_category_tree_view,
-                                                        self.output_category_tree_view))
+                                                        self.output_category_tree_view)
+        )
         self.delete_category_push_button.clicked.connect(
             lambda: self.move_categories_between_tables(self.output_category_tree_view,
                                                         self.input_category_tree_view))
+
         self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
             lambda: self.move_products_between_tables(
@@ -169,9 +173,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_tables)
         self.input_category_tree_view.expanded.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
-        self.output_category_tree_view.expanded.connect(lambda: self.output_category_tree_view.resizeColumnToContents(0))
+        self.output_category_tree_view.expanded.connect(
+            lambda: self.output_category_tree_view.resizeColumnToContents(0))
         self.input_category_tree_view.collapsed.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
-        self.output_category_tree_view.collapsed.connect(lambda: self.output_category_tree_view.resizeColumnToContents(0))
+        self.output_category_tree_view.collapsed.connect(
+            lambda: self.output_category_tree_view.resizeColumnToContents(0))
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
@@ -577,73 +583,79 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 output_table_row_count -= 1
             else:
                 row += 1
-
-        # input_products_model.removeRows(0, input_products_model.rowCount())
-        # output_products_model.removeRows(0, output_products_model.rowCount())
-        # self.populate_input_products_table()
-        # self.move_products_between_tables(
-        #     self.input_products_table_view,
-        #     self.output_products_table_view
-        # )
-
         print("Data has been removed from table")
 
-    @staticmethod
-    def move_categories_between_tables(input_table_view: QTreeView,
-                                       output_table_view: QTreeView):
+    def move_categories_between_tables(self,
+                                       input_category_tree_view: QTreeView,
+                                       output_category_tree_view: QTreeView):
         """
         Moves checked items from the source table view to the destination table view.
 
         Args:
             input_table_view (QtWidgets.QTableView): The source table view.
             output_table_view (QtWidgets.QTableView): The destination table view.
+            :param output_category_tree_view:
+            :param input_category_tree_view:
         """
         # Get source and destination models
-        input_model = input_table_view.model().sourceModel()
-        output_model = output_table_view.model().sourceModel()
+        input_model = input_category_tree_view.model().sourceModel()
+        output_model = output_category_tree_view.model().sourceModel()
 
         if not input_model or not output_model:
             print("Error: Invalid table view models.")
             return
 
         # Collect checked items in source model
-        output_items = []
+        selected_items = []
         row = 0
         while row < input_model.rowCount():
-            input_item = input_model.item(row, 0)
-            cloned_item = MainWindow.iterate_input_category_tree_and_clone_and_delete(input_item)
-            if cloned_item[0] is not None:
-                output_items.append(cloned_item)
-            if input_item.checkState() == Qt.Checked:
-                input_model.removeRow(row)
-            else:
-                row += 1
+            input_item_name = input_model.item(row, 0)
+            cloned_item_name, clone_item_id = self.remove_item_from_input_table(input_item_name)
+            if cloned_item_name is not None:
+                selected_items.append((cloned_item_name, clone_item_id))
+            # if input_item_name.checkState() == Qt.Checked:
+            #     input_model.removeRow(row)
+            # else:
+            row += 1
 
-        for item in output_items:
-            output_model.appendRow(item)
-            # MainWindow.iterate_output_category_tree_and_insert(item)
+        row = 0
+        while row < output_model.rowCount():
+            output_item_name = output_model.item(row, 0)
+            print("input_item_name: ", output_item_name.data(Qt.DisplayRole))
+            self.iterate_output_category_tree_and_insert(output_item_name)
+            row += 1
 
-        pprint.pp(f"output_items: {output_items}")
-        output_table_view.resizeColumnToContents(0)
+        pprint.pp(f"output_items: {selected_items}")
+        output_category_tree_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
 
-    @staticmethod
-    def iterate_input_category_tree_and_clone_and_delete(input_item: QStandardItem):
+    def remove_item_from_input_table(self, input_item: QStandardItem):
         check_state: Qt.CheckState = input_item.checkState()
         if check_state != Qt.Unchecked:
-            clone_name_item = QStandardItem()
-            clone_name_item.setText(input_item.text())
+            clone_name_item = QStandardItem(input_item)
             clone_name_item.setCheckable(True)
             clone_id_item = QStandardItem()
-            clone_id_item.setText(input_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
+            print("input_item name clone: ", input_item.data(Qt.DisplayRole))
+            print("input_item id clone: ", input_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
+            id_text = input_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
+            clone_id_item.setText(id_text)
             clone_id_item.setCheckable(False)
             if input_item.hasChildren():
                 row = 0
                 while row < input_item.rowCount():
                     child = input_item.child(row)
-                    clone_child_name, clone_child_id_item = MainWindow.iterate_input_category_tree_and_clone_and_delete(child)
+                    clone_child_name, clone_child_id_item = self.remove_item_from_input_table(child)
                     if clone_child_name is not None:
-                        clone_name_item.appendRow([clone_child_name, clone_child_id_item])
+                        print("clone_child_name: ", clone_child_name.data(Qt.DisplayRole), "clone_child_id_item: ",
+                              clone_child_id_item.data(Qt.DisplayRole))
+                        # clone_name_item.appendRow([clone_child_name, clone_child_id_item])
+                        parent_id = self.categoryid_parent_ids_dict[clone_child_id_item.data(Qt.DisplayRole)]
+                        if parent_id is not None:
+                            if parent_id not in self.cloned_parentid_item_dict:
+                                self.cloned_parentid_item_dict[parent_id] = []
+                            self.cloned_parentid_item_dict[parent_id].append({"name": clone_child_name,
+                                                                              "id": clone_child_id_item})
+                            print("Checkstate: ", clone_child_name.checkState())
                     if child.checkState() == Qt.Checked:
                         input_item.removeRow(row)
                     else:
@@ -651,19 +663,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return clone_name_item, clone_id_item
         return None, None
 
-    @staticmethod
-    def iterate_output_category_tree_and_insert(input_item: QStandardItem):
-        check_state: Qt.CheckState = input_item.checkState()
-        if check_state == Qt.PartiallyChecked or check_state == Qt.Checked:
-            clone = QStandardItem()
-            clone.setText(input_item.text())
-            clone.setCheckable(True)
-            if input_item.hasChildren():
-                for row in range(input_item.rowCount()):
-                    child = input_item.child(row)
-                    clone_child, row = MainWindow.iterate_input_category_tree_and_clone_and_delete(child)
-                    clone.appendRow(clone_child)
-            return clone
+    def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
+        # if output_item_name.hasChildren():
+        #     for row in range(output_item_name.rowCount()):
+        #         print("Child name:", output_item_name.child(row).data(Qt.DisplayRole))
+        #         self.iterate_output_category_tree_and_insert(output_item_name.child(row))
+        output_item_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        print("output_item_name: ", output_item_name.data(Qt.DisplayRole), "output_item_id: ",
+              output_item_id)
+        if output_item_id in self.cloned_parentid_item_dict:
+            input_items_list = self.cloned_parentid_item_dict[output_item_id]
+            for input_item in input_items_list:
+                input_name_item = input_item["name"].clone()
+                input_id_item = input_item["id"].clone()
+                output_item_name.appendRow([input_name_item, input_id_item])
+                self.iterate_output_category_tree_and_insert(input_name_item)
+            self.cloned_parentid_item_dict[output_item_id] = []
+
 
     # open xml file
     def open_file(self):
@@ -763,20 +779,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # create a method that builds a tree of categories and subcategories from self.input_categories_dict
         graph = nx.DiGraph()
         parents_list = []
+        # self.parentid_childid_dict = dict.fromkeys(self.categoryid_parent_ids_dict.values(), [])
         for child_id, parent_id in self.categoryid_parent_ids_dict.items():
             if parent_id is None:
                 graph.add_node(child_id)
                 parents_list.append(child_id)
+                self.parentid_childid_dict[child_id] = []
             else:
-                graph.add_node(child_id)
+                # self.parentid_childid_dict[parent_id].append(child_id)
+                if parent_id not in self.parentid_childid_dict:
+                    self.parentid_childid_dict[parent_id] = []
+                self.parentid_childid_dict[parent_id].append(child_id)
                 graph.add_node(parent_id)
+                graph.add_node(child_id)
                 graph.add_edge(parent_id, child_id)
 
         for parent_id in parents_list:
             input_item = self.input_categories_dict[parent_id]
             self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
-            # output_item = QStandardItem(input_item)
-            # self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
+            output_item = QStandardItem(input_item)
+            self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, input_item)
         self.input_category_tree_view.resizeColumnToContents(0)
         self.input_category_names_table_view.resizeColumnToContents(0)
