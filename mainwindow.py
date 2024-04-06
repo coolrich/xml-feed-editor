@@ -660,19 +660,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # for row in range(output_item_name.rowCount()):
         #     child = output_item_name.child(row, 0)
         #     self.iterate_output_category_tree_and_insert(child)
+        items_list = []
+        for row in range(output_item_name.rowCount()):
+            child_id = output_item_name.child(row, 1)
+            items_list.append(child_id.data(Qt.DisplayRole))
 
         if output_text_id in self.cloned_parentid_items_dict:
             input_items_list = self.cloned_parentid_items_dict.pop(output_text_id)
             for cloned_item in input_items_list:
                 cloned_name_item = cloned_item["name"].clone()
                 cloned_id_item = cloned_item["id"].clone()
-                b = True
-                for row in range(output_item_name.rowCount()):
-                    child_id = output_item_name.child(row, 1)
-                    if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
-                        b = False
-                        break
-                if b:
+                # b = True
+                # for row in range(output_item_name.rowCount()):
+                #     child_id = output_item_name.child(row, 1)
+                #     if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
+                #         b = False
+                #         break
+                # if b:
+                if cloned_id_item.data(Qt.DisplayRole) not in items_list:
                     output_item_name.appendRow([cloned_name_item, cloned_id_item])
                 for row in range(output_item_name.rowCount()):
                     child = output_item_name.child(row, 0)
