@@ -656,7 +656,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             if parent_id not in self.cloned_parentid_items_dict:
                                 self.cloned_parentid_items_dict[parent_id] = []
                             self.cloned_parentid_items_dict[parent_id].append({"name": clone_child_name,
-                                                                              "id": clone_child_id_item})
+                                                                               "id": clone_child_id_item})
                             print("Checkstate: ", clone_child_name.checkState())
                     if child.checkState() == Qt.Checked:
                         input_item.removeRow(row)
@@ -681,14 +681,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for row in range(output_item_name.rowCount()):
                     child_id = output_item_name.child(row, 1)
                     if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
-                       b = False
+                        b = False
                 if b:
                     output_item_name.appendRow([cloned_name_item, cloned_id_item])
                 self.iterate_output_category_tree_and_insert(cloned_name_item)
-
-
-
-
 
     # open xml file
     def open_file(self):
