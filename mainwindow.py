@@ -20,7 +20,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, app):
         super().__init__()
-        self.presented_items_list = []
         self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
         self.setupUi(self)
@@ -607,16 +606,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # Collect checked items in source model
-        selected_items = []
         row = 0
         while row < input_model.rowCount():
             input_item_name = input_model.item(row, 0)
-            cloned_item_name, clone_item_id = self.remove_item_from_input_table(input_item_name)
-            if cloned_item_name is not None:
-                selected_items.append((cloned_item_name, clone_item_id))
-            # if input_item_name.checkState() == Qt.Checked:
-            #     input_model.removeRow(row)
-            # else:
+            self.remove_item_from_input_table(input_item_name)
             row += 1
 
         row = 0
@@ -625,9 +618,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("input_item_name: ", output_item_name.data(Qt.DisplayRole))
             self.iterate_output_category_tree_and_insert(output_item_name)
             row += 1
-        self.presented_items_list = []
 
-        pprint.pp(f"output_items: {selected_items}")
+        # pprint.pp(f"output_items: {selected_items}")
         output_category_tree_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
 
@@ -637,8 +629,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             clone_name_item = QStandardItem(input_item)
             clone_name_item.setCheckable(True)
             clone_id_item = QStandardItem()
-            print("input_item name clone: ", input_item.data(Qt.DisplayRole))
-            print("input_item id clone: ", input_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
+            # print("input_item name clone: ", input_item.data(Qt.DisplayRole))
+            # print("input_item id clone: ", input_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
             id_text = input_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
             clone_id_item.setText(id_text)
             clone_id_item.setCheckable(False)
@@ -648,9 +640,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     child = input_item.child(row)
                     clone_child_name, clone_child_id_item = self.remove_item_from_input_table(child)
                     if clone_child_name is not None:
-                        print("clone_child_name: ", clone_child_name.data(Qt.DisplayRole), "clone_child_id_item: ",
-                              clone_child_id_item.data(Qt.DisplayRole))
-                        # clone_name_item.appendRow([clone_child_name, clone_child_id_item])
                         parent_id = self.categoryid_parent_ids_dict[clone_child_id_item.data(Qt.DisplayRole)]
                         if parent_id is not None:
                             if parent_id not in self.cloned_parentid_items_dict:
@@ -669,7 +658,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         output_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
         for row in range(output_item_name.rowCount()):
             child = output_item_name.child(row, 0)
-            self.presented_items_list.append(child)
             self.iterate_output_category_tree_and_insert(child)
 
         if output_id in self.cloned_parentid_items_dict:
@@ -682,6 +670,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     child_id = output_item_name.child(row, 1)
                     if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
                         b = False
+                        break
+                # if cloned_id_item.data(Qt.DisplayRole) not in self.parentid_childid_dict[output_id]:
                 if b:
                     output_item_name.appendRow([cloned_name_item, cloned_id_item])
                 self.iterate_output_category_tree_and_insert(cloned_name_item)
