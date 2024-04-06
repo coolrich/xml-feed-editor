@@ -20,6 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, app):
         super().__init__()
+        self.presented_items_list = []
         self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
         self.setupUi(self)
@@ -624,6 +625,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("input_item_name: ", output_item_name.data(Qt.DisplayRole))
             self.iterate_output_category_tree_and_insert(output_item_name)
             row += 1
+        self.presented_items_list = []
 
         pprint.pp(f"output_items: {selected_items}")
         output_category_tree_view.resizeColumnToContents(0)
@@ -664,18 +666,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return None, None
 
     def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
-        output_item_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
-        print("output_item_name: ", output_item_name.data(Qt.DisplayRole), "output_item_id: ",
-              output_item_id)
-        if output_item_id in self.cloned_parentid_items_dict:
-            input_items_list = self.cloned_parentid_items_dict.pop(output_item_id)
+        output_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        if output_id in self.cloned_parentid_items_dict:
+            input_items_list = self.cloned_parentid_items_dict.pop(output_id)
             for cloned_item in input_items_list:
                 cloned_name_item = cloned_item["name"].clone()
                 cloned_id_item = cloned_item["id"].clone()
                 output_item_name.appendRow([cloned_name_item, cloned_id_item])
                 for row in range(output_item_name.rowCount()):
-                    self.iterate_output_category_tree_and_insert(output_item_name.child(row, 0))
-            self.cloned_parentid_items_dict[output_item_id] = []
+                    child = output_item_name.child(row, 0)
+                    self.iterate_output_category_tree_and_insert(child)
+
 
 
     # open xml file
