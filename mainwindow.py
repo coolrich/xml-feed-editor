@@ -464,6 +464,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         selected_categories_ids = list()
         row_count = output_category_model.rowCount()
         for row in range(row_count):
+            # TODO: Recursively get all selected categories
             # Gather ids of the selected categories
             item = output_category_model.data(output_category_model.index(row, 1))
             selected_categories_ids.append(item)
@@ -655,13 +656,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return None, None
 
     def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
-        output_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
-        for row in range(output_item_name.rowCount()):
-            child = output_item_name.child(row, 0)
-            self.iterate_output_category_tree_and_insert(child)
+        output_text_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        # for row in range(output_item_name.rowCount()):
+        #     child = output_item_name.child(row, 0)
+        #     self.iterate_output_category_tree_and_insert(child)
 
-        if output_id in self.cloned_parentid_items_dict:
-            input_items_list = self.cloned_parentid_items_dict.pop(output_id)
+        if output_text_id in self.cloned_parentid_items_dict:
+            input_items_list = self.cloned_parentid_items_dict.pop(output_text_id)
             for cloned_item in input_items_list:
                 cloned_name_item = cloned_item["name"].clone()
                 cloned_id_item = cloned_item["id"].clone()
@@ -671,10 +672,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
                         b = False
                         break
-                # if cloned_id_item.data(Qt.DisplayRole) not in self.parentid_childid_dict[output_id]:
                 if b:
                     output_item_name.appendRow([cloned_name_item, cloned_id_item])
-                self.iterate_output_category_tree_and_insert(cloned_name_item)
+                for row in range(output_item_name.rowCount()):
+                    child = output_item_name.child(row, 0)
+                    self.iterate_output_category_tree_and_insert(child)
 
     # open xml file
     def open_file(self):
@@ -693,7 +695,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        self.populate_input_category_tables()
+        self.populate_category_tables()
         self.populate_input_categories_replacement_table()
         self.populate_input_products_replacement_table()
 
@@ -770,7 +772,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_name_item.setData(category_name, Qt.DisplayRole)
         return category_id, category_name_item
 
-    def populate_input_category_tables(self):
+    def populate_category_tables(self):
         # create a method that builds a tree of categories and subcategories from self.input_categories_dict
         graph = nx.DiGraph()
         parents_list = []
