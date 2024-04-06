@@ -667,15 +667,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
         output_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        for row in range(output_item_name.rowCount()):
+            child = output_item_name.child(row, 0)
+            self.presented_items_list.append(child)
+            self.iterate_output_category_tree_and_insert(child)
+
         if output_id in self.cloned_parentid_items_dict:
             input_items_list = self.cloned_parentid_items_dict.pop(output_id)
             for cloned_item in input_items_list:
                 cloned_name_item = cloned_item["name"].clone()
                 cloned_id_item = cloned_item["id"].clone()
-                output_item_name.appendRow([cloned_name_item, cloned_id_item])
+                b = True
                 for row in range(output_item_name.rowCount()):
-                    child = output_item_name.child(row, 0)
-                    self.iterate_output_category_tree_and_insert(child)
+                    child_id = output_item_name.child(row, 1)
+                    if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
+                       b = False
+                if b:
+                    output_item_name.appendRow([cloned_name_item, cloned_id_item])
+                self.iterate_output_category_tree_and_insert(cloned_name_item)
+
+
 
 
 
