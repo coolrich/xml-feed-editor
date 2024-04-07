@@ -657,9 +657,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
         output_text_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
-        # for row in range(output_item_name.rowCount()):
-        #     child = output_item_name.child(row, 0)
-        #     self.iterate_output_category_tree_and_insert(child)
         items_list = []
         for row in range(output_item_name.rowCount()):
             child_id = output_item_name.child(row, 1)
@@ -670,18 +667,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for cloned_item in input_items_list:
                 cloned_name_item = cloned_item["name"].clone()
                 cloned_id_item = cloned_item["id"].clone()
-                # b = True
-                # for row in range(output_item_name.rowCount()):
-                #     child_id = output_item_name.child(row, 1)
-                #     if child_id.data(Qt.DisplayRole) == cloned_id_item.data(Qt.DisplayRole):
-                #         b = False
-                #         break
-                # if b:
                 if cloned_id_item.data(Qt.DisplayRole) not in items_list:
                     output_item_name.appendRow([cloned_name_item, cloned_id_item])
-                for row in range(output_item_name.rowCount()):
-                    child = output_item_name.child(row, 0)
-                    self.iterate_output_category_tree_and_insert(child)
+            for row in range(output_item_name.rowCount()):
+                child = output_item_name.child(row, 0)
+                self.iterate_output_category_tree_and_insert(child)
 
     # open xml file
     def open_file(self):
