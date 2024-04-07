@@ -4,7 +4,7 @@ import pprint
 import re
 import networkx as nx
 
-from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSignalBlocker
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.move_categories_between_tables(self.output_category_tree_view,
                                                         self.input_category_tree_view))
 
-        self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
+        # self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
             lambda: self.move_products_between_tables(
                 self.input_products_table_view, self.output_products_table_view)
@@ -459,15 +459,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def populate_input_products_table(self):
         sptv_model = self.input_products_table_view.model().sourceModel()
-        output_category_model = self.output_category_tree_view.model()
+        output_category_model = self.output_category_tree_view.model().sourceModel()
 
         selected_categories_ids = list()
         row_count = output_category_model.rowCount()
         for row in range(row_count):
-            # TODO: Recursively get all selected categories
-            # Gather ids of the selected categories
-            item = output_category_model.data(output_category_model.index(row, 1))
-            selected_categories_ids.append(item)
+            item = output_category_model.item(row, 0)
+            self.get_selected_categories(item, selected_categories_ids)
+            # item = output_category_model.data(output_category_model.index(row, 1))
+            # selected_categories_ids.append(item)
+        print("Selected categories:", selected_categories_ids)
 
         # Gather all products ids from sptv_model in input_products_ids_list
         input_products_ids_list = list()
@@ -485,6 +486,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_products_table_view.resizeColumnsToContents()
         # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
         print("Data has been added to table")
+
+    def get_selected_categories(self, output_item, selected_categories_ids):
+        row_count = output_item.rowCount()
+        selected_categories_ids.append(output_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
+        print("Item id:", output_item.data(Qt.DisplayRole), "Row count:", row_count)
+        for row in range(row_count):
+            self.get_selected_categories(output_item.child(row, 0), selected_categories_ids)
 
     @staticmethod
     def move_products_between_tables(input_tabel, output_tabel):
@@ -633,6 +641,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             row += 1
 
         row = 0
+
         while row < output_model.rowCount():
             output_item_name = output_model.item(row, 0)
             self.iterate_output_category_tree_and_insert(output_item_name)
@@ -642,6 +651,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # pprint.pp(f"output_items: {selected_items}")
         output_category_tree_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
+        self.populate_input_products_table()
 
     def clone_items_from_input_table(self, input_item: QStandardItem):
         check_state: Qt.CheckState = input_item.checkState()
