@@ -307,7 +307,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def checkForBottomPriceValue(self, value):
         if value > self.upper_price_limit_spin_box.value():
-            self.bottom_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value() - 1)
+            self.bottom_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value())
             # Show a warning window with message Нижня межа не може перевищувати верхню
             # noinspection PyUnresolvedReferences
             QMessageBox.warning(self, "Попередження",
@@ -316,7 +316,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def checkForUpperPriceValue(self, value):
         if value < self.bottom_price_limit_spin_box.value():
-            self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
+            self.upper_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value())
             # noinspection PyUnresolvedReferences
             QMessageBox.warning(self, "Попередження",
                                 "Верхня межа не може бути менше за нижню!",
