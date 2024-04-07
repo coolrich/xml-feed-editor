@@ -20,27 +20,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, app):
         super().__init__()
+        self.setWindowTitle("XML parser")
+        self.setupUi(self)
+        self.app = app
+
         self.selected_categories_ids = []
         self.input_products_ids = []
         self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
-        self.setupUi(self)
-        self.app = app
-        self.setWindowTitle("XML parser")
         self.block_parent_checkboxes_checking = False
-        self.init_item = None
-        self.block_sibling_checkboxes_checking = False
 
         self.categoryid_parent_ids_dict = {}
         # hint: dict[category_id] = category_name_item
         self.input_categories_dict: dict[str, QStandardItem] = {}
         # hint: dict[category_id] = category_name_item
-        self.output_categories_dict: dict[str, QStandardItem] = {}
+            # self.output_categories_dict: dict[str, QStandardItem] = {}
         # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
         #                                       "product_name": product_name_item,
         #                                       "product_price": product_price_item}
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
-        self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+            # self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
         self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
         self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
         self.input_products_replacement_dict: dict[str, QStandardItem] = {}
