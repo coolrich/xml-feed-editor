@@ -606,25 +606,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("Error: Invalid table view models.")
             return
 
-        # Collect checked items in source model
+        row = 0
+        output_item_ids = []
+        while row < output_model.rowCount():
+            output_item_id = output_model.item(row, 1).data(Qt.DisplayRole)
+            output_item_ids.append(output_item_id)
+            row += 1
+
         row = 0
         while row < input_model.rowCount():
             input_item_name = input_model.item(row, 0)
-            self.remove_item_from_input_table(input_item_name)
+
+            if input_item_name.checkState() != Qt.Unchecked:
+                if input_model.item(row, 1).data(Qt.DisplayRole) not in output_item_ids:
+                    output_model.appendRow([input_item_name.clone(), input_model.item(row, 1).clone()])
+
+            if input_item_name.checkState() == Qt.PartiallyChecked:
+                self.clone_items_from_input_table(input_item_name)
+                input_item_name.setCheckState(Qt.Unchecked)
+            elif input_item_name.checkState() == Qt.Checked:
+                self.clone_items_from_input_table(input_item_name)
+                input_item_name.setCheckState(Qt.Unchecked)
+                # input_item_name = input_model.takeItem(row, 0)
+                input_model.removeRow(row)
+
             row += 1
 
         row = 0
         while row < output_model.rowCount():
             output_item_name = output_model.item(row, 0)
-            print("input_item_name: ", output_item_name.data(Qt.DisplayRole))
             self.iterate_output_category_tree_and_insert(output_item_name)
+            output_item_name.setCheckState(Qt.Unchecked)
             row += 1
 
         # pprint.pp(f"output_items: {selected_items}")
         output_category_tree_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
 
-    def remove_item_from_input_table(self, input_item: QStandardItem):
+    def clone_items_from_input_table(self, input_item: QStandardItem):
         check_state: Qt.CheckState = input_item.checkState()
         if check_state != Qt.Unchecked:
             clone_name_item = QStandardItem(input_item)
@@ -639,7 +658,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 row = 0
                 while row < input_item.rowCount():
                     child = input_item.child(row)
-                    clone_child_name, clone_child_id_item = self.remove_item_from_input_table(child)
+                    clone_child_name, clone_child_id_item = self.clone_items_from_input_table(child)
                     if clone_child_name is not None:
                         parent_id = self.categoryid_parent_ids_dict[clone_child_id_item.data(Qt.DisplayRole)]
                         if parent_id is not None:
@@ -667,6 +686,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for cloned_item in input_items_list:
                 cloned_name_item = cloned_item["name"].clone()
                 cloned_id_item = cloned_item["id"].clone()
+                cloned_name_item.setCheckState(Qt.Unchecked)
                 if cloned_id_item.data(Qt.DisplayRole) not in items_list:
                     output_item_name.appendRow([cloned_name_item, cloned_id_item])
             for row in range(output_item_name.rowCount()):
@@ -789,8 +809,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for parent_id in parents_list:
             input_item = self.input_categories_dict[parent_id]
             self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
-            output_item = QStandardItem(input_item)
-            self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
+            # output_item = QStandardItem(input_item)
+            # self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, input_item)
         self.input_category_tree_view.resizeColumnToContents(0)
         self.input_category_names_table_view.resizeColumnToContents(0)
