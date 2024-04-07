@@ -21,7 +21,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, app):
         super().__init__()
         self.selected_categories_ids = []
-        self.selected_products_ids = []
+        self.input_products_ids = []
         self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
         self.setupUi(self)
@@ -160,19 +160,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.move_categories_between_tables(self.input_category_tree_view,
                                                         self.output_category_tree_view)
         )
+        # self.add_category_push_button.clicked.connect(self.populate_input_products_table)
         self.delete_category_push_button.clicked.connect(
             lambda: self.move_categories_between_tables(self.output_category_tree_view,
                                                         self.input_category_tree_view))
-
+        # self.delete_category_push_button.clicked.connect(self.refresh_products_tables)
         # self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
             lambda: self.move_products_between_tables(
                 self.input_products_table_view, self.output_products_table_view)
         )
+        # self.add_product_push_button.clicked.connect(self.populate_input_products_table)
         self.remove_product_push_button.clicked.connect(
             lambda: self.move_products_between_tables(
                 self.output_products_table_view, self.input_products_table_view)
         )
+        # self.remove_product_push_button.clicked.connect(self.refresh_products_tables)
         # self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_tables)
         self.input_category_tree_view.expanded.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
         self.output_category_tree_view.expanded.connect(
@@ -468,25 +471,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for row in range(row_count):
             item = output_category_model.item(row, 0)
             self.get_selected_categories(item)
-            # item = output_category_model.data(output_category_model.index(row, 1))
-            # selected_categories_ids.append(item)
         print("Selected categories:", self.selected_categories_ids)
-
-        # Gather all products ids from sptv_model in input_products_ids_list
-        # input_products_ids_list = list()
-        # for row in range(sptv_model.rowCount()):
-        #     item = sptv_model.data(sptv_model.index(row, 1))
-        #     if item not in input_products_ids_list:
-        #         input_products_ids_list.append(item)
 
         for product_id, product_items in self.input_products_dict.items():
             product_id_item = QStandardItem(product_id)
             product_name_item = product_items["product_name"]
             product_price_item = product_items["product_price"]
             category_id = product_items["category_id"].data(Qt.DisplayRole)
-            product_id = product_id_item.data(Qt.DisplayRole)
-            if category_id in self.selected_categories_ids and product_id not in self.selected_products_ids:
-                self.selected_products_ids.append(product_id)
+            product_id_text = product_id_item.data(Qt.DisplayRole)
+            if category_id in self.selected_categories_ids and product_id_text not in self.input_products_ids:
+                self.input_products_ids.append(product_id)
                 sptv_model.appendRow([product_name_item, product_price_item, product_id_item])
         self.input_products_table_view.resizeColumnsToContents()
         # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
@@ -560,11 +554,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("Data has been added to table")
 
     def refresh_products_tables(self):
+        # self.selected_categories_ids = []
         input_products_model = self.input_products_table_view.model().sourceModel()
         input_table_col_count = input_products_model.columnCount()
         input_table_row_count = input_products_model.rowCount()
+        # for row in range(self.output_category_model.rowCount()):
+        #     self.get_selected_categories(self.output_category_model.item(row, 0))
+
         row = 0
-        while row < input_table_row_count:
+        while row < input_products_model.rowCount():
             product_item = input_products_model.item(row, input_table_col_count - 1)
             product_id = product_item.data(Qt.DisplayRole)
             product_category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
@@ -572,8 +570,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 row_items = input_products_model.takeRow(row)
                 name_item = row_items[0]
                 name_item.setCheckState(Qt.Unchecked)
-                input_products_model.removeRow(row)
-                self.selected_products_ids.remove(product_id)
+                # input_products_model.removeRow(row)
+                self.input_products_ids.remove(product_id)
                 input_table_row_count -= 1
             else:
                 row += 1
@@ -639,7 +637,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # input_item_name = input_model.takeItem(row, 0)
                 input_model.removeRow(row)
                 continue
-
             row += 1
 
         row = 0
