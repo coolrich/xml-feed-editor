@@ -587,6 +587,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 row_items = output_products_model.takeRow(row)
                 name_item = row_items[0]
                 name_item.setCheckState(Qt.Unchecked)
+                self.input_products_ids.remove(product_id)
                 output_table_row_count -= 1
             else:
                 row += 1
