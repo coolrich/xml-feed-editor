@@ -328,13 +328,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 QMessageBox.Ok)
 
     def get_new_xml(self):
-        output_category_model = self.output_category_tree_view.model().sourceModel()
+        # output_category_model = self.output_category_tree_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
-
-        # selected_categories_ids_list = []
-        # for row in range(output_category_model.rowCount()):
-        #     chosen_category_id = output_category_model.data(output_category_model.index(row, 1))
-        #     selected_categories_ids_list.append(chosen_category_id)
 
         chosen_id_products_dict = {}
         for row in range(final_product_model.rowCount()):
@@ -554,12 +549,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("Data has been added to table")
 
     def refresh_products_tables(self):
-        # self.selected_categories_ids = []
         input_products_model = self.input_products_table_view.model().sourceModel()
         input_table_col_count = input_products_model.columnCount()
         input_table_row_count = input_products_model.rowCount()
-        # for row in range(self.output_category_model.rowCount()):
-        #     self.get_selected_categories(self.output_category_model.item(row, 0))
 
         row = 0
         while row < input_products_model.rowCount():
@@ -657,11 +649,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clone_items_from_input_table(self, input_item: QStandardItem):
         check_state: Qt.CheckState = input_item.checkState()
         if check_state != Qt.Unchecked:
+            # TODO: make an optimization here
             clone_name_item = QStandardItem(input_item)
             clone_name_item.setCheckable(True)
             clone_id_item = QStandardItem()
-            # print("input_item name clone: ", input_item.data(Qt.DisplayRole))
-            # print("input_item id clone: ", input_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
             id_text = input_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
             clone_id_item.setText(id_text)
             clone_id_item.setCheckable(False)
@@ -721,7 +712,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        self.populate_category_tables()
+        self.populate_input_category_table()
         self.populate_input_categories_replacement_table()
         self.populate_input_products_replacement_table()
 
@@ -798,18 +789,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_name_item.setData(category_name, Qt.DisplayRole)
         return category_id, category_name_item
 
-    def populate_category_tables(self):
+    def populate_input_category_table(self):
         # create a method that builds a tree of categories and subcategories from self.input_categories_dict
         graph = nx.DiGraph()
         parents_list = []
-        # self.parentid_childid_dict = dict.fromkeys(self.categoryid_parent_ids_dict.values(), [])
         for child_id, parent_id in self.categoryid_parent_ids_dict.items():
             if parent_id is None:
                 graph.add_node(child_id)
                 parents_list.append(child_id)
                 self.parentid_childid_dict[child_id] = []
             else:
-                # self.parentid_childid_dict[parent_id].append(child_id)
                 if parent_id not in self.parentid_childid_dict:
                     self.parentid_childid_dict[parent_id] = []
                 self.parentid_childid_dict[parent_id].append(child_id)
@@ -820,8 +809,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for parent_id in parents_list:
             input_item = self.input_categories_dict[parent_id]
             self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
-            # output_item = QStandardItem(input_item)
-            # self.output_category_model.appendRow([output_item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, input_item)
         self.input_category_tree_view.resizeColumnToContents(0)
         self.input_category_names_table_view.resizeColumnToContents(0)
