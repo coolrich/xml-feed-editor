@@ -32,7 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.categoryid_parent_ids_dict = {}
         # hint: dict[category_id] = category_name_item
-        self.input_categories_dict: dict[str, QStandardItem] = {}
+        self.input_categories_dict: dict[str, str] = {}
         # hint: dict[category_id] = category_name_item
         # self.output_categories_dict: dict[str, QStandardItem] = {}
         # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
@@ -232,7 +232,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def check_id_and_change(self, category_ids, name_item):
         id_item_value = name_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
         if id_item_value in category_ids:
-            new_item_name = self.input_categories_dict[id_item_value].data(Qt.DisplayRole)
+            new_item_name = self.input_categories_dict[id_item_value]
             name_item.setData(new_item_name, Qt.DisplayRole)
 
     def iterate_categories_tree_and_replace_words(self, name_item, category_ids):
@@ -245,15 +245,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def replace_words_in_input_categories_dict(self, category_ids, old_category_name: str, new_category_name: str):
         print("Replaced words in input input_categories_dict:")
         for category_id in category_ids:
-            category_name_item = self.input_categories_dict[category_id]
-            category_name = category_name_item.data(Qt.DisplayRole)
+            category_name = self.input_categories_dict[category_id]
             print("Old category:", category_name)
             while old_category_name in category_name:
                 category_name = category_name.replace(old_category_name, new_category_name)
             print(" New category:", category_name)
             print("--" * len(category_name))
-            category_name_item.setData(category_name, Qt.DisplayRole)
-            self.input_categories_dict[category_id] = category_name_item
+            self.input_categories_dict[category_id] = category_name
 
     def on_clicked_check_for_subcategories(self, item):
         if self.block_parent_checkboxes_checking is False:
@@ -381,6 +379,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # output_category_model = self.output_category_tree_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
 
+        if self.output_xml_tree is None:
+            return
+        output_xml_tree = self.output_xml_tree
+
         chosen_id_products_dict = {}
         for row in range(final_product_model.rowCount()):
             product_name = final_product_model.data(final_product_model.index(row, 0))
@@ -395,10 +397,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 chosen_id_products_dict[product_id]["drop_price"] = drop_price
 
         # Create a copy of self.input_xml_tree
-        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
-        output_xml_tree = self.output_xml_tree
-        if output_xml_tree is None:
-            return
 
         # Remove unselected categories
         categories_elements_list = output_xml_tree.xpath("//category")
@@ -719,7 +717,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                                "id": clone_child_id_item})
                             print("Checkstate: ", clone_child_name.checkState())
                     if child.checkState() == Qt.Checked:
-                        self.input_categories_dict[clone_id_item.data(Qt.DisplayRole)] = clone_name_item
                         input_item.removeRow(row)
                     else:
                         row += 1
@@ -785,6 +782,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
+
+        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+
         self.get_category_ids_and_names_from_xml()
         self.get_offers_from_xml()
         gc.collect()
@@ -807,7 +807,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for category in category_elems:
             category_id, category_name_item = self.create_category_item(category)
             self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
-            self.input_categories_dict[category_id] = category_name_item
+            self.input_categories_dict[category_id] = category_name_item.data(Qt.DisplayRole)
             category_id, category_name_item = self.create_category_item(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
 
@@ -857,7 +857,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 graph.add_edge(parent_id, child_id)
 
         for parent_id in parents_list:
-            input_item = self.input_categories_dict[parent_id]
+            input_item_name = self.input_categories_dict[parent_id]
+            input_item = QStandardItem(input_item_name)
+            input_item.setCheckable(True)
             self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, input_item)
         self.input_category_tree_view.resizeColumnToContents(0)
@@ -867,5 +869,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(" " * indent, parent_item.data(Qt.DisplayRole))
         for child_id in graph.neighbors(child_id):
             item = self.input_categories_dict[child_id]
+            item = QStandardItem(item)
             parent_item.appendRow([item, QStandardItem(child_id)])
             self.dfs(graph, child_id, item, indent + 2)
