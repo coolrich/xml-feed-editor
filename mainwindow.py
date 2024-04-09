@@ -34,12 +34,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # hint: dict[category_id] = category_name_item
         self.input_categories_dict: dict[str, QStandardItem] = {}
         # hint: dict[category_id] = category_name_item
-            # self.output_categories_dict: dict[str, QStandardItem] = {}
+        # self.output_categories_dict: dict[str, QStandardItem] = {}
         # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
         #                                       "product_name": product_name_item,
         #                                       "product_price": product_price_item}
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
-            # self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+        # self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
         self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
         self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
         self.input_products_replacement_dict: dict[str, QStandardItem] = {}
@@ -203,10 +203,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.input_category_tree_view.clicked.connect(self.on_clicked_check_for_subcategories)
         self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
         self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
-
-
+        self.replace_category_name_push_button.clicked.connect(self.replace_category_names)
 
         self.xml_data = None
+
+    def replace_category_names(self):
+        old_category_name = self.search_category_for_replace_line_edit.text()
+        new_item_name = self.replace_category_name_line_edit.text()
+
+        category_ids = []
+        for category_id, category_item_name in self.input_categories_replacement_dict.items():
+            category_name = category_item_name.data(Qt.DisplayRole)
+            if old_category_name in category_name:
+                category_ids.append(category_id)
+        pprint.pp(category_ids)
+
+        self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_item_name)
+
+    def replace_words_in_input_categories_dict(self, category_ids, old_category_name: str, new_category_name: str):
+        print("Replaced words in input input_categories_dict:")
+        for category_id in category_ids:
+            category_name_item = self.input_categories_dict[category_id]
+            category_name = category_name_item.data(Qt.DisplayRole)
+            print("Old category:", category_name)
+            while old_category_name in category_name:
+                category_name = category_name.replace(old_category_name, new_category_name)
+            print(" New category:", category_name)
+            print("--"*len(category_name))
+            category_name_item.setData(category_name, Qt.DisplayRole)
+            self.input_categories_dict[category_id] = category_name_item
 
     def on_clicked_check_for_subcategories(self, item):
         if self.block_parent_checkboxes_checking is False:
