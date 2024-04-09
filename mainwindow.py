@@ -209,7 +209,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def replace_category_names(self):
         old_category_name = self.search_category_for_replace_line_edit.text()
-        new_item_name = self.replace_category_name_line_edit.text()
+        new_category_name = self.replace_category_name_line_edit.text()
 
         category_ids = []
         for category_id, category_item_name in self.input_categories_replacement_dict.items():
@@ -218,9 +218,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 category_ids.append(category_id)
         pprint.pp(category_ids)
 
-        self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_item_name)
+        self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_category_name)
         self.replace_words_in_tree_catgories_table(self.input_category_model, category_ids)
         self.replace_words_in_tree_catgories_table(self.output_category_model, category_ids)
+        self.__replace_words_in_output_xml_tree(category_ids, old_category_name, new_category_name)
+
+    def __replace_words_in_output_xml_tree(self, category_ids, old_category_name, new_category_name):
+        output_xml_tree = self.output_xml_tree
+        categories_elements_list = output_xml_tree.xpath("//category")
+        for category in categories_elements_list:
+            category_id = category.get("id")
+            if category_id in category_ids:
+                category.text = self.input_categories_dict[category_id]
 
     def replace_words_in_tree_catgories_table(self, input_model, category_ids):
         row_count = input_model.rowCount()
