@@ -218,8 +218,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pprint.pp(category_ids)
 
         self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_category_name)
-        self.replace_words_in_tree_catgories_table(self.input_category_model, category_ids)
-        self.replace_words_in_tree_catgories_table(self.output_category_model, category_ids)
+        self.replace_words_in_tree_categories_table(self.input_category_model, category_ids)
+        self.replace_words_in_tree_categories_table(self.output_category_model, category_ids)
         self.__replace_category_words_in_output_xml_tree(category_ids)
 
     def replace_product_names(self):
@@ -247,8 +247,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_id = offer.get("id")
             if product_id in product_ids:
                 # TODO: which tags content should be changed
-                product_name = offer.xpath("//name")[0]
-                product_name.text = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
+                product_name_tag = offer.xpath("name")[0]
+                product_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
+                product_name_tag.text = product_name
+        pprint.pp(offers_elements_list[0])
 
     def __replace_category_words_in_output_xml_tree(self, category_ids):
         output_xml_tree = self.output_xml_tree
@@ -258,7 +260,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if category_id in category_ids:
                 category.text = self.input_categories_dict[category_id]
 
-    def replace_words_in_tree_catgories_table(self, input_model, category_ids):
+    def replace_words_in_tree_categories_table(self, input_model, category_ids):
         row_count = input_model.rowCount()
         for row in range(row_count):
             name_item = input_model.item(row, 0)
@@ -365,6 +367,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         rows_count = self.input_category_names_proxy_model.rowCount()
         for row in range(rows_count):
             item = self.input_category_names_proxy_model.data(self.input_category_names_proxy_model.index(row, 0),
+                                                              Qt.DisplayRole)
+            print(item)
+
+    def replace_input_product_names(self):
+        rows_count = self.input_product_names_proxy_model.rowCount()
+        for row in range(rows_count):
+            item = self.input_product_names_proxy_model.data(self.input_product_names_proxy_model.index(row, 0),
                                                               Qt.DisplayRole)
             print(item)
 
