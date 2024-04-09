@@ -219,6 +219,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pprint.pp(category_ids)
 
         self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_item_name)
+        self.replace_words_in_input_catgories_table(category_ids)
+
+    def replace_words_in_input_catgories_table(self, category_ids):
+        input_model = self.input_category_model
+        row_count = input_model.rowCount()
+        for row in range(row_count):
+            name_item = input_model.item(row, 0)
+            id_item_value = name_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
+            if id_item_value in category_ids:
+                new_item_name = self.input_categories_dict[id_item_value].data(Qt.DisplayRole)
+                name_item.setData(new_item_name, Qt.DisplayRole)
+            self.iterate_categories_tree_and_replace_words(input_model, name_item)
+
 
     def replace_words_in_input_categories_dict(self, category_ids, old_category_name: str, new_category_name: str):
         print("Replaced words in input input_categories_dict:")
