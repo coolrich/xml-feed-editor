@@ -220,6 +220,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_item_name)
         self.replace_words_in_tree_catgories_table(self.input_category_model, category_ids)
+        self.replace_words_in_tree_catgories_table(self.output_category_model, category_ids)
 
     def replace_words_in_tree_catgories_table(self, input_model, category_ids):
         row_count = input_model.rowCount()
@@ -611,7 +612,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 row_items = input_products_model.takeRow(row)
                 name_item = row_items[0]
                 name_item.setCheckState(Qt.Unchecked)
-                # input_products_model.removeRow(row)
                 self.input_products_ids.remove(product_id)
                 input_table_row_count -= 1
             else:
@@ -719,6 +719,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                                "id": clone_child_id_item})
                             print("Checkstate: ", clone_child_name.checkState())
                     if child.checkState() == Qt.Checked:
+                        self.input_categories_dict[clone_id_item.data(Qt.DisplayRole)] = clone_name_item
                         input_item.removeRow(row)
                     else:
                         row += 1
