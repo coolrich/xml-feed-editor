@@ -30,8 +30,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.parentid_childid_dict = {}
         self.block_parent_checkboxes_checking = False
 
+        # Important
         self.categoryid_parent_ids_dict = {}
         # hint: dict[category_id] = category_name_item
+        # Important
         self.input_categories_dict: dict[str, str] = {}
         # hint: dict[category_id] = category_name_item
         # self.output_categories_dict: dict[str, QStandardItem] = {}
@@ -40,10 +42,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #                                       "product_price": product_price_item}
         # important
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+        # important
         self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
+        # important
         self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+        # important
         self.input_products_replacement_dict: dict[str, QStandardItem] = {}
+        # important
         self.output_products_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+        # important
         self.input_xml_tree = None
         self.output_xml_tree = None
 
