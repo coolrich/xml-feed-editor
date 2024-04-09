@@ -38,15 +38,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
         #                                       "product_name": product_name_item,
         #                                       "product_price": product_price_item}
+        # important
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
-        # self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
         self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
         self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
         self.input_products_replacement_dict: dict[str, QStandardItem] = {}
         self.output_products_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
-
-        # self.input_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
-        # self.output_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
         self.input_xml_tree = None
         self.output_xml_tree = None
 
@@ -257,7 +254,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 product_name_tag = offer.xpath("name")[0]
                 product_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
                 product_name_tag.text = product_name
+                # TODO: description tag should be changed
+                description_tag = offer.xpath("description")[0]
+                description_text = description_tag.text
+                description_text = self.find_and_replace_in_description_tag(description_text)
+                if description_text is not None and len(description_text) > 0:
+                    description_tag.text = description_text
+
         pprint.pp(offers_elements_list[0])
+
+    def find_and_replace_in_description_tag(self, description_tag_text):
+        old_product_name = self.search_product_for_replace_line_edit.text()
+        new_product_name = self.replace_product_name_line_edit.text()
+        if description_tag_text is None:
+            return None
+        while old_product_name in description_tag_text:
+            description_tag_text = description_tag_text.replace(old_product_name, new_product_name)
+        return description_tag_text
 
     def __replace_category_words_in_output_xml_tree(self, category_ids):
         output_xml_tree = self.output_xml_tree
