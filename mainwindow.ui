@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -166,7 +166,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>759</width>
+               <width>757</width>
                <height>738</height>
               </rect>
              </property>
@@ -211,7 +211,7 @@ XML</string>
                       <number>50</number>
                      </property>
                      <item>
-                      <widget class="QPushButton" name="pushButton_9">
+                      <widget class="QPushButton" name="check_all_source_products_push_button">
                        <property name="text">
                         <string>Вибрати всі</string>
                        </property>
