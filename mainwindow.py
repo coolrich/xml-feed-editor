@@ -204,6 +204,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
         self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
 
+
+
         self.xml_data = None
 
     def on_clicked_check_for_subcategories(self, item):
@@ -749,7 +751,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("product_id: ", product_id)
             self.input_products_dict[product_id] = {"product_name": product_name_item,
                                                     "product_price": product_price_item,
-                                                    "category_id": category_id_item, }
+                                                    "category_id": category_id_item}
             product_name_item = self.create_product_name_item(offer_tag)
             self.input_products_replacement_dict[product_id] = product_name_item
 
