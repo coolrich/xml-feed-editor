@@ -870,5 +870,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for child_id in graph.neighbors(child_id):
             item = self.input_categories_dict[child_id]
             item = QStandardItem(item)
+            item.setCheckable(True)
             parent_item.appendRow([item, QStandardItem(child_id)])
             self.dfs(graph, child_id, item, indent + 2)
