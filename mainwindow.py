@@ -230,7 +230,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for product_id, product_item_name in self.input_products_dict.items():
             product_name = product_item_name["product_name"].data(Qt.DisplayRole)
             if old_product_name in product_name:
-                print("-----------------", "-"*len(product_name), sep="")
+                print("-----------------", "-" * len(product_name), sep="")
                 print("Old product name:", product_name)
                 while old_product_name in product_name:
                     product_name = product_name.replace(old_product_name, new_product_name)
@@ -238,7 +238,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 product_item_name["product_name"].setData(product_name, Qt.DisplayRole)
                 product_ids.append(product_id)
 
+        self.replace_words_in_input_product_names_table(product_ids)
         self.__replace_product_words_in_output_xml_tree(product_ids)
+
+    def replace_words_in_input_product_names_table(self, category_ids):
+        for product_id, product_item_name in self.input_products_replacement_dict.items():
+            product_item_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
+            if product_id in category_ids:
+                self.input_products_replacement_dict[product_id].setText(product_item_name)
 
     def __replace_product_words_in_output_xml_tree(self, product_ids):
         output_xml_tree = self.output_xml_tree
@@ -290,6 +297,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("New category:", category_name)
             print("--" * len(category_name))
             self.input_categories_dict[category_id] = category_name
+            # TODO: pay attention to here.
+            self.input_categories_replacement_dict[category_id].setData(category_name, Qt.DisplayRole)
 
     def on_clicked_check_for_subcategories(self, item):
         if self.block_parent_checkboxes_checking is False:
@@ -374,7 +383,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         rows_count = self.input_product_names_proxy_model.rowCount()
         for row in range(rows_count):
             item = self.input_product_names_proxy_model.data(self.input_product_names_proxy_model.index(row, 0),
-                                                              Qt.DisplayRole)
+                                                             Qt.DisplayRole)
             print(item)
 
     def find_in_input_categories(self, text):
@@ -800,9 +809,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populate_input_products_replacement_table()
 
     def populate_input_products_replacement_table(self):
-        for product_id_item, product_data in self.input_products_replacement_dict.items():
+        for product_id, product_data in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
-            product_id_item.setData(product_id_item, Qt.DisplayRole)
+            product_id_item.setData(product_id, Qt.DisplayRole)
             self.input_product_names_model.appendRow([product_data, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
