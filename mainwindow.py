@@ -2,11 +2,12 @@ import copy
 import gc
 import pprint
 import re
+import networkx as nx
 
-from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSignalBlocker
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
 from lxml import etree
 from lxml.etree import ElementTree
 
@@ -19,14 +20,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, app):
         super().__init__()
+        self.setWindowTitle("XML parser")
         self.setupUi(self)
         self.app = app
-        self.setWindowTitle("XML parser")
 
-        self.categoryid_name_dict: dict[str, str] = {}
-        # key:cid value: [{"product_id": product_id, "product_name": product_name, "product_price": product_price}]
-        self.all_category_ids_products_dict: dict[str, list[dict[str:str, str:str, str:int]]] = {}
-        self.chosed_categories_products_dict = None
+        self.selected_categories_ids = []
+        self.input_products_ids = []
+        self.cloned_parentid_items_dict = {}
+        self.parentid_childid_dict = {}
+        self.block_parent_checkboxes_checking = False
+
+        self.categoryid_parent_ids_dict = {}
+        # hint: dict[category_id] = category_name_item
+        self.input_categories_dict: dict[str, QStandardItem] = {}
+        # hint: dict[category_id] = category_name_item
+            # self.output_categories_dict: dict[str, QStandardItem] = {}
+        # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
+        #                                       "product_name": product_name_item,
+        #                                       "product_price": product_price_item}
+        self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+            # self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+        self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
+        self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+        self.input_products_replacement_dict: dict[str, QStandardItem] = {}
+        self.output_products_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+
+        # self.input_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
+        # self.output_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
         self.input_xml_tree = None
         self.output_xml_tree = None
 
@@ -35,26 +55,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_model = QStandardItemModel()
         self.input_category_model.setHorizontalHeaderLabels(category_header_name)
         self.input_category_proxy_model = QSortFilterProxyModel()
+        self.input_category_proxy_model.setRecursiveFilteringEnabled(True)
         self.input_category_proxy_model.setSourceModel(self.input_category_model)
         self.input_category_proxy_model.setFilterKeyColumn(0)
-        self.input_category_table_view.setModel(self.input_category_proxy_model)
-        self.input_category_table_view.resizeColumnsToContents()
+        self.input_category_tree_view.setModel(self.input_category_proxy_model)
+        self.input_category_tree_view.resizeColumnToContents(0)
         # self.input_category_table_view.horizontalHeader().setStretchLastSection(True)
-        self.input_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # self.input_category_tree_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         # noinspection PyUnresolvedReferences
-        self.input_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.input_category_tree_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of output_category_table_view
         self.output_category_model = QStandardItemModel()
         self.output_category_model.setHorizontalHeaderLabels(category_header_name)
         self.output_category_proxy_model = QSortFilterProxyModel()
+        self.output_category_proxy_model.setRecursiveFilteringEnabled(True)
         self.output_category_proxy_model.setSourceModel(self.output_category_model)
         self.output_category_proxy_model.setFilterKeyColumn(0)
-        self.output_category_table_view.setModel(self.output_category_proxy_model)
+        self.output_category_tree_view.setModel(self.output_category_proxy_model)
         # self.output_category_table_view.horizontalHeader().setStretchLastSection(True)
-        self.output_category_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        # self.output_category_tree_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         # noinspection PyUnresolvedReferences
-        self.output_category_table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.output_category_tree_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of products_table_view
         product_header_name = ["Товар", "Початкова Ціна", "ID"]
@@ -136,25 +158,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.open_action.triggered.connect(self.open_file)
 
         self.add_category_push_button.clicked.connect(
-            lambda: self.move_categories_between_tables(self.input_category_table_view,
-                                                        self.output_category_table_view))
+            lambda: self.move_categories_between_tables(self.input_category_tree_view,
+                                                        self.output_category_tree_view)
+        )
+        # self.add_category_push_button.clicked.connect(self.populate_input_products_table)
         self.delete_category_push_button.clicked.connect(
-            lambda: self.move_categories_between_tables(self.output_category_table_view,
-                                                        self.input_category_table_view))
-        self.output_category_model.rowsInserted.connect(self.add_products_to_src_products_table)
+            lambda: self.move_categories_between_tables(self.output_category_tree_view,
+                                                        self.input_category_tree_view))
+        # self.delete_category_push_button.clicked.connect(self.refresh_products_tables)
+        # self.output_category_model.rowsInserted.connect(self.populate_input_products_table)
         self.add_product_push_button.clicked.connect(
-            lambda: self.move_products_from_input_to_destination_table(
+            lambda: self.move_products_between_tables(
                 self.input_products_table_view, self.output_products_table_view)
         )
+        # self.add_product_push_button.clicked.connect(self.populate_input_products_table)
         self.remove_product_push_button.clicked.connect(
-            lambda: self.move_products_from_input_to_destination_table(
+            lambda: self.move_products_between_tables(
                 self.output_products_table_view, self.input_products_table_view)
         )
-        self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_in_product_tables)
+        # self.remove_product_push_button.clicked.connect(self.refresh_products_tables)
+        # self.output_category_model.rowsAboutToBeRemoved.connect(self.refresh_products_tables)
+        self.input_category_tree_view.expanded.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
+        self.output_category_tree_view.expanded.connect(
+            lambda: self.output_category_tree_view.resizeColumnToContents(0))
+        self.input_category_tree_view.collapsed.connect(lambda: self.input_category_tree_view.resizeColumnToContents(0))
+        self.output_category_tree_view.collapsed.connect(
+            lambda: self.output_category_tree_view.resizeColumnToContents(0))
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
-        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValu)
+        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
 
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
@@ -167,7 +200,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.replace_product_name_push_button.setEnabled(False)
         self.replace_product_name_push_button.clicked.connect(self.replace_input_product_names)
 
+        # self.input_category_tree_view.clicked.connect(self.on_clicked_check_for_subcategories)
+        self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
+        self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
+
+
+
         self.xml_data = None
+
+    def on_clicked_check_for_subcategories(self, item):
+        if self.block_parent_checkboxes_checking is False:
+            self.block_parent_checkboxes_checking = True
+            current_item_checkbox_state = item.checkState()
+            self.iterate_tree(current_item_checkbox_state, item)
+            current_item = item.parent()
+            # while current_item is not None:
+            #     current_item.setCheckState(current_item_checkbox_state)
+            #     current_item = current_item.parent()
+            ###########################################
+            current_item = item
+            while current_item.parent() is not None:
+                current_item_checkbox_state = current_item.checkState()
+                is_change_parent_checkboxes_state = True
+                sibling_count = current_item.parent().rowCount()
+                for row in range(sibling_count):
+                    sibling_item_checkbox_state = current_item.parent().child(row).checkState()
+                    if current_item_checkbox_state != sibling_item_checkbox_state:
+                        current_item.parent().setCheckState(Qt.CheckState.PartiallyChecked)
+                        is_change_parent_checkboxes_state = False
+                        break
+                if is_change_parent_checkboxes_state is True:
+                    current_item.parent().setCheckState(current_item_checkbox_state)
+                current_item = current_item.parent()
+
+            self.block_parent_checkboxes_checking = False
+
+    def iterate_tree(self, checkbox_state, item):
+        if item.hasChildren():
+            for row in range(item.rowCount()):
+                child_item = item.child(row)
+                self.iterate_tree(checkbox_state, child_item)
+        item.setCheckState(checkbox_state)
 
     def find_category_names_for_replace(self, text):
         self.input_category_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
@@ -218,7 +291,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         rows_count = self.input_product_names_proxy_model.rowCount()
         for row in range(rows_count):
             item = self.input_product_names_proxy_model.data(self.input_product_names_proxy_model.index(row, 0),
-                                                              Qt.DisplayRole)
+                                                             Qt.DisplayRole)
             print(item)
 
     def find_in_input_categories(self, text):
@@ -242,42 +315,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def checkForBottomPriceValue(self, value):
         if value > self.upper_price_limit_spin_box.value():
-            self.bottom_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value() - 1)
+            self.bottom_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value())
             # Show a warning window with message Нижня межа не може перевищувати верхню
             # noinspection PyUnresolvedReferences
             QMessageBox.warning(self, "Попередження",
                                 "Нижня межа не може перевищувати верхню",
                                 QMessageBox.Ok)
 
-    def checkForUpperPriceValu(self, value):
+    def checkForUpperPriceValue(self, value):
         if value < self.bottom_price_limit_spin_box.value():
-            self.upper_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value() + 1)
+            self.upper_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value())
             # noinspection PyUnresolvedReferences
             QMessageBox.warning(self, "Попередження",
                                 "Верхня межа не може бути менше за нижню!",
                                 QMessageBox.Ok)
 
     def get_new_xml(self):
-        output_category_model = self.output_category_table_view.model().sourceModel()
+        # output_category_model = self.output_category_tree_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
 
-        selected_categories_ids_list = []
-        for row in range(output_category_model.rowCount()):
-            chosen_category_id = output_category_model.data(output_category_model.index(row, 1))
-            selected_categories_ids_list.append(chosen_category_id)
-
-        chosen_products_ids_dict = {}
+        chosen_id_products_dict = {}
         for row in range(final_product_model.rowCount()):
             product_name = final_product_model.data(final_product_model.index(row, 0))
             wholesale_price = final_product_model.data(final_product_model.index(row, 2))
             drop_price = final_product_model.data(final_product_model.index(row, 3))
             product_id = final_product_model.data(final_product_model.index(row, 4))
-            chosen_products_ids_dict[product_id] = {}
-            chosen_products_ids_dict[product_id]["product_name"] = product_name
+            chosen_id_products_dict[product_id] = {}
+            chosen_id_products_dict[product_id]["product_name"] = product_name
             if wholesale_price != 0:
-                chosen_products_ids_dict[product_id]["wholesale_price"] = wholesale_price
+                chosen_id_products_dict[product_id]["wholesale_price"] = wholesale_price
             if drop_price != 0:
-                chosen_products_ids_dict[product_id]["drop_price"] = drop_price
+                chosen_id_products_dict[product_id]["drop_price"] = drop_price
 
         # Create a copy of self.input_xml_tree
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
@@ -289,14 +357,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         categories_elements_list = output_xml_tree.xpath("//category")
         for category in categories_elements_list:
             category_id = category.get("id").strip()
-            if category_id not in selected_categories_ids_list:
+            if category_id not in self.selected_categories_ids:
                 category.getparent().remove(category)
 
         # Remove products of unselected categories
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
             category_id = offer.xpath("categoryId")[0].text.strip()
-            if category_id not in selected_categories_ids_list:
+            if category_id not in self.selected_categories_ids:
                 offer.getparent().remove(offer)
                 continue
 
@@ -304,18 +372,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
             product_id = offer.get("id").strip()
-            if product_id not in chosen_products_ids_dict.keys():
+            if product_id not in chosen_id_products_dict.keys():
                 offer.getparent().remove(offer)
             else:
                 # Change price to new
                 price = offer.xpath("url")[0]
-                if "wholesale_price" in chosen_products_ids_dict[product_id].keys():
-                    wholesale_price = chosen_products_ids_dict[product_id]["wholesale_price"]
+                if "wholesale_price" in chosen_id_products_dict[product_id].keys():
+                    wholesale_price = chosen_id_products_dict[product_id]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if "drop_price" in chosen_products_ids_dict[product_id].keys():
-                    drop_price = chosen_products_ids_dict[product_id]["drop_price"]
+                if "drop_price" in chosen_id_products_dict[product_id].keys():
+                    drop_price = chosen_id_products_dict[product_id]["drop_price"]
                     price_drop = etree.Element("price_drop")
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
@@ -386,53 +454,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         row_count = fptv_model.rowCount()
         for row in range(row_count):
             input_price = fptv_model.data(fptv_model.index(row, 1))
-            final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
+            # final_price = fptv_model.data(fptv_model.index(row, column_index_target_price))
             if bottom_price_limit <= input_price <= upper_price_limit:
                 product_markup = int(multiplier * input_price)
                 fptv_model.setData(fptv_model.index(row, column_index_target_price), product_markup)
             print(input_price)
 
-    def add_products_to_src_products_table(self):
-        sptv_model = self.input_products_table_view.model()
+    def populate_input_products_table(self):
+        sptv_model = self.input_products_table_view.model().sourceModel()
+        output_category_model = self.output_category_tree_view.model().sourceModel()
 
-        # Get all categories ids from self.output_category_table_view
-        output_category_model = self.output_category_table_view.model()
-        categories_ids = list()
-        for row in range(output_category_model.rowCount()):
-            # Gather ids of the selected categories
-            item = output_category_model.data(output_category_model.index(row, 1))
-            categories_ids.append(item)
+        self.selected_categories_ids = list()
+        row_count = output_category_model.rowCount()
+        for row in range(row_count):
+            item = output_category_model.item(row, 0)
+            self.get_selected_categories(item)
+        print("Selected categories:", self.selected_categories_ids)
 
-        # Gather all products ids from sptv_model in input_products_ids_list
-        input_products_ids_list = list()
-        for row in range(sptv_model.rowCount()):
-            item = sptv_model.data(sptv_model.index(row, 1))
-            input_products_ids_list.append(item)
-
-        for category_id in categories_ids:
-            products_list = self.all_category_ids_products_dict[category_id]
-            for products_dict in products_list:
-                product_name = products_dict["product_name"]
-                if product_name in input_products_ids_list:
-                    continue
-                product_price = products_dict["product_price"]
-                product_id = products_dict["product_id"]
-                product_item = QStandardItem()
-                product_item.setData(product_name, Qt.DisplayRole)
-                product_item.setCheckable(True)
-                price_item = QStandardItem()
-                price_item.setData(product_price, Qt.DisplayRole)
-                product_id_item = QStandardItem()
-                product_id_item.setData(product_id, Qt.DisplayRole)
-                sptv_model.sourceModel().appendRow([product_item, price_item, product_id_item])
+        for product_id, product_items in self.input_products_dict.items():
+            product_id_item = QStandardItem(product_id)
+            product_name_item = product_items["product_name"]
+            product_price_item = product_items["product_price"]
+            category_id = product_items["category_id"].data(Qt.DisplayRole)
+            product_id_text = product_id_item.data(Qt.DisplayRole)
+            if category_id in self.selected_categories_ids and product_id_text not in self.input_products_ids:
+                self.input_products_ids.append(product_id)
+                sptv_model.appendRow([product_name_item, product_price_item, product_id_item])
         self.input_products_table_view.resizeColumnsToContents()
         # self.input_products_table_view.horizontalHeader().setStretchLastSection(True)
         print("Data has been added to table")
 
+    def get_selected_categories(self, output_item):
+        row_count = output_item.rowCount()
+        self.selected_categories_ids.append(output_item.index().siblingAtColumn(1).data(Qt.DisplayRole))
+        print("Item id:", output_item.data(Qt.DisplayRole), "Row count:", row_count)
+        for row in range(row_count):
+            self.get_selected_categories(output_item.child(row, 0))
+
     @staticmethod
-    def move_products_from_input_to_destination_table(input_tabel, output_tabel):
-        input_model = input_tabel.model()
-        output_model = output_tabel.model()
+    def move_products_between_tables(input_tabel, output_tabel):
+        input_model = input_tabel.model().sourceModel()
+        output_model = output_tabel.model().sourceModel()
         # Check for destination model existence
         if not input_model or not output_model:
             print("Error: Invalid table view models.")
@@ -449,15 +511,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         row = 0
         checked_number = 0
         while row < input_table_row_count:
-            checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
-            if checked == 2:
+            check_state = input_model.item(row, 0).checkState()
+            if check_state == Qt.Checked:
                 checked_number += 1
+                item_data = input_model.item(row, 0)
+                item_data.setCheckState(Qt.Unchecked)
                 for col in range(input_col_count):
-                    index = input_model.index(row, col)
-                    data_item = input_model.data(index)
+                    item_data = input_model.takeItem(row, col)
                     header_name = input_model.headerData(col, Qt.Horizontal)
-                    input_table_dict[header_name].append(data_item)
+                    input_table_dict[header_name].append(item_data.data(Qt.DisplayRole))
                 input_model.removeRow(row)
+                input_table_row_count -= 1
             else:
                 row += 1
 
@@ -480,175 +544,281 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 new_item.setCheckable(True if col == 0 else False)
                 new_item.setEditable(False)
                 out_table_row_items.append(new_item)
-            output_model.sourceModel().appendRow(out_table_row_items)
+            output_model.appendRow(out_table_row_items)
 
         input_tabel.resizeColumnsToContents()
         output_tabel.resizeColumnsToContents()
         print("The process of moving items has been completed.")
         print("Data has been added to table")
 
-    def refresh_products_in_product_tables(self):
-        sptv_model = self.input_products_table_view.model()
-        fptv_model = self.output_products_table_view.model()
-        sptv_model.removeRows(0, sptv_model.rowCount())
-        fptv_model.removeRows(0, fptv_model.rowCount())
-        self.add_products_to_src_products_table()
-        self.move_products_from_input_to_destination_table(
-            self.input_products_table_view,
-            self.output_products_table_view
-        )
+    def refresh_products_tables(self):
+        input_products_model = self.input_products_table_view.model().sourceModel()
+        input_table_col_count = input_products_model.columnCount()
+        input_table_row_count = input_products_model.rowCount()
 
+        row = 0
+        while row < input_products_model.rowCount():
+            product_item = input_products_model.item(row, input_table_col_count - 1)
+            product_id = product_item.data(Qt.DisplayRole)
+            product_category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+            if product_category_id not in self.selected_categories_ids:
+                row_items = input_products_model.takeRow(row)
+                name_item = row_items[0]
+                name_item.setCheckState(Qt.Unchecked)
+                # input_products_model.removeRow(row)
+                self.input_products_ids.remove(product_id)
+                input_table_row_count -= 1
+            else:
+                row += 1
+
+        output_products_model = self.output_products_table_view.model().sourceModel()
+        output_table_col_count = output_products_model.columnCount()
+        output_table_row_count = output_products_model.rowCount()
+        row = 0
+        while row < output_table_row_count:
+            product_id = output_products_model.item(row, output_table_col_count - 1).data(Qt.DisplayRole)
+            product_category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+            if product_category_id not in self.selected_categories_ids:
+                row_items = output_products_model.takeRow(row)
+                name_item = row_items[0]
+                name_item.setCheckState(Qt.Unchecked)
+                self.input_products_ids.remove(product_id)
+                output_table_row_count -= 1
+            else:
+                row += 1
         print("Data has been removed from table")
 
-    @staticmethod
-    def move_categories_between_tables(input_table_view: QTableView,
-                                       destination_table_view: QTableView):
+    def move_categories_between_tables(self,
+                                       input_category_tree_view: QTreeView,
+                                       output_category_tree_view: QTreeView):
         """
         Moves checked items from the source table view to the destination table view.
 
         Args:
             input_table_view (QtWidgets.QTableView): The source table view.
-            destination_table_view (QtWidgets.QTableView): The destination table view.
+            output_table_view (QtWidgets.QTableView): The destination table view.
+            :param output_category_tree_view:
+            :param input_category_tree_view:
         """
         # Get source and destination models
-        input_model = input_table_view.model()
-        destination_model = destination_table_view.model()
+        input_model = input_category_tree_view.model().sourceModel()
+        output_model = output_category_tree_view.model().sourceModel()
 
-        if not input_model or not destination_model:
+        if not input_model or not output_model:
             print("Error: Invalid table view models.")
             return
 
-        # Collect checked items in source model
-        input_results = []
-        row_count = input_model.rowCount()
         row = 0
-        while row < row_count:
-            checked = input_model.data(input_model.index(row, 0), Qt.CheckStateRole)
-            if checked == 2:
-                item_name = input_model.data(input_model.index(row, 0))
-                item_id = input_model.data(input_model.index(row, 1))
-                input_results.append([item_name, item_id])
+        output_item_ids = []
+        while row < output_model.rowCount():
+            output_item_id = output_model.item(row, 1).data(Qt.DisplayRole)
+            output_item_ids.append(output_item_id)
+            row += 1
+
+        row = 0
+        while row < input_model.rowCount():
+            input_item_name = input_model.item(row, 0)
+
+            if input_item_name.checkState() != Qt.Unchecked:
+                input_item_id = input_model.item(row, 1).data(Qt.DisplayRole)
+                if input_item_id not in output_item_ids:
+                    output_model.appendRow([input_item_name.clone(), input_model.item(row, 1).clone()])
+
+            if input_item_name.checkState() == Qt.PartiallyChecked:
+                self.clone_items_from_input_table(input_item_name)
+                input_item_name.setCheckState(Qt.Unchecked)
+            elif input_item_name.checkState() == Qt.Checked:
+                self.clone_items_from_input_table(input_item_name)
+                input_item_name.setCheckState(Qt.Unchecked)
+                # input_item_name = input_model.takeItem(row, 0)
                 input_model.removeRow(row)
-            else:
-                row += 1
+                continue
+            row += 1
 
-        # Check for destination model existence (improved error handling)
-        if not destination_model:
-            print("Error: Destination table view has no model.")
-            return
+        row = 0
 
-        # Collect existing items in destination model
-        destination_results = []
-        for row in range(destination_model.rowCount()):
-            item = destination_model.data(destination_model.index(row, 1))
-            destination_results.append(item)
+        while row < output_model.rowCount():
+            output_item_name = output_model.item(row, 0)
+            self.iterate_output_category_tree_and_insert(output_item_name)
+            output_item_name.setCheckState(Qt.Unchecked)
+            row += 1
 
-        # Add unique items from source to destination
-        for categoryname_id in input_results:
-            categoryname_item = QStandardItem()
-            c_name = categoryname_id[0]
-            category_id = categoryname_id[1]
-            categoryname_item.setData(c_name, Qt.DisplayRole)
-            categoryname_item.setCheckable(True)
-            categoryid_item = QStandardItem()
-            categoryid_item.setData(category_id, Qt.DisplayRole)
-
-            if category_id not in destination_results:
-                destination_model.sourceModel().appendRow([categoryname_item, categoryid_item])
-        destination_table_view.resizeColumnsToContents()
+        # pprint.pp(f"output_items: {selected_items}")
+        output_category_tree_view.resizeColumnToContents(0)
         print("The process of moving items has been completed.")
+        self.populate_input_products_table()
+        self.refresh_products_tables()
+
+    def clone_items_from_input_table(self, input_item: QStandardItem):
+        check_state: Qt.CheckState = input_item.checkState()
+        if check_state != Qt.Unchecked:
+            # TODO: make an optimization here
+            clone_name_item = QStandardItem(input_item)
+            clone_name_item.setCheckable(True)
+            clone_id_item = QStandardItem()
+            id_text = input_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
+            clone_id_item.setText(id_text)
+            clone_id_item.setCheckable(False)
+            if input_item.hasChildren():
+                row = 0
+                while row < input_item.rowCount():
+                    child = input_item.child(row)
+                    clone_child_name, clone_child_id_item = self.clone_items_from_input_table(child)
+                    if clone_child_name is not None:
+                        parent_id = self.categoryid_parent_ids_dict[clone_child_id_item.data(Qt.DisplayRole)]
+                        if parent_id is not None:
+                            if parent_id not in self.cloned_parentid_items_dict:
+                                self.cloned_parentid_items_dict[parent_id] = []
+                            self.cloned_parentid_items_dict[parent_id].append({"name": clone_child_name,
+                                                                               "id": clone_child_id_item})
+                            print("Checkstate: ", clone_child_name.checkState())
+                    if child.checkState() == Qt.Checked:
+                        input_item.removeRow(row)
+                    else:
+                        row += 1
+            return clone_name_item, clone_id_item
+        return None, None
+
+    def iterate_output_category_tree_and_insert(self, output_item_name: QStandardItem):
+        output_text_id = output_item_name.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        items_list = []
+        for row in range(output_item_name.rowCount()):
+            child_id = output_item_name.child(row, 1)
+            items_list.append(child_id.data(Qt.DisplayRole))
+
+        if output_text_id in self.cloned_parentid_items_dict:
+            input_items_list = self.cloned_parentid_items_dict.pop(output_text_id)
+            for cloned_item in input_items_list:
+                cloned_name_item = cloned_item["name"].clone()
+                cloned_id_item = cloned_item["id"].clone()
+                cloned_name_item.setCheckState(Qt.Unchecked)
+                if cloned_id_item.data(Qt.DisplayRole) not in items_list:
+                    output_item_name.appendRow([cloned_name_item, cloned_id_item])
+            for row in range(output_item_name.rowCount()):
+                child = output_item_name.child(row, 0)
+                self.iterate_output_category_tree_and_insert(child)
 
     # open xml file
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
-        category_ids_products_dict = self.parse(file_path)
-        if not category_ids_products_dict:
-            return
-        self.all_category_ids_products_dict = category_ids_products_dict
-        self.reset_tables_data()
-        self.populate_input_tables()
+        self.init_tables(file_path)
         print("File closed")
 
-    def reset_tables_data(self):
+    def init_tables(self, file_path):
+        if not self.parse(file_path):
+            return
+        self.reset_input_categories_tables_data()
+        self.populate_input_tables()
+
+    def reset_input_categories_tables_data(self):
         self.input_category_model.removeRows(0, self.input_category_model.rowCount())
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
     def populate_input_tables(self):
-        for category_id in self.all_category_ids_products_dict.keys():
-            category_name = self.categoryid_name_dict[category_id]
-            category_name_item = QStandardItem()
-            category_name_item.setCheckable(True)
-            category_name_item.setData(category_name, Qt.DisplayRole)
-            category_id_item = QStandardItem()
-            category_id_item.setData(category_id, Qt.DisplayRole)
-            self.input_category_model.appendRow([category_name_item, category_id_item])
+        self.populate_input_category_table()
+        self.populate_input_categories_replacement_table()
+        self.populate_input_products_replacement_table()
 
-        all_products_list = []
-        for product_names_list in self.all_category_ids_products_dict.values():
-            all_products_list.extend(product_names_list)
-
-        for product in all_products_list:
-            product_name_item = QStandardItem()
-            product_name = product["product_name"]
-            product_name_item.setData(product_name, Qt.DisplayRole)
+    def populate_input_products_replacement_table(self):
+        for product_id_item, product_data in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
-            product_id = product["product_id"]
-            product_id_item.setData(product_id, Qt.DisplayRole)
-            self.input_product_names_model.appendRow([product_name_item, product_id_item])
+            product_id_item.setData(product_id_item, Qt.DisplayRole)
+            self.input_product_names_model.appendRow([product_data, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
-        # Make the same for the self.input_category_names_model
-        for category_id, category_name in self.categoryid_name_dict.items():
-            category_name_item = QStandardItem()
-            category_name_item.setData(category_name, Qt.DisplayRole)
+    def populate_input_categories_replacement_table(self):
+        for category_id, category_name_item in self.input_categories_replacement_dict.items():
             category_id_item = QStandardItem()
             category_id_item.setData(category_id, Qt.DisplayRole)
             self.input_category_names_model.appendRow([category_name_item, category_id_item])
         self.input_category_names_table_view.resizeColumnsToContents()
-        self.input_category_table_view.resizeColumnsToContents()
 
     def parse(self, file_path):
         if not file_path:
-            return None
+            return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
-        category_elems = self.input_xml_tree.xpath("//category")
-        categoryid_name_dict = {}
+        self.get_category_ids_and_names_from_xml()
+        self.get_offers_from_xml()
+        gc.collect()
+        pprint.pp(f"input_products_dict: {self.input_products_dict}")
+        return True
 
-        for category in category_elems:
-            category_id = category.get("id").strip()
-            category_name = category.text.strip()
-            categoryid_name_dict[category_id] = category_name
-        self.categoryid_name_dict = categoryid_name_dict
-        self.categoryid_name_dict[MainWindow.DEFAULT_CATEGORY_ID] = MainWindow.DEFAULT_CATEGORY_NAME
-
-        category_products_dict = {}
-        # TODO: change category names to category ids
-        for category_id in categoryid_name_dict.keys():
-            category_products_dict[category_id] = []
-
-        # Add the category MainWindow.DEFAULT_CATEGORY for products without category
-        category_products_dict[MainWindow.DEFAULT_CATEGORY_ID] = []
-
+    def get_offers_from_xml(self):
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
-            category_id = offer_tag.xpath("categoryId")
-            product_id = offer_tag.get("id").strip()
-            product_name = offer_tag.xpath("name")[0].text.strip()
-            product_price = int(offer_tag.xpath("price")[0].text.strip())
-            cid = category_id[0].text.strip()
-            print(cid)
-            if cid not in categoryid_name_dict:
-                # Add product to the category MainWindow.DEFAULT_CATEGORY
-                category_products_dict[MainWindow.DEFAULT_CATEGORY_ID].append(
-                    {"product_id": product_id, "product_name": product_name, "product_price": product_price}
-                )
-                continue
-            category_products_dict[cid].append(
-                {"product_id": product_id, "product_name": product_name, "product_price": product_price}
-            )
-        pprint.pp(category_products_dict)
+            category_id_item, product_id, product_name_item, product_price_item = self.create_product(offer_tag)
+            print("product_id: ", product_id)
+            self.input_products_dict[product_id] = {"product_name": product_name_item,
+                                                    "product_price": product_price_item,
+                                                    "category_id": category_id_item}
+            product_name_item = self.create_product_name_item(offer_tag)
+            self.input_products_replacement_dict[product_id] = product_name_item
 
-        # del tree, categories, offer_tags
-        gc.collect()
-        return category_products_dict
+    def get_category_ids_and_names_from_xml(self):
+        category_elems = self.input_xml_tree.xpath("//category")
+        for category in category_elems:
+            category_id, category_name_item = self.create_category_item(category)
+            self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
+            self.input_categories_dict[category_id] = category_name_item
+            category_id, category_name_item = self.create_category_item(category)
+            self.input_categories_replacement_dict[category_id] = category_name_item
+
+    def create_product(self, offer_tag):
+        product_id = offer_tag.get("id").strip()
+        category_id = offer_tag.xpath("categoryId")[0].text.strip()
+        category_id_item = QStandardItem()
+        category_id_item.setData(category_id, Qt.DisplayRole)
+        product_name_item = self.create_product_name_item(offer_tag)
+        product_price = int(offer_tag.xpath("price")[0].text.strip())
+        product_price_item = QStandardItem()
+        product_price_item.setData(product_price, Qt.DisplayRole)
+        return category_id_item, product_id, product_name_item, product_price_item
+
+    @staticmethod
+    def create_product_name_item(offer_tag):
+        product_name = offer_tag.xpath("name")[0].text.strip()
+        product_name_item = QStandardItem()
+        product_name_item.setData(product_name, Qt.DisplayRole)
+        product_name_item.setCheckable(True)
+        return product_name_item
+
+    @staticmethod
+    def create_category_item(category):
+        category_id = category.get("id").strip()
+        category_name = category.text.strip()
+        category_name_item: QStandardItem = QStandardItem()
+        category_name_item.setCheckable(True)
+        category_name_item.setData(category_name, Qt.DisplayRole)
+        return category_id, category_name_item
+
+    def populate_input_category_table(self):
+        # create a method that builds a tree of categories and subcategories from self.input_categories_dict
+        graph = nx.DiGraph()
+        parents_list = []
+        for child_id, parent_id in self.categoryid_parent_ids_dict.items():
+            if parent_id is None:
+                graph.add_node(child_id)
+                parents_list.append(child_id)
+                self.parentid_childid_dict[child_id] = []
+            else:
+                if parent_id not in self.parentid_childid_dict:
+                    self.parentid_childid_dict[parent_id] = []
+                self.parentid_childid_dict[parent_id].append(child_id)
+                graph.add_node(parent_id)
+                graph.add_node(child_id)
+                graph.add_edge(parent_id, child_id)
+
+        for parent_id in parents_list:
+            input_item = self.input_categories_dict[parent_id]
+            self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
+            self.dfs(graph, parent_id, input_item)
+        self.input_category_tree_view.resizeColumnToContents(0)
+        self.input_category_names_table_view.resizeColumnToContents(0)
+
+    def dfs(self, graph, child_id, parent_item, indent=0):
+        print(" " * indent, parent_item.data(Qt.DisplayRole))
+        for child_id in graph.neighbors(child_id):
+            item = self.input_categories_dict[child_id]
+            parent_item.appendRow([item, QStandardItem(child_id)])
+            self.dfs(graph, child_id, item, indent + 2)

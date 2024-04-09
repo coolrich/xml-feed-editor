@@ -20,7 +20,8 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QGroupBo
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QMainWindow, QMenu, QMenuBar, QPushButton,
     QScrollArea, QSizePolicy, QSpinBox, QStatusBar,
-    QTabWidget, QTableView, QVBoxLayout, QWidget)
+    QTabWidget, QTableView, QTreeView, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -40,19 +41,23 @@ class Ui_MainWindow(object):
         self.action_about_qt.setObjectName(u"action_about_qt")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout_20 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_21 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
+        self.verticalLayout_20 = QVBoxLayout()
         self.verticalLayout_20.setObjectName(u"verticalLayout_20")
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.verticalLayout_11 = QVBoxLayout(self.tab)
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
+        self.verticalLayout_4 = QVBoxLayout()
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.groupBox_4 = QGroupBox(self.tab)
         self.groupBox_4.setObjectName(u"groupBox_4")
-        self.verticalLayout_3 = QVBoxLayout(self.groupBox_4)
+        self.verticalLayout_2 = QVBoxLayout(self.groupBox_4)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -69,8 +74,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
-        self.verticalLayout_4 = QVBoxLayout()
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.check_all_source_categories_push_button = QPushButton(self.groupBox_4)
@@ -89,23 +92,25 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.add_category_push_button)
 
 
-        self.verticalLayout_4.addLayout(self.horizontalLayout)
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
 
-        self.input_category_table_view = QTableView(self.groupBox_4)
-        self.input_category_table_view.setObjectName(u"input_category_table_view")
+        self.input_category_tree_view = QTreeView(self.groupBox_4)
+        self.input_category_tree_view.setObjectName(u"input_category_tree_view")
 
-        self.verticalLayout_4.addWidget(self.input_category_table_view)
-
-
-        self.verticalLayout_3.addLayout(self.verticalLayout_4)
+        self.verticalLayout_3.addWidget(self.input_category_tree_view)
 
 
-        self.verticalLayout_11.addWidget(self.groupBox_4)
+        self.verticalLayout_2.addLayout(self.verticalLayout_3)
+
+
+        self.verticalLayout_4.addWidget(self.groupBox_4)
 
         self.groupBox_3 = QGroupBox(self.tab)
         self.groupBox_3.setObjectName(u"groupBox_3")
         self.verticalLayout_7 = QVBoxLayout(self.groupBox_3)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.verticalLayout_5 = QVBoxLayout()
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_14 = QHBoxLayout()
         self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
         self.label_13 = QLabel(self.groupBox_3)
@@ -119,10 +124,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_14.addWidget(self.search_output_category_line_edit)
 
 
-        self.verticalLayout_7.addLayout(self.horizontalLayout_14)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_14)
 
-        self.verticalLayout_5 = QVBoxLayout()
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.horizontalLayout_13 = QHBoxLayout()
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
         self.check_all_chosen_categories_push_button = QPushButton(self.groupBox_3)
@@ -143,16 +146,19 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_13)
 
-        self.output_category_table_view = QTableView(self.groupBox_3)
-        self.output_category_table_view.setObjectName(u"output_category_table_view")
+        self.output_category_tree_view = QTreeView(self.groupBox_3)
+        self.output_category_tree_view.setObjectName(u"output_category_tree_view")
 
-        self.verticalLayout_5.addWidget(self.output_category_table_view)
+        self.verticalLayout_5.addWidget(self.output_category_tree_view)
 
 
         self.verticalLayout_7.addLayout(self.verticalLayout_5)
 
 
-        self.verticalLayout_11.addWidget(self.groupBox_3)
+        self.verticalLayout_4.addWidget(self.groupBox_3)
+
+
+        self.verticalLayout_11.addLayout(self.verticalLayout_4)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -165,7 +171,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 760, 738))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 759, 738))
         self.verticalLayout_12 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
         self.groupBox_5 = QGroupBox(self.scrollAreaWidgetContents)
@@ -542,7 +548,7 @@ class Ui_MainWindow(object):
 
         self.tabWidget.addTab(self.tab_3, "")
 
-        self.verticalLayout_2.addWidget(self.tabWidget)
+        self.verticalLayout_20.addWidget(self.tabWidget)
 
         self.horizontalLayout_19 = QHBoxLayout()
         self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
@@ -557,15 +563,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout_19.addWidget(self.get_csv_push_button)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_19)
+        self.verticalLayout_20.addLayout(self.horizontalLayout_19)
 
 
-        self.verticalLayout_20.addLayout(self.verticalLayout_2)
+        self.verticalLayout_21.addLayout(self.verticalLayout_20)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 820, 22))
+        self.menubar.setGeometry(QRect(0, 0, 820, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
