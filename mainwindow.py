@@ -219,19 +219,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pprint.pp(category_ids)
 
         self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_item_name)
-        self.replace_words_in_input_catgories_table(category_ids)
+        self.replace_words_in_tree_catgories_table(self.input_category_model, category_ids)
 
-    def replace_words_in_input_catgories_table(self, category_ids):
-        input_model = self.input_category_model
+    def replace_words_in_tree_catgories_table(self, input_model, category_ids):
         row_count = input_model.rowCount()
         for row in range(row_count):
             name_item = input_model.item(row, 0)
-            id_item_value = name_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
-            if id_item_value in category_ids:
-                new_item_name = self.input_categories_dict[id_item_value].data(Qt.DisplayRole)
-                name_item.setData(new_item_name, Qt.DisplayRole)
-            self.iterate_categories_tree_and_replace_words(input_model, name_item)
+            self.check_id_and_change(category_ids, name_item)
+            self.iterate_categories_tree_and_replace_words(name_item, category_ids)
 
+    def check_id_and_change(self, category_ids, name_item):
+        id_item_value = name_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        if id_item_value in category_ids:
+            new_item_name = self.input_categories_dict[id_item_value].data(Qt.DisplayRole)
+            name_item.setData(new_item_name, Qt.DisplayRole)
+
+    def iterate_categories_tree_and_replace_words(self, name_item, category_ids):
+        if name_item.hasChildren():
+            for i in range(name_item.rowCount()):
+                child_item = name_item.child(i)
+                self.check_id_and_change(category_ids, child_item)
+                self.iterate_categories_tree_and_replace_words(child_item, category_ids)
 
     def replace_words_in_input_categories_dict(self, category_ids, old_category_name: str, new_category_name: str):
         print("Replaced words in input input_categories_dict:")
@@ -242,7 +250,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             while old_category_name in category_name:
                 category_name = category_name.replace(old_category_name, new_category_name)
             print(" New category:", category_name)
-            print("--"*len(category_name))
+            print("--" * len(category_name))
             category_name_item.setData(category_name, Qt.DisplayRole)
             self.input_categories_dict[category_id] = category_name_item
 
