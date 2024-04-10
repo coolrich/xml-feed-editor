@@ -257,6 +257,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for offer in offers_elements_list:
             product_id = offer.get("id")
             if product_id in product_ids:
+                # ts000027787
                 # TODO: which tags content should be changed
                 product_name_tag = offer.xpath("name")[0]
                 product_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
