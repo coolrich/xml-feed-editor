@@ -2,6 +2,8 @@ import copy
 import gc
 import pprint
 import re
+from typing import Set
+
 import networkx as nx
 
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSignalBlocker
@@ -229,20 +231,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def replace_product_names(self):
         old_product_name = self.search_product_for_replace_line_edit.text()
         new_product_name = self.replace_product_name_line_edit.text()
-
-        product_ids = []
+        product_ids_description = self.get_products_description_ids(old_product_name)
+        product_ids_names = self.get_products_names_ids(old_product_name)
         for product_id, product_item_name in self.input_products_dict.items():
             product_name = product_item_name["product_name"].data(Qt.DisplayRole)
-            if old_product_name in product_name:
+            if product_id in product_ids_names:
                 print("-----------------", "-" * len(product_name), sep="")
                 print("Old product name:", product_name)
                 while old_product_name in product_name:
                     product_name = product_name.replace(old_product_name, new_product_name)
                 print("New product name:", product_name)
                 product_item_name["product_name"].setData(product_name, Qt.DisplayRole)
-                product_ids.append(product_id)
-
-        self.replace_words_in_input_product_names_table(product_ids)
+        product_ids = set()
+        product_ids.update(product_ids_names)
+        product_ids.update(product_ids_description)
+        self.replace_words_in_input_product_names_table(product_ids_names)
         self.__replace_product_words_in_output_xml_tree(product_ids)
 
     def replace_words_in_input_product_names_table(self, category_ids):
@@ -259,17 +262,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if product_id in product_ids:
                 # ts000027787
                 # TODO: which tags content should be changed
-                product_name_tag = offer.xpath("name")[0]
-                product_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
-                product_name_tag.text = product_name
+                self.change_name_tag(offer, product_id)
                 # TODO: description tag should be changed
-                description_tag = offer.xpath("description")[0]
-                description_text = description_tag.text
-                description_text = self.find_and_replace_in_description_tag(description_text)
+                description_tag, description_text = self.change_description_tag(offer)
                 if description_text is not None and len(description_text) > 0:
                     description_tag.text = description_text
 
         pprint.pp(offers_elements_list[0])
+
+    def change_description_tag(self, offer):
+        description_tag = offer.xpath("description")[0]
+        description_text = description_tag.text
+        description_text = self.find_and_replace_in_description_tag(description_text)
+        return description_tag, description_text
+
+    def change_name_tag(self, offer, product_id):
+        product_name_tag = offer.xpath("name")[0]
+        product_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
+        product_name_tag.text = product_name
 
     def find_and_replace_in_description_tag(self, description_tag_text):
         old_product_name = self.search_product_for_replace_line_edit.text()
@@ -896,6 +906,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         product_name_item.setCheckable(True)
         return product_name_item
 
+    def get_products_description_ids(self, old_product_name) -> set[str]:
+        product_ids = set()
+        output_xml_tree = self.output_xml_tree
+        offer_tags = output_xml_tree.xpath("//offer")
+        for offer_tag in offer_tags:
+            description_text = offer_tag.xpath("description")[0].text
+            if description_text is not None and old_product_name in description_text:
+                product_id = offer_tag.get("id").strip()
+                product_ids.add(product_id)
+        return product_ids
+
     @staticmethod
     def create_category_item(category):
         category_id = category.get("id").strip()
@@ -939,3 +960,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             item.setCheckable(True)
             parent_item.appendRow([item, QStandardItem(child_id)])
             self.dfs(graph, child_id, item, indent + 2)
+
+    def get_products_names_ids(self, old_product_name):
+        product_ids_names = set()
+        for product_id, product_name in self.input_products_dict.items():
+            if old_product_name in product_name["product_name"].data(Qt.DisplayRole):
+                product_ids_names.add(product_id)
+        return product_ids_names
