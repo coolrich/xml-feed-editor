@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(820, 719)
+        MainWindow.resize(796, 719)
         MainWindow.setLayoutDirection(Qt.LeftToRight)
         self.open_action = QAction(MainWindow)
         self.open_action.setObjectName(u"open_action")
@@ -76,15 +76,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.check_all_source_categories_push_button = QPushButton(self.groupBox_4)
-        self.check_all_source_categories_push_button.setObjectName(u"check_all_source_categories_push_button")
+        self.check_all_input_categories_push_button = QPushButton(self.groupBox_4)
+        self.check_all_input_categories_push_button.setObjectName(u"check_all_input_categories_push_button")
 
-        self.horizontalLayout.addWidget(self.check_all_source_categories_push_button)
+        self.horizontalLayout.addWidget(self.check_all_input_categories_push_button)
 
-        self.uncheck_all_source_categories_push_button = QPushButton(self.groupBox_4)
-        self.uncheck_all_source_categories_push_button.setObjectName(u"uncheck_all_source_categories_push_button")
+        self.uncheck_all_input_categories_push_button = QPushButton(self.groupBox_4)
+        self.uncheck_all_input_categories_push_button.setObjectName(u"uncheck_all_input_categories_push_button")
 
-        self.horizontalLayout.addWidget(self.uncheck_all_source_categories_push_button)
+        self.horizontalLayout.addWidget(self.uncheck_all_input_categories_push_button)
 
         self.add_category_push_button = QPushButton(self.groupBox_4)
         self.add_category_push_button.setObjectName(u"add_category_push_button")
@@ -128,15 +128,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_13 = QHBoxLayout()
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.check_all_chosen_categories_push_button = QPushButton(self.groupBox_3)
-        self.check_all_chosen_categories_push_button.setObjectName(u"check_all_chosen_categories_push_button")
+        self.check_all_output_categories_push_button = QPushButton(self.groupBox_3)
+        self.check_all_output_categories_push_button.setObjectName(u"check_all_output_categories_push_button")
 
-        self.horizontalLayout_13.addWidget(self.check_all_chosen_categories_push_button)
+        self.horizontalLayout_13.addWidget(self.check_all_output_categories_push_button)
 
-        self.uncheck_all_chosen_categories_push_button = QPushButton(self.groupBox_3)
-        self.uncheck_all_chosen_categories_push_button.setObjectName(u"uncheck_all_chosen_categories_push_button")
+        self.uncheck_all_output_categories_push_button = QPushButton(self.groupBox_3)
+        self.uncheck_all_output_categories_push_button.setObjectName(u"uncheck_all_output_categories_push_button")
 
-        self.horizontalLayout_13.addWidget(self.uncheck_all_chosen_categories_push_button)
+        self.horizontalLayout_13.addWidget(self.uncheck_all_output_categories_push_button)
 
         self.delete_category_push_button = QPushButton(self.groupBox_3)
         self.delete_category_push_button.setObjectName(u"delete_category_push_button")
@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 759, 738))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 733, 738))
         self.verticalLayout_12 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
         self.groupBox_5 = QGroupBox(self.scrollAreaWidgetContents)
@@ -200,15 +200,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setSpacing(50)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.pushButton_9 = QPushButton(self.groupBox_5)
-        self.pushButton_9.setObjectName(u"pushButton_9")
+        self.check_all_input_products_push_button = QPushButton(self.groupBox_5)
+        self.check_all_input_products_push_button.setObjectName(u"check_all_input_products_push_button")
 
-        self.horizontalLayout_8.addWidget(self.pushButton_9)
+        self.horizontalLayout_8.addWidget(self.check_all_input_products_push_button)
 
-        self.pushButton_7 = QPushButton(self.groupBox_5)
-        self.pushButton_7.setObjectName(u"pushButton_7")
+        self.uncheck_all_input_products_push_button = QPushButton(self.groupBox_5)
+        self.uncheck_all_input_products_push_button.setObjectName(u"uncheck_all_input_products_push_button")
 
-        self.horizontalLayout_8.addWidget(self.pushButton_7)
+        self.horizontalLayout_8.addWidget(self.uncheck_all_input_products_push_button)
 
         self.add_product_push_button = QPushButton(self.groupBox_5)
         self.add_product_push_button.setObjectName(u"add_product_push_button")
@@ -255,15 +255,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setSpacing(50)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.pushButton_10 = QPushButton(self.groupBox_6)
-        self.pushButton_10.setObjectName(u"pushButton_10")
+        self.check_all_output_products_push_button = QPushButton(self.groupBox_6)
+        self.check_all_output_products_push_button.setObjectName(u"check_all_output_products_push_button")
 
-        self.horizontalLayout_7.addWidget(self.pushButton_10)
+        self.horizontalLayout_7.addWidget(self.check_all_output_products_push_button)
 
-        self.pushButton_8 = QPushButton(self.groupBox_6)
-        self.pushButton_8.setObjectName(u"pushButton_8")
+        self.uncheck_all_output_products_push_button = QPushButton(self.groupBox_6)
+        self.uncheck_all_output_products_push_button.setObjectName(u"uncheck_all_output_products_push_button")
 
-        self.horizontalLayout_7.addWidget(self.pushButton_8)
+        self.horizontalLayout_7.addWidget(self.uncheck_all_output_products_push_button)
 
         self.remove_product_push_button = QPushButton(self.groupBox_6)
         self.remove_product_push_button.setObjectName(u"remove_product_push_button")
@@ -571,7 +571,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 820, 21))
+        self.menubar.setGeometry(QRect(0, 0, 796, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
@@ -607,27 +607,27 @@ class Ui_MainWindow(object):
         self.action_about_qt.setText(QCoreApplication.translate("MainWindow", u"About Qt", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0456 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0457 \u0442\u043e\u0432\u0430\u0440\u0456\u0432", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
-        self.check_all_source_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
-        self.uncheck_all_source_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
+        self.check_all_input_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
+        self.uncheck_all_input_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
         self.add_category_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0434\u043e\n"
 "XML", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"\u041e\u0431\u0440\u0430\u043d\u0456 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0457 \u0442\u043e\u0432\u0430\u0440\u0456\u0432 \u0434\u043b\u044f \u0432\u0438\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u044f \u0434\u043e XML \u0444\u0430\u0439\u043b\u0443", None))
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
-        self.check_all_chosen_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
-        self.uncheck_all_chosen_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
+        self.check_all_output_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
+        self.uncheck_all_output_categories_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
         self.delete_category_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
 "XML", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0457", None))
         self.groupBox_5.setTitle(QCoreApplication.translate("MainWindow", u"\u0422\u043e\u0432\u0430\u0440\u0438 \u0437 \u043e\u0431\u0440\u0430\u043d\u0438\u0445 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0439", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
-        self.pushButton_9.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
-        self.pushButton_7.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
+        self.check_all_input_products_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
+        self.uncheck_all_input_products_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
         self.add_product_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0434\u043e\n"
 "XML", None))
         self.groupBox_6.setTitle(QCoreApplication.translate("MainWindow", u"\u041e\u0431\u0440\u0430\u043d\u0456 \u0442\u043e\u0432\u0430\u0440\u0438 \u0434\u043b\u044f \u0432\u0438\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u044f \u0432 XML \u0444\u0430\u0439\u043b", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0448\u0443\u043a:", None))
-        self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
-        self.pushButton_8.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
+        self.check_all_output_products_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0431\u0440\u0430\u0442\u0438 \u0432\u0441\u0456", None))
+        self.uncheck_all_output_products_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u043d\u044f\u0442\u0438 \u0432\u0438\u0431\u0456\u0440 \u0437 \u0443\u0441\u0456\u0445", None))
         self.remove_product_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0423\u0431\u0440\u0430\u0442\u0438 \u0437\n"
 "XML", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0446\u0456\u043d", None))

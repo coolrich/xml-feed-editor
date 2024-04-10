@@ -2,11 +2,9 @@ import copy
 import gc
 import pprint
 import re
-from typing import Set
 
 import networkx as nx
-
-from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSignalBlocker
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
@@ -205,12 +203,54 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.replace_product_name_line_edit.textChanged.connect(self.replace_product_name_line_edit_text_change)
         self.replace_product_name_push_button.setEnabled(False)
         self.replace_product_name_push_button.clicked.connect(self.replace_product_names)
+        self.check_all_input_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.input_products_model, True)
+        )
+        self.uncheck_all_input_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.input_products_model, False)
+        )
+        self.check_all_output_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.output_products_model, True)
+        )
+        self.uncheck_all_output_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.output_products_model, False)
+        )
 
-        # self.input_category_tree_view.clicked.connect(self.on_clicked_check_for_subcategories)
+        self.check_all_input_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.input_category_model, True)
+        )
+        self.uncheck_all_input_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.input_category_model, False)
+        )
+
+        self.check_all_output_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.output_category_model, True)
+        )
+        self.uncheck_all_output_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.output_category_model, False)
+        )
         self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
         self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
 
         self.xml_data = None
+
+    @staticmethod
+    def select_all_products(model, checked):
+        row_count = model.rowCount()
+        for row in range(row_count):
+            if checked:
+                model.item(row, 0).setCheckState(Qt.Checked)
+            else:
+                model.item(row, 0).setCheckState(Qt.Unchecked)
+
+    @staticmethod
+    def select_all_categories(model, checked):
+        row_count = model.rowCount()
+        for row in range(row_count):
+            if checked:
+                model.item(row, 0).setCheckState(Qt.Checked)
+            else:
+                model.item(row, 0).setCheckState(Qt.Unchecked)
 
     def replace_category_names(self):
         old_category_name = self.search_category_for_replace_line_edit.text()
