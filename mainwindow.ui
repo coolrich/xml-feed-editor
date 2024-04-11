@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -780,12 +780,12 @@ XML</string>
   </action>
   <action name="load_project_action">
    <property name="text">
-    <string>Відкрити проект</string>
+    <string>Відкрити проект...</string>
    </property>
   </action>
   <action name="save_project_action">
    <property name="text">
-    <string>Зберегти проект</string>
+    <string>Зберегти проект...</string>
    </property>
   </action>
   <action name="action_about_qt">

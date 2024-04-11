@@ -4,9 +4,8 @@ import json
 import pprint
 import re
 
-from xml_to_dict import xml_to_dict
 import networkx as nx
-from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSettings
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
@@ -246,10 +245,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.delete_table_rows(self.output_product_names_model)
         )
         # self.output_category_names_model.itemChanged.connect(self.on_select_pattern_item)  # add this line in
-        self.output_category_names_table_view.clicked.connect(
+        self.output_category_names_table_view.pressed.connect(
             self.on_select_category_pattern_item
         )
-        self.output_product_names_table_view.clicked.connect(
+        self.output_product_names_table_view.pressed.connect(
             self.on_select_product_pattern_item
         )
         self.save_project_action.triggered.connect(self.save_data_to_disk)
@@ -992,9 +991,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # open xml file
     def open_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
-        self.init_tables(file_path)
-        print("File closed")
+        # TODO: Pay attention here
+        # file_path, _ = QFileDialog.getOpenFileName(filter=)
+        load_dialog = QFileDialog()
+        load_dialog.setFileMode(QFileDialog.AnyFile)
+        load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        load_dialog.setNameFilter("XML Files (*.xml)")
+        if load_dialog.exec():
+            load_path = load_dialog.selectedFiles()[0]
+            self.init_tables(load_path)
+            print("File closed")
 
     def init_tables(self, file_path):
         if not self.parse(file_path):
