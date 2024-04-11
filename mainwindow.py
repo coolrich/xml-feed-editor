@@ -3,6 +3,7 @@ import gc
 import pprint
 import re
 
+from xml_to_dict import xml_to_dict
 import networkx as nx
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
@@ -44,9 +45,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
         # important
         self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
-        # important
+        # important dict[old_name] = ["new_name"]
         self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
-        # important
+        # important dict[old_name] = ["new_name"]
         self.input_products_replacement_dict: dict[str, QStandardItem] = {}
         # important
         self.output_products_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
@@ -122,7 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_names_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of search output_category_names_table_view
-        output_category_header_name = ["Початкова назва", "Нова назва", "ID"]
+        output_category_header_name = ["Початкова назва", "Нова назва"]
         self.output_category_names_model = QStandardItemModel()
         self.output_category_names_model.setHorizontalHeaderLabels(output_category_header_name)
         self.output_category_names_proxy_model = QSortFilterProxyModel()
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_product_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
         # Init of search output_category_names_table_view
-        output_product_header_name = ["Початкова назва", "Нова назва", "ID"]
+        output_product_header_name = ["Початкова назва", "Нова назва"]
         self.output_product_names_model = QStandardItemModel()
         self.output_product_names_model.setHorizontalHeaderLabels(output_product_header_name)
         self.output_product_proxy_model = QSortFilterProxyModel()
@@ -231,8 +232,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
         self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
+        self.add_category_row_push_button.clicked.connect(
+            lambda: self.add_table_row(self.output_category_names_model)
+        )
+        self.add_product_row_push_button.clicked.connect(
+            lambda: self.add_table_row(self.output_product_names_model)
+        )
+        self.delete_category_row_push_button.clicked.connect(
+            lambda: self.delete_table_rows(self.output_category_names_model)
+        )
+        self.delete_product_row_push_button.clicked.connect(
+            lambda: self.delete_table_rows(self.output_product_names_model)
+        )
 
         self.xml_data = None
+
+    @staticmethod
+    def add_table_row(model):
+        name_item = QStandardItem("")
+        name_item.setCheckable(True)
+        model.appendRow([name_item])
+
+    @staticmethod
+    def delete_table_rows(model):
+        row_count = model.rowCount()
+        row = 0
+        while row < row_count:
+            item = model.item(row, 0)
+            if item.checkState() == Qt.Checked:
+                model.removeRow(row)
+                row_count -= 1
+            else:
+                row += 1
 
     @staticmethod
     def select_all_products(model, checked):
@@ -263,7 +294,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 category_ids.append(category_id)
         pprint.pp(category_ids)
 
-        self.replace_words_in_input_categories_dict(category_ids, old_category_name, new_category_name)
+        self.replace_words_in_input_categories_dicts(category_ids, old_category_name, new_category_name)
         self.replace_words_in_tree_categories_table(self.input_category_model, category_ids)
         self.replace_words_in_tree_categories_table(self.output_category_model, category_ids)
         self.__replace_category_words_in_output_xml_tree(category_ids)
@@ -301,9 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_id = offer.get("id")
             if product_id in product_ids:
                 # ts000027787
-                # TODO: which tags content should be changed
                 self.change_name_tag(offer, product_id)
-                # TODO: description tag should be changed
                 description_tag, description_text = self.change_description_tag(offer)
                 if description_text is not None and len(description_text) > 0:
                     description_tag.text = description_text
@@ -358,7 +387,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.check_id_and_change(category_ids, child_item)
                 self.iterate_categories_tree_and_replace_words(child_item, category_ids)
 
-    def replace_words_in_input_categories_dict(self, category_ids, old_category_name: str, new_category_name: str):
+    def replace_words_in_input_categories_dicts(self, category_ids, old_category_name: str, new_category_name: str):
         print("Replaced words in input input_categories_dict:")
         for category_id in category_ids:
             category_name = self.input_categories_dict[category_id]
@@ -368,7 +397,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("New category:", category_name)
             print("--" * len(category_name))
             self.input_categories_dict[category_id] = category_name
-            # TODO: pay attention to here.
             self.input_categories_replacement_dict[category_id].setData(category_name, Qt.DisplayRole)
 
     def on_clicked_check_for_subcategories(self, item):
@@ -493,6 +521,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 "Верхня межа не може бути менше за нижню!",
                                 QMessageBox.Ok)
 
+    def convert_to_csv(self, output_xml):
+        pass
+
     def get_new_xml(self):
         # output_category_model = self.output_category_tree_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
@@ -548,6 +579,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price_drop = etree.Element("price_drop")
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
+
+        # parser = xml_to_dict.XMLtoDict(output_xml_tree)
+        # output_xml_tree_dict = parser.parse(etree.tostring(output_xml_tree))
+        # from dict_to_csv import transform
+        # output_csv = transform(output_xml_tree_dict)
+        # # write csv into a file
+        # with open(f"./output.csv", "w", encoding="utf-8") as f:
+        #     f.write(output_csv)
 
         # Create a window for saving a new xml file
         save_dialog = QFileDialog()
@@ -926,6 +965,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.input_categories_dict[category_id] = category_name_item.data(Qt.DisplayRole)
             category_id, category_name_item = self.create_category_item(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
+            self.output_categories_replacement_dict[category_name_item.data(Qt.DisplayRole)] = set()
 
     def create_product(self, offer_tag):
         product_id = offer_tag.get("id").strip()

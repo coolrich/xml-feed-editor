@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(796, 719)
+        MainWindow.resize(797, 692)
         MainWindow.setLayoutDirection(Qt.LeftToRight)
         self.open_action = QAction(MainWindow)
         self.open_action.setObjectName(u"open_action")
@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 733, 738))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 734, 738))
         self.verticalLayout_12 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
         self.groupBox_5 = QGroupBox(self.scrollAreaWidgetContents)
@@ -383,8 +383,8 @@ class Ui_MainWindow(object):
         self.tab_3.setObjectName(u"tab_3")
         self.verticalLayout_19 = QVBoxLayout(self.tab_3)
         self.verticalLayout_19.setObjectName(u"verticalLayout_19")
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_17 = QHBoxLayout()
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
         self.groupBox = QGroupBox(self.tab_3)
         self.groupBox.setObjectName(u"groupBox")
         self.verticalLayout_18 = QVBoxLayout(self.groupBox)
@@ -453,16 +453,26 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_15.addLayout(self.verticalLayout_13)
 
-        self.horizontalLayout_17 = QHBoxLayout()
-        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.add_category_row_push_button = QPushButton(self.groupBox)
+        self.add_category_row_push_button.setObjectName(u"add_category_row_push_button")
 
-        self.verticalLayout_15.addLayout(self.horizontalLayout_17)
+        self.horizontalLayout_9.addWidget(self.add_category_row_push_button)
+
+        self.delete_category_row_push_button = QPushButton(self.groupBox)
+        self.delete_category_row_push_button.setObjectName(u"delete_category_row_push_button")
+
+        self.horizontalLayout_9.addWidget(self.delete_category_row_push_button)
+
+
+        self.verticalLayout_15.addLayout(self.horizontalLayout_9)
 
 
         self.verticalLayout_18.addLayout(self.verticalLayout_15)
 
 
-        self.horizontalLayout_9.addWidget(self.groupBox)
+        self.horizontalLayout_17.addWidget(self.groupBox)
 
         self.groupBox_2 = QGroupBox(self.tab_3)
         self.groupBox_2.setObjectName(u"groupBox_2")
@@ -532,19 +542,29 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_16.addLayout(self.verticalLayout_14)
 
-        self.horizontalLayout_18 = QHBoxLayout()
-        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.horizontalLayout_22 = QHBoxLayout()
+        self.horizontalLayout_22.setObjectName(u"horizontalLayout_22")
+        self.add_product_row_push_button = QPushButton(self.groupBox_2)
+        self.add_product_row_push_button.setObjectName(u"add_product_row_push_button")
 
-        self.verticalLayout_16.addLayout(self.horizontalLayout_18)
+        self.horizontalLayout_22.addWidget(self.add_product_row_push_button)
+
+        self.delete_product_row_push_button = QPushButton(self.groupBox_2)
+        self.delete_product_row_push_button.setObjectName(u"delete_product_row_push_button")
+
+        self.horizontalLayout_22.addWidget(self.delete_product_row_push_button)
+
+
+        self.verticalLayout_16.addLayout(self.horizontalLayout_22)
 
 
         self.verticalLayout_17.addLayout(self.verticalLayout_16)
 
 
-        self.horizontalLayout_9.addWidget(self.groupBox_2)
+        self.horizontalLayout_17.addWidget(self.groupBox_2)
 
 
-        self.verticalLayout_19.addLayout(self.horizontalLayout_9)
+        self.verticalLayout_19.addLayout(self.horizontalLayout_17)
 
         self.tabWidget.addTab(self.tab_3, "")
 
@@ -571,7 +591,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 796, 21))
+        self.menubar.setGeometry(QRect(0, 0, 797, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
@@ -592,7 +612,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.exit_action.triggered.connect(MainWindow.close)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -646,13 +666,17 @@ class Ui_MainWindow(object):
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0438\u0442\u0438 \u043d\u0430:", None))
         self.replace_category_name_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0438\u0442\u0438", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0456 \u043d\u0430\u0437\u0432\u0438 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0439 \u0442\u043e\u0432\u0430\u0440\u0456\u0432", None))
-        self.label_14.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u0456\u043d\u0438 \u043d\u0430\u0437\u0432 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0439", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0430\u0431\u043b\u043e\u043d\u0438 \u0434\u043b\u044f \u0437\u0430\u043c\u0456\u043d\u0438 \u043d\u0430\u0437\u0432 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0439", None))
+        self.add_category_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.delete_category_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"\u0422\u043e\u0432\u0430\u0440\u0438", None))
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"\u0424\u0440\u0430\u0437\u0430 \u0434\u043b\u044f \u0437\u0430\u043c\u0456\u043d\u0438:", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0438\u0442\u0438 \u043d\u0430:", None))
         self.replace_product_name_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0438\u0442\u0438", None))
         self.label_15.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0441\u0456 \u043d\u0430\u0437\u0432\u0438 \u0442\u043e\u0432\u0430\u0440\u0456\u0432", None))
-        self.label_16.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u0456\u043d\u0438 \u043d\u0430\u0437\u0432 \u0442\u043e\u0432\u0430\u0440\u0456\u0432", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"\u0428\u0430\u0431\u043b\u043e\u043d\u0438 \u0434\u043b\u044f \u0437\u0430\u043c\u0456\u043d\u0438 \u043d\u0430\u0437\u0432 \u0442\u043e\u0432\u0430\u0440\u0456\u0432", None))
+        self.add_product_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
+        self.delete_product_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0430 \u0441\u043b\u0456\u0432", None))
         self.get_new_xml_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
         self.get_csv_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 CSV", None))

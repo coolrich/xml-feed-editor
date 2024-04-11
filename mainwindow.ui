@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>719</height>
+    <width>797</width>
+    <height>692</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -166,7 +166,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>733</width>
+               <width>734</width>
                <height>738</height>
               </rect>
              </property>
@@ -503,7 +503,7 @@ XML</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_19">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <layout class="QHBoxLayout" name="horizontalLayout_17">
             <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
@@ -576,7 +576,7 @@ XML</string>
                    <item>
                     <widget class="QLabel" name="label_14">
                      <property name="text">
-                      <string>Виконані заміни назв категорій</string>
+                      <string>Шаблони для заміни назв категорій</string>
                      </property>
                     </widget>
                    </item>
@@ -586,7 +586,22 @@ XML</string>
                   </layout>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_17"/>
+                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                   <item>
+                    <widget class="QPushButton" name="add_category_row_push_button">
+                     <property name="text">
+                      <string>Додати рядок</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="delete_category_row_push_button">
+                     <property name="text">
+                      <string>Видалити рядок(-ки)</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </item>
@@ -665,7 +680,7 @@ XML</string>
                    <item>
                     <widget class="QLabel" name="label_16">
                      <property name="text">
-                      <string>Виконані заміни назв товарів</string>
+                      <string>Шаблони для заміни назв товарів</string>
                      </property>
                     </widget>
                    </item>
@@ -675,7 +690,22 @@ XML</string>
                   </layout>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_18"/>
+                  <layout class="QHBoxLayout" name="horizontalLayout_22">
+                   <item>
+                    <widget class="QPushButton" name="add_product_row_push_button">
+                     <property name="text">
+                      <string>Додати рядок</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="delete_product_row_push_button">
+                     <property name="text">
+                      <string>Видалити рядок(-ки)</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </item>
@@ -715,7 +745,7 @@ XML</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>796</width>
+     <width>797</width>
      <height>21</height>
     </rect>
    </property>
