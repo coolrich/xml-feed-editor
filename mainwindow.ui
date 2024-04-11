@@ -780,12 +780,12 @@ XML</string>
   </action>
   <action name="load_project_action">
    <property name="text">
-    <string>Відкрити проект...</string>
+    <string>Відкрити шаблон...</string>
    </property>
   </action>
   <action name="save_project_action">
    <property name="text">
-    <string>Зберегти проект...</string>
+    <string>Зберегти шаблон...</string>
    </property>
   </action>
   <action name="action_about_qt">

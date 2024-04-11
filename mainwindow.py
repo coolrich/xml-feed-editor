@@ -943,7 +943,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clone_items_from_input_table(self, input_item: QStandardItem):
         check_state: Qt.CheckState = input_item.checkState()
         if check_state != Qt.Unchecked:
-            # TODO: make an optimization here
             clone_name_item = QStandardItem(input_item)
             clone_name_item.setCheckable(True)
             clone_id_item = QStandardItem()
@@ -991,8 +990,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # open xml file
     def open_file(self):
-        # TODO: Pay attention here
-        # file_path, _ = QFileDialog.getOpenFileName(filter=)
         load_dialog = QFileDialog()
         load_dialog.setFileMode(QFileDialog.AnyFile)
         load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
