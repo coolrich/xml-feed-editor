@@ -1,11 +1,12 @@
 import copy
 import gc
+import json
 import pprint
 import re
 
 from xml_to_dict import xml_to_dict
 import networkx as nx
-from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSettings
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
@@ -123,7 +124,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_names_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of search output_category_names_table_view
-        output_category_header_name = ["Початкова назва", "Нова назва"]
+        output_category_header_name = ["Початкова назва", "Заміна на"]
         self.output_category_names_model = QStandardItemModel()
         self.output_category_names_model.setHorizontalHeaderLabels(output_category_header_name)
         self.output_category_names_proxy_model = QSortFilterProxyModel()
@@ -146,7 +147,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_product_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
         # Init of search output_category_names_table_view
-        output_product_header_name = ["Початкова назва", "Нова назва"]
+        output_product_header_name = ["Початкова назва", "Заміна на"]
         self.output_product_names_model = QStandardItemModel()
         self.output_product_names_model.setHorizontalHeaderLabels(output_product_header_name)
         self.output_product_proxy_model = QSortFilterProxyModel()
@@ -244,12 +245,105 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delete_product_row_push_button.clicked.connect(
             lambda: self.delete_table_rows(self.output_product_names_model)
         )
+        # self.output_category_names_model.itemChanged.connect(self.on_select_pattern_item)  # add this line in
+        self.output_category_names_table_view.clicked.connect(
+            self.on_select_category_pattern_item
+        )
+        self.output_product_names_table_view.clicked.connect(
+            self.on_select_product_pattern_item
+        )
+        self.save_project_action.triggered.connect(self.save_data_to_disk)
+        self.load_project_action.triggered.connect(self.load_data_from_disk)
 
         self.xml_data = None
 
+    def load_data_from_disk(self):
+        load_dialog = QFileDialog()
+        load_dialog.setFileMode(QFileDialog.AnyFile)
+        load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        load_dialog.setNameFilter("JSON Files (*.json)")
+        if load_dialog.exec():
+            load_path = load_dialog.selectedFiles()[0]
+            with open(load_path, "r") as f:
+                data = json.loads(f.read())
+            if data is None:
+                return
+            self.clear_data_from_tables(self.output_category_names_model,
+                                        self.output_product_names_model)
+            MainWindow.set_data_to_names_table(self.output_category_names_model, data[0])
+            MainWindow.set_data_to_names_table(self.output_product_names_model, data[1])
+
+    @staticmethod
+    def clear_data_from_tables(*name_tables: QStandardItemModel):
+        for name_table in name_tables:
+            name_table.removeRows(0, name_table.rowCount())
+
+    # Create a method that saves the data from output_category_names_table_view
+    # and output_product_names_table_view to the disk using QSettings
+    def save_data_to_disk(self):
+        ocnt_dict = MainWindow.get_dict_from_names_table(self.output_category_names_model)
+        opnt_dict = MainWindow.get_dict_from_names_table(self.output_product_names_model)
+        names_table_dicts = [ocnt_dict, opnt_dict]
+        json_str = json.dumps(names_table_dicts)
+        save_dialog = QFileDialog()
+        # noinspection PyUnresolvedReferences
+        save_dialog.setFileMode(QFileDialog.AnyFile)
+        # noinspection PyUnresolvedReferences
+        save_dialog.setAcceptMode(QFileDialog.AcceptSave)
+        save_dialog.setNameFilter("JSON Files (*.json)")
+        if save_dialog.exec():
+            save_path = save_dialog.selectedFiles()[0]
+            with open(save_path, "w") as f:
+                f.write(json_str)
+            print(f"XML {save_path} created")
+            return
+
+    @staticmethod
+    def get_dict_from_names_table(model) -> dict:
+        row_count = model.rowCount()
+        row = 0
+        data_dict = {}
+        while row < row_count:
+            old_name = model.item(row, 0).data(Qt.DisplayRole)
+            new_name = model.item(row, 1).data(Qt.DisplayRole)
+            data_dict[row] = {"old_name": old_name, "new_name": new_name}
+            row += 1
+        return data_dict
+
+    @staticmethod
+    def set_data_to_names_table(model, data_dict):
+        for row in data_dict:
+            old_name = data_dict[row]["old_name"]
+            new_name = data_dict[row]["new_name"]
+            old_item = QStandardItem(old_name)
+            new_item = QStandardItem(new_name)
+            old_item.setCheckable(True)
+            new_item.setCheckable(True)
+            model.appendRow([old_item, new_item])
+
+    def on_select_category_pattern_item(self, index):
+        text = index.data(Qt.DisplayRole)
+        column = index.column()
+        print("Selected pattern: ", text)
+        if text is not None:
+            if column == 0:
+                self.search_category_for_replace_line_edit.setText(text)
+            elif column == 1:
+                self.replace_category_name_line_edit.setText(text)
+
+    def on_select_product_pattern_item(self, index):
+        text = index.data(Qt.DisplayRole)
+        column = index.column()
+        print("Selected pattern: ", text)
+        if text is not None:
+            if column == 0:
+                self.search_product_for_replace_line_edit.setText(text)
+            elif column == 1:
+                self.replace_product_name_line_edit.setText(text)
+
     @staticmethod
     def add_table_row(model):
-        name_item = QStandardItem("")
+        name_item = QStandardItem()
         name_item.setCheckable(True)
         model.appendRow([name_item])
 

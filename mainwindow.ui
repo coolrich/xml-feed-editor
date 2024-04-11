@@ -754,8 +754,8 @@ XML</string>
      <string>Файл</string>
     </property>
     <addaction name="open_action"/>
-    <addaction name="action"/>
-    <addaction name="action_2"/>
+    <addaction name="load_project_action"/>
+    <addaction name="save_project_action"/>
     <addaction name="exit_action"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -778,12 +778,12 @@ XML</string>
     <string>Вихід</string>
    </property>
   </action>
-  <action name="action">
+  <action name="load_project_action">
    <property name="text">
     <string>Відкрити проект</string>
    </property>
   </action>
-  <action name="action_2">
+  <action name="save_project_action">
    <property name="text">
     <string>Зберегти проект</string>
    </property>
