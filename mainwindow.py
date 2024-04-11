@@ -318,7 +318,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             old_item = QStandardItem(old_name)
             new_item = QStandardItem(new_name)
             old_item.setCheckable(True)
-            new_item.setCheckable(True)
             model.appendRow([old_item, new_item])
 
     def on_select_category_pattern_item(self, index):
