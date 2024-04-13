@@ -16,8 +16,8 @@ from ui_mainwindow import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    DEFAULT_CATEGORY_NAME = "Без категорії"
-    DEFAULT_CATEGORY_ID = "-1"
+    # DEFAULT_CATEGORY_NAME = "Без категорії"
+    # DEFAULT_CATEGORY_ID = "-1"
 
     def __init__(self, app):
         super().__init__()
@@ -672,13 +672,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
 
-        # parser = xml_to_dict.XMLtoDict(output_xml_tree)
-        # output_xml_tree_dict = parser.parse(etree.tostring(output_xml_tree))
-        # from dict_to_csv import transform
-        # output_csv = transform(output_xml_tree_dict)
-        # # write csv into a file
-        # with open(f"./output.csv", "w", encoding="utf-8") as f:
-        #     f.write(output_csv)
+        # self.write_to_csv(chosen_id_products_dict)
 
         # Create a window for saving a new xml file
         save_dialog = QFileDialog()
@@ -694,6 +688,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.correction_of_the_xml_elements(save_path)
             print(f"XML {save_path} created")
             return
+
+    # def write_to_csv(self, selected_products_ids_dict: dict):
+    #     import csv
+    #     with open("output_categories.csv", 'w', newline='') as csvfile:
+    #         csvwriter = csv.writer(csvfile, delimiter=';')
+    #         csvwriter.writerow(["category", "id", "parent_id"])
+    #         for category_id in self.selected_categories_ids:
+    #             category_name = self.input_categories_dict[category_id]
+    #             parent_id = self.categoryid_parent_ids_dict[category_id]
+    #             csvwriter.writerow([category_name, category_id, parent_id])
+    #
+    #     with open("output_products.csv", 'w', newline='') as csvfile:
+    #         csvwriter = csv.writer(csvfile, delimiter=';')
+    #         csvwriter.writerow(["product_name", "wholesale_price", "drop_price", "id", "category_id"])
+    #         for product_id in selected_products_ids_dict.keys():
+    #             product_name = selected_products_ids_dict[product_id]["product_name"]
+    #             wholesale_price = selected_products_ids_dict[product_id]["wholesale_price"]
+    #             drop_price = selected_products_ids_dict[product_id]["drop_price"]
+    #             category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+    #             csvwriter.writerow([product_name, wholesale_price, drop_price, product_id, category_id])
 
     @staticmethod
     def correction_of_the_xml_elements(filename: str):
