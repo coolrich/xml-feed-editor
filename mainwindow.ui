@@ -757,14 +757,14 @@ XML</string>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_19">
         <item>
-         <widget class="QPushButton" name="get_new_xml_push_button">
+         <widget class="QPushButton" name="get_output_xml_push_button">
           <property name="text">
            <string>Отримати XML</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="get_csv_push_button">
+         <widget class="QPushButton" name="get_output_csv_push_button">
           <property name="text">
            <string>Отримати CSV</string>
           </property>

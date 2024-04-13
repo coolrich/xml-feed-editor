@@ -582,15 +582,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_19 = QHBoxLayout()
         self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
-        self.get_new_xml_push_button = QPushButton(self.centralwidget)
-        self.get_new_xml_push_button.setObjectName(u"get_new_xml_push_button")
+        self.get_output_xml_push_button = QPushButton(self.centralwidget)
+        self.get_output_xml_push_button.setObjectName(u"get_output_xml_push_button")
 
-        self.horizontalLayout_19.addWidget(self.get_new_xml_push_button)
+        self.horizontalLayout_19.addWidget(self.get_output_xml_push_button)
 
-        self.get_csv_push_button = QPushButton(self.centralwidget)
-        self.get_csv_push_button.setObjectName(u"get_csv_push_button")
+        self.get_output_csv_push_button = QPushButton(self.centralwidget)
+        self.get_output_csv_push_button.setObjectName(u"get_output_csv_push_button")
 
-        self.horizontalLayout_19.addWidget(self.get_csv_push_button)
+        self.horizontalLayout_19.addWidget(self.get_output_csv_push_button)
 
 
         self.verticalLayout_20.addLayout(self.horizontalLayout_19)
@@ -688,8 +688,8 @@ class Ui_MainWindow(object):
         self.add_product_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u0440\u044f\u0434\u043e\u043a", None))
         self.delete_product_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a(-\u043a\u0438)", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0430 \u0441\u043b\u0456\u0432", None))
-        self.get_new_xml_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
-        self.get_csv_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 CSV", None))
+        self.get_output_xml_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
+        self.get_output_csv_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 CSV", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0432\u0456\u0434\u043a\u0430", None))
     # retranslateUi

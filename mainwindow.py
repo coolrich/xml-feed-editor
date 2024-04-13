@@ -190,7 +190,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_category_tree_view.collapsed.connect(
             lambda: self.output_category_tree_view.resizeColumnToContents(0))
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
-        self.get_new_xml_push_button.clicked.connect(self.get_new_xml)
+        self.get_output_xml_push_button.clicked.connect(self.get_output_xml)
+        self.get_output_csv_push_button.clicked.connect(self.get_output_csv)
         self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
         self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
@@ -613,37 +614,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 "Верхня межа не може бути менше за нижню!",
                                 QMessageBox.Ok)
 
-    def convert_to_csv(self, output_xml):
-        pass
-
-    def get_new_xml(self):
-        # output_category_model = self.output_category_tree_view.model().sourceModel()
-        final_product_model = self.output_products_table_view.model().sourceModel()
-
+    def get_output_xml(self):
         if self.output_xml_tree is None:
             return
         output_xml_tree = self.output_xml_tree
+        output_id_products_dict = self.get_output_id_products_dict()
+        self.change_xml(output_id_products_dict, output_xml_tree)
+        save_path = self.save_as("XML Files (*.xml)")
+        if save_path is None:
+            return
+        self.output_xml_tree.write(save_path, encoding='windows-1251')
+        self.change_encoding_letter_case_in_output_xml(save_path)
+        self.correction_of_the_xml_elements(save_path)
 
-        chosen_id_products_dict = {}
-        for row in range(final_product_model.rowCount()):
-            product_name = final_product_model.data(final_product_model.index(row, 0))
-            wholesale_price = final_product_model.data(final_product_model.index(row, 2))
-            drop_price = final_product_model.data(final_product_model.index(row, 3))
-            product_id = final_product_model.data(final_product_model.index(row, 4))
-            chosen_id_products_dict[product_id] = {}
-            chosen_id_products_dict[product_id]["product_name"] = product_name
-            if wholesale_price != 0:
-                chosen_id_products_dict[product_id]["wholesale_price"] = wholesale_price
-            if drop_price != 0:
-                chosen_id_products_dict[product_id]["drop_price"] = drop_price
+    def get_output_csv(self):
+        output_id_products_dict = self.get_output_id_products_dict()
+        save_path = self.save_as("CSV Files (*.csv)")
+        if save_path is None:
+            return
+        self.write_to_csv(output_id_products_dict, save_path)
 
+    def change_xml(self, output_id_products_dict, output_xml_tree):
         # Remove unselected categories
         categories_elements_list = output_xml_tree.xpath("//category")
         for category in categories_elements_list:
             category_id = category.get("id").strip()
             if category_id not in self.selected_categories_ids:
                 category.getparent().remove(category)
-
         # Remove products of unselected categories
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
@@ -651,63 +648,78 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if category_id not in self.selected_categories_ids:
                 offer.getparent().remove(offer)
                 continue
-
         # Remove unselected products
         offers = output_xml_tree.xpath("//offer")
         for offer in offers:
             product_id = offer.get("id").strip()
-            if product_id not in chosen_id_products_dict.keys():
+            if product_id not in output_id_products_dict.keys():
                 offer.getparent().remove(offer)
             else:
                 # Change price to new
                 price = offer.xpath("url")[0]
-                if "wholesale_price" in chosen_id_products_dict[product_id].keys():
-                    wholesale_price = chosen_id_products_dict[product_id]["wholesale_price"]
+                if "wholesale_price" in output_id_products_dict[product_id].keys():
+                    wholesale_price = output_id_products_dict[product_id]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if "drop_price" in chosen_id_products_dict[product_id].keys():
-                    drop_price = chosen_id_products_dict[product_id]["drop_price"]
-                    price_drop = etree.Element("price_drop")
-                    price_drop.text = str(drop_price)
-                    price.addnext(price_drop)
+                if "drop_price" in output_id_products_dict[product_id].keys():
+                    price_drop = output_id_products_dict[product_id]["drop_price"]
+                    price_drop_tag = offer.xpath("price_drop")
+                    if not price_drop_tag:
+                        drop_price_tag = etree.Element("price_drop")
+                        drop_price_tag.text = str(price_drop)
+                        price.addnext(drop_price_tag)
+                    else:
+                        price_drop_tag[0].text = str(price_drop)
 
-        # self.write_to_csv(chosen_id_products_dict)
+    def get_output_id_products_dict(self):
+        final_product_model = self.output_products_table_view.model().sourceModel()
+        output_id_products_dict = {}
+        for row in range(final_product_model.rowCount()):
+            product_name = final_product_model.data(final_product_model.index(row, 0))
+            wholesale_price = final_product_model.data(final_product_model.index(row, 2))
+            drop_price = final_product_model.data(final_product_model.index(row, 3))
+            product_id = final_product_model.data(final_product_model.index(row, 4))
+            output_id_products_dict[product_id] = {}
+            output_id_products_dict[product_id]["product_name"] = product_name
+            if wholesale_price != 0:
+                output_id_products_dict[product_id]["wholesale_price"] = wholesale_price
+            if drop_price != 0:
+                output_id_products_dict[product_id]["drop_price"] = drop_price
+        return output_id_products_dict
 
+    @staticmethod
+    def save_as(file_format):
         # Create a window for saving a new xml file
         save_dialog = QFileDialog()
         # noinspection PyUnresolvedReferences
         save_dialog.setFileMode(QFileDialog.AnyFile)
         # noinspection PyUnresolvedReferences
         save_dialog.setAcceptMode(QFileDialog.AcceptSave)
-        save_dialog.setNameFilter("XML Files (*.xml)")
+        save_dialog.setNameFilter(file_format)
         if save_dialog.exec():
             save_path = save_dialog.selectedFiles()[0]
-            self.output_xml_tree.write(save_path, encoding='windows-1251')
-            self.change_encoding_letter_case_in_output_xml(save_path)
-            self.correction_of_the_xml_elements(save_path)
-            print(f"XML {save_path} created")
-            return
+            print(f"{file_format}, path: {save_path} created")
+            return save_path
+        return None
 
-    # def write_to_csv(self, selected_products_ids_dict: dict):
-    #     import csv
-    #     with open("output_categories.csv", 'w', newline='') as csvfile:
-    #         csvwriter = csv.writer(csvfile, delimiter=';')
-    #         csvwriter.writerow(["category", "id", "parent_id"])
-    #         for category_id in self.selected_categories_ids:
-    #             category_name = self.input_categories_dict[category_id]
-    #             parent_id = self.categoryid_parent_ids_dict[category_id]
-    #             csvwriter.writerow([category_name, category_id, parent_id])
-    #
-    #     with open("output_products.csv", 'w', newline='') as csvfile:
-    #         csvwriter = csv.writer(csvfile, delimiter=';')
-    #         csvwriter.writerow(["product_name", "wholesale_price", "drop_price", "id", "category_id"])
-    #         for product_id in selected_products_ids_dict.keys():
-    #             product_name = selected_products_ids_dict[product_id]["product_name"]
-    #             wholesale_price = selected_products_ids_dict[product_id]["wholesale_price"]
-    #             drop_price = selected_products_ids_dict[product_id]["drop_price"]
-    #             category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
-    #             csvwriter.writerow([product_name, wholesale_price, drop_price, product_id, category_id])
+    def write_to_csv(self, selected_products_ids_dict: dict, path):
+        import csv
+        with open(path, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=';')
+            csvwriter.writerow(["category_name", "category_id", "parent_id"])
+            for category_id in self.selected_categories_ids:
+                category_name = self.input_categories_dict[category_id]
+                parent_id = self.categoryid_parent_ids_dict[category_id]
+                csvwriter.writerow([category_name, category_id, parent_id])
+            csvwriter.writerow([])
+            csvwriter.writerow(["product_name", "wholesale_price", "drop_price", "product_id", "category_id"])
+            for product_id in selected_products_ids_dict.keys():
+                product_name = selected_products_ids_dict[product_id]["product_name"]
+                wholesale_price = selected_products_ids_dict[product_id].get("wholesale_price", 0)
+                drop_price = selected_products_ids_dict[product_id].get("drop_price", 0)
+                category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+                csvwriter.writerow([product_name, wholesale_price, drop_price, product_id, category_id])
 
     @staticmethod
     def correction_of_the_xml_elements(filename: str):
