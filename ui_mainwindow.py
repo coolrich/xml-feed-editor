@@ -16,12 +16,12 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QGroupBox,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QScrollArea, QSizePolicy, QSpinBox, QStatusBar,
-    QTabWidget, QTableView, QTreeView, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QDoubleSpinBox,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QScrollArea, QSizePolicy, QSpinBox,
+    QStatusBar, QTabWidget, QTableView, QTreeView,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -96,6 +96,7 @@ class Ui_MainWindow(object):
 
         self.input_category_tree_view = QTreeView(self.groupBox_4)
         self.input_category_tree_view.setObjectName(u"input_category_tree_view")
+        self.input_category_tree_view.setAlternatingRowColors(True)
 
         self.verticalLayout_3.addWidget(self.input_category_tree_view)
 
@@ -148,6 +149,7 @@ class Ui_MainWindow(object):
 
         self.output_category_tree_view = QTreeView(self.groupBox_3)
         self.output_category_tree_view.setObjectName(u"output_category_tree_view")
+        self.output_category_tree_view.setAlternatingRowColors(True)
 
         self.verticalLayout_5.addWidget(self.output_category_tree_view)
 
@@ -221,6 +223,7 @@ class Ui_MainWindow(object):
         self.input_products_table_view = QTableView(self.groupBox_5)
         self.input_products_table_view.setObjectName(u"input_products_table_view")
         self.input_products_table_view.setMaximumSize(QSize(16777215, 16777215))
+        self.input_products_table_view.setAlternatingRowColors(True)
 
         self.verticalLayout.addWidget(self.input_products_table_view)
 
@@ -277,6 +280,7 @@ class Ui_MainWindow(object):
         self.output_products_table_view.setObjectName(u"output_products_table_view")
         self.output_products_table_view.setMinimumSize(QSize(0, 1))
         self.output_products_table_view.setMaximumSize(QSize(16777215, 300))
+        self.output_products_table_view.setAlternatingRowColors(True)
 
         self.verticalLayout_6.addWidget(self.output_products_table_view)
 
@@ -437,6 +441,8 @@ class Ui_MainWindow(object):
 
         self.input_category_names_table_view = QTableView(self.groupBox)
         self.input_category_names_table_view.setObjectName(u"input_category_names_table_view")
+        self.input_category_names_table_view.setAlternatingRowColors(True)
+        self.input_category_names_table_view.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
 
         self.verticalLayout_13.addWidget(self.input_category_names_table_view)
 
@@ -447,6 +453,7 @@ class Ui_MainWindow(object):
 
         self.output_category_names_table_view = QTableView(self.groupBox)
         self.output_category_names_table_view.setObjectName(u"output_category_names_table_view")
+        self.output_category_names_table_view.setAlternatingRowColors(True)
 
         self.verticalLayout_13.addWidget(self.output_category_names_table_view)
 
@@ -526,6 +533,8 @@ class Ui_MainWindow(object):
 
         self.input_product_names_table_view = QTableView(self.groupBox_2)
         self.input_product_names_table_view.setObjectName(u"input_product_names_table_view")
+        self.input_product_names_table_view.setAlternatingRowColors(True)
+        self.input_product_names_table_view.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
 
         self.verticalLayout_14.addWidget(self.input_product_names_table_view)
 
@@ -536,6 +545,7 @@ class Ui_MainWindow(object):
 
         self.output_product_names_table_view = QTableView(self.groupBox_2)
         self.output_product_names_table_view.setObjectName(u"output_product_names_table_view")
+        self.output_product_names_table_view.setAlternatingRowColors(True)
 
         self.verticalLayout_14.addWidget(self.output_product_names_table_view)
 

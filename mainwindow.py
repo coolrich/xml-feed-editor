@@ -1018,6 +1018,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for product_id, product_data in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
             product_id_item.setData(product_id, Qt.DisplayRole)
+            product_id_item.setEditable(False)
+            product_data.setEditable(False)
             self.input_product_names_model.appendRow([product_data, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
