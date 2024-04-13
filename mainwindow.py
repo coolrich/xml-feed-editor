@@ -499,11 +499,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.block_parent_checkboxes_checking = True
             current_item_checkbox_state = item.checkState()
             self.iterate_tree(current_item_checkbox_state, item)
-            current_item = item.parent()
-            # while current_item is not None:
-            #     current_item.setCheckState(current_item_checkbox_state)
-            #     current_item = current_item.parent()
-            ###########################################
             current_item = item
             while current_item.parent() is not None:
                 current_item_checkbox_state = current_item.checkState()
@@ -637,6 +632,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.write_to_csv(output_id_products_dict, save_path)
 
     def change_xml(self, output_id_products_dict, output_xml_tree):
+        # find tags <name>, <company>, first <url> tag
+        # text in first and second tags replce with "smart-b2b"
+        # In the third tag replace text with "https://smart-b2b.com.ua/ua/"
+        output_xml_tree.xpath("//name")[0].text = "smart-b2b"
+        output_xml_tree.xpath("//company")[0].text = "smart-b2b"
+        output_xml_tree.xpath("//url")[0].text = "https://smart-b2b.com.ua/ua/"
+
         # Remove unselected categories
         categories_elements_list = output_xml_tree.xpath("//category")
         for category in categories_elements_list:
