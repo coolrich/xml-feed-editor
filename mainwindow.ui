@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
-    <height>719</height>
+    <width>797</width>
+    <height>692</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,14 +57,14 @@
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout">
                    <item>
-                    <widget class="QPushButton" name="check_all_source_categories_push_button">
+                    <widget class="QPushButton" name="check_all_input_categories_push_button">
                      <property name="text">
                       <string>Вибрати всі</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="uncheck_all_source_categories_push_button">
+                    <widget class="QPushButton" name="uncheck_all_input_categories_push_button">
                      <property name="text">
                       <string>Зняти вибір з усіх</string>
                      </property>
@@ -81,7 +81,11 @@ XML</string>
                   </layout>
                  </item>
                  <item>
-                  <widget class="QTreeView" name="input_category_tree_view"/>
+                  <widget class="QTreeView" name="input_category_tree_view">
+                   <property name="alternatingRowColors">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -113,14 +117,14 @@ XML</string>
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_13">
                    <item>
-                    <widget class="QPushButton" name="check_all_chosen_categories_push_button">
+                    <widget class="QPushButton" name="check_all_output_categories_push_button">
                      <property name="text">
                       <string>Вибрати всі</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="uncheck_all_chosen_categories_push_button">
+                    <widget class="QPushButton" name="uncheck_all_output_categories_push_button">
                      <property name="text">
                       <string>Зняти вибір з усіх</string>
                      </property>
@@ -137,7 +141,11 @@ XML</string>
                   </layout>
                  </item>
                  <item>
-                  <widget class="QTreeView" name="output_category_tree_view"/>
+                  <widget class="QTreeView" name="output_category_tree_view">
+                   <property name="alternatingRowColors">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -166,7 +174,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>759</width>
+               <width>734</width>
                <height>738</height>
               </rect>
              </property>
@@ -211,14 +219,14 @@ XML</string>
                       <number>50</number>
                      </property>
                      <item>
-                      <widget class="QPushButton" name="pushButton_9">
+                      <widget class="QPushButton" name="check_all_input_products_push_button">
                        <property name="text">
                         <string>Вибрати всі</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QPushButton" name="pushButton_7">
+                      <widget class="QPushButton" name="uncheck_all_input_products_push_button">
                        <property name="text">
                         <string>Зняти вибір з усіх</string>
                        </property>
@@ -241,6 +249,9 @@ XML</string>
                        <width>16777215</width>
                        <height>16777215</height>
                       </size>
+                     </property>
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -283,14 +294,14 @@ XML</string>
                       <number>50</number>
                      </property>
                      <item>
-                      <widget class="QPushButton" name="pushButton_10">
+                      <widget class="QPushButton" name="check_all_output_products_push_button">
                        <property name="text">
                         <string>Вибрати всі</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QPushButton" name="pushButton_8">
+                      <widget class="QPushButton" name="uncheck_all_output_products_push_button">
                        <property name="text">
                         <string>Зняти вибір з усіх</string>
                        </property>
@@ -319,6 +330,9 @@ XML</string>
                        <width>16777215</width>
                        <height>300</height>
                       </size>
+                     </property>
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -503,7 +517,7 @@ XML</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_19">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <layout class="QHBoxLayout" name="horizontalLayout_17">
             <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
@@ -571,22 +585,48 @@ XML</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QTableView" name="input_category_names_table_view"/>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_14">
-                     <property name="text">
-                      <string>Виконані заміни назв категорій</string>
+                    <widget class="QTableView" name="input_category_names_table_view">
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
+                     </property>
+                     <property name="horizontalScrollMode">
+                      <enum>QAbstractItemView::ScrollPerPixel</enum>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QTableView" name="output_category_names_table_view"/>
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Шаблони для заміни назв категорій</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableView" name="output_category_names_table_view">
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_17"/>
+                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                   <item>
+                    <widget class="QPushButton" name="add_category_row_push_button">
+                     <property name="text">
+                      <string>Додати рядок</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="delete_category_row_push_button">
+                     <property name="text">
+                      <string>Видалити рядок(-ки)</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </item>
@@ -660,22 +700,48 @@ XML</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QTableView" name="input_product_names_table_view"/>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="label_16">
-                     <property name="text">
-                      <string>Виконані заміни назв товарів</string>
+                    <widget class="QTableView" name="input_product_names_table_view">
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
+                     </property>
+                     <property name="horizontalScrollMode">
+                      <enum>QAbstractItemView::ScrollPerPixel</enum>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QTableView" name="output_product_names_table_view"/>
+                    <widget class="QLabel" name="label_16">
+                     <property name="text">
+                      <string>Шаблони для заміни назв товарів</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableView" name="output_product_names_table_view">
+                     <property name="alternatingRowColors">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_18"/>
+                  <layout class="QHBoxLayout" name="horizontalLayout_22">
+                   <item>
+                    <widget class="QPushButton" name="add_product_row_push_button">
+                     <property name="text">
+                      <string>Додати рядок</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="delete_product_row_push_button">
+                     <property name="text">
+                      <string>Видалити рядок(-ки)</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </item>
@@ -715,7 +781,7 @@ XML</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>820</width>
+     <width>797</width>
      <height>21</height>
     </rect>
    </property>
@@ -724,8 +790,8 @@ XML</string>
      <string>Файл</string>
     </property>
     <addaction name="open_action"/>
-    <addaction name="action"/>
-    <addaction name="action_2"/>
+    <addaction name="load_project_action"/>
+    <addaction name="save_project_action"/>
     <addaction name="exit_action"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -748,14 +814,14 @@ XML</string>
     <string>Вихід</string>
    </property>
   </action>
-  <action name="action">
+  <action name="load_project_action">
    <property name="text">
-    <string>Відкрити проект</string>
+    <string>Відкрити шаблон...</string>
    </property>
   </action>
-  <action name="action_2">
+  <action name="save_project_action">
    <property name="text">
-    <string>Зберегти проект</string>
+    <string>Зберегти шаблон...</string>
    </property>
   </action>
   <action name="action_about_qt">

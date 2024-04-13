@@ -24,3 +24,7 @@
 /XML_parser/
 /test_tree_view.py
 /build_categories_tree.py
+/.venv/
+/new_products_catalog_1.xml
+/__pycache__/mainwindow.cpython-312.pyc
+/__pycache__/ui_mainwindow.cpython-312.pyc

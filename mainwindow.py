@@ -1,10 +1,11 @@
 import copy
 import gc
+import json
 import pprint
 import re
-import networkx as nx
 
-from PySide6.QtCore import QSortFilterProxyModel, QModelIndex, QSignalBlocker
+import networkx as nx
+from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
@@ -15,8 +16,8 @@ from ui_mainwindow import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    DEFAULT_CATEGORY_NAME = "Без категорії"
-    DEFAULT_CATEGORY_ID = "-1"
+    # DEFAULT_CATEGORY_NAME = "Без категорії"
+    # DEFAULT_CATEGORY_ID = "-1"
 
     def __init__(self, app):
         super().__init__()
@@ -30,23 +31,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.parentid_childid_dict = {}
         self.block_parent_checkboxes_checking = False
 
+        # Important
         self.categoryid_parent_ids_dict = {}
         # hint: dict[category_id] = category_name_item
-        self.input_categories_dict: dict[str, QStandardItem] = {}
+        # Important
+        self.input_categories_dict: dict[str, str] = {}
         # hint: dict[category_id] = category_name_item
-            # self.output_categories_dict: dict[str, QStandardItem] = {}
+        # self.output_categories_dict: dict[str, QStandardItem] = {}
         # hint: self.input_products_dict[product_id].append({"category_id": product_id_item,
         #                                       "product_name": product_name_item,
         #                                       "product_price": product_price_item}
+        # important
         self.input_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
-            # self.output_products_dict: dict[str, dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]] = {}
+        # important
         self.input_categories_replacement_dict: dict[str, QStandardItem] = {}
+        # important dict[old_name] = ["new_name"]
         self.output_categories_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
+        # important dict[old_name] = ["new_name"]
         self.input_products_replacement_dict: dict[str, QStandardItem] = {}
+        # important
         self.output_products_replacement_dict: dict[str, dict[str: QStandardItem]] = {}
-
-        # self.input_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
-        # self.output_category_ids_products_dict: dict[str, list[dict[str:QStandardItem, str:QStandardItem, str:QStandardItem]]] = {}
+        # important
         self.input_xml_tree = None
         self.output_xml_tree = None
 
@@ -118,7 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_names_table_view.setEditTriggers(QTableView.NoEditTriggers)
 
         # Init of search output_category_names_table_view
-        output_category_header_name = ["Початкова назва", "Нова назва", "ID"]
+        output_category_header_name = ["Початкова назва", "Заміна на"]
         self.output_category_names_model = QStandardItemModel()
         self.output_category_names_model.setHorizontalHeaderLabels(output_category_header_name)
         self.output_category_names_proxy_model = QSortFilterProxyModel()
@@ -141,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_product_names_table_view.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
         # Init of search output_category_names_table_view
-        output_product_header_name = ["Початкова назва", "Нова назва", "ID"]
+        output_product_header_name = ["Початкова назва", "Заміна на"]
         self.output_product_names_model = QStandardItemModel()
         self.output_product_names_model.setHorizontalHeaderLabels(output_product_header_name)
         self.output_product_proxy_model = QSortFilterProxyModel()
@@ -193,20 +198,298 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
         self.replace_category_name_line_edit.textChanged.connect(self.replace_category_name_line_edit_text_change)
         self.replace_category_name_push_button.setEnabled(False)
-        self.replace_category_name_push_button.clicked.connect(self.replace_input_category_names)
+        self.replace_category_name_push_button.clicked.connect(self.replace_category_names)
 
         self.search_product_for_replace_line_edit.textChanged.connect(self.find_product_names_for_replace)
         self.replace_product_name_line_edit.textChanged.connect(self.replace_product_name_line_edit_text_change)
         self.replace_product_name_push_button.setEnabled(False)
-        self.replace_product_name_push_button.clicked.connect(self.replace_input_product_names)
+        self.replace_product_name_push_button.clicked.connect(self.replace_product_names)
+        self.check_all_input_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.input_products_model, True)
+        )
+        self.uncheck_all_input_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.input_products_model, False)
+        )
+        self.check_all_output_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.output_products_model, True)
+        )
+        self.uncheck_all_output_products_push_button.clicked.connect(
+            lambda: self.select_all_products(self.output_products_model, False)
+        )
 
-        # self.input_category_tree_view.clicked.connect(self.on_clicked_check_for_subcategories)
+        self.check_all_input_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.input_category_model, True)
+        )
+        self.uncheck_all_input_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.input_category_model, False)
+        )
+
+        self.check_all_output_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.output_category_model, True)
+        )
+        self.uncheck_all_output_categories_push_button.clicked.connect(
+            lambda: self.select_all_categories(self.output_category_model, False)
+        )
         self.input_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
         self.output_category_model.itemChanged.connect(self.on_clicked_check_for_subcategories)
-
-
+        self.add_category_row_push_button.clicked.connect(
+            lambda: self.add_table_row(self.output_category_names_model)
+        )
+        self.add_product_row_push_button.clicked.connect(
+            lambda: self.add_table_row(self.output_product_names_model)
+        )
+        self.delete_category_row_push_button.clicked.connect(
+            lambda: self.delete_table_rows(self.output_category_names_model)
+        )
+        self.delete_product_row_push_button.clicked.connect(
+            lambda: self.delete_table_rows(self.output_product_names_model)
+        )
+        # self.output_category_names_model.itemChanged.connect(self.on_select_pattern_item)  # add this line in
+        self.output_category_names_table_view.pressed.connect(
+            self.on_select_category_pattern_item
+        )
+        self.output_product_names_table_view.pressed.connect(
+            self.on_select_product_pattern_item
+        )
+        self.save_project_action.triggered.connect(self.save_data_to_disk)
+        self.load_project_action.triggered.connect(self.load_data_from_disk)
 
         self.xml_data = None
+
+    def load_data_from_disk(self):
+        load_dialog = QFileDialog()
+        load_dialog.setFileMode(QFileDialog.AnyFile)
+        load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        load_dialog.setNameFilter("JSON Files (*.json)")
+        if load_dialog.exec():
+            load_path = load_dialog.selectedFiles()[0]
+            with open(load_path, "r") as f:
+                data = json.loads(f.read())
+            if data is None:
+                return
+            self.clear_data_from_tables(self.output_category_names_model,
+                                        self.output_product_names_model)
+            MainWindow.set_data_to_names_table(self.output_category_names_model, data[0])
+            MainWindow.set_data_to_names_table(self.output_product_names_model, data[1])
+
+    @staticmethod
+    def clear_data_from_tables(*name_tables: QStandardItemModel):
+        for name_table in name_tables:
+            name_table.removeRows(0, name_table.rowCount())
+
+    # Create a method that saves the data from output_category_names_table_view
+    # and output_product_names_table_view to the disk using QSettings
+    def save_data_to_disk(self):
+        ocnt_dict = MainWindow.get_dict_from_names_table(self.output_category_names_model)
+        opnt_dict = MainWindow.get_dict_from_names_table(self.output_product_names_model)
+        names_table_dicts = [ocnt_dict, opnt_dict]
+        json_str = json.dumps(names_table_dicts)
+        save_dialog = QFileDialog()
+        # noinspection PyUnresolvedReferences
+        save_dialog.setFileMode(QFileDialog.AnyFile)
+        # noinspection PyUnresolvedReferences
+        save_dialog.setAcceptMode(QFileDialog.AcceptSave)
+        save_dialog.setNameFilter("JSON Files (*.json)")
+        if save_dialog.exec():
+            save_path = save_dialog.selectedFiles()[0]
+            with open(save_path, "w") as f:
+                f.write(json_str)
+            print(f"XML {save_path} created")
+            return
+
+    @staticmethod
+    def get_dict_from_names_table(model) -> dict:
+        row_count = model.rowCount()
+        row = 0
+        data_dict = {}
+        while row < row_count:
+            old_name = model.item(row, 0).data(Qt.DisplayRole)
+            new_name = model.item(row, 1).data(Qt.DisplayRole)
+            data_dict[row] = {"old_name": old_name, "new_name": new_name}
+            row += 1
+        return data_dict
+
+    @staticmethod
+    def set_data_to_names_table(model, data_dict):
+        for row in data_dict:
+            old_name = data_dict[row]["old_name"]
+            new_name = data_dict[row]["new_name"]
+            old_item = QStandardItem(old_name)
+            new_item = QStandardItem(new_name)
+            old_item.setCheckable(True)
+            model.appendRow([old_item, new_item])
+
+    def on_select_category_pattern_item(self, index):
+        text = index.data(Qt.DisplayRole)
+        column = index.column()
+        print("Selected pattern: ", text)
+        if text is not None:
+            if column == 0:
+                self.search_category_for_replace_line_edit.setText(text)
+            elif column == 1:
+                self.replace_category_name_line_edit.setText(text)
+
+    def on_select_product_pattern_item(self, index):
+        text = index.data(Qt.DisplayRole)
+        column = index.column()
+        print("Selected pattern: ", text)
+        if text is not None:
+            if column == 0:
+                self.search_product_for_replace_line_edit.setText(text)
+            elif column == 1:
+                self.replace_product_name_line_edit.setText(text)
+
+    @staticmethod
+    def add_table_row(model):
+        name_item = QStandardItem()
+        name_item.setCheckable(True)
+        model.appendRow([name_item])
+
+    @staticmethod
+    def delete_table_rows(model):
+        row_count = model.rowCount()
+        row = 0
+        while row < row_count:
+            item = model.item(row, 0)
+            if item.checkState() == Qt.Checked:
+                model.removeRow(row)
+                row_count -= 1
+            else:
+                row += 1
+
+    @staticmethod
+    def select_all_products(model, checked):
+        row_count = model.rowCount()
+        for row in range(row_count):
+            if checked:
+                model.item(row, 0).setCheckState(Qt.Checked)
+            else:
+                model.item(row, 0).setCheckState(Qt.Unchecked)
+
+    @staticmethod
+    def select_all_categories(model, checked):
+        row_count = model.rowCount()
+        for row in range(row_count):
+            if checked:
+                model.item(row, 0).setCheckState(Qt.Checked)
+            else:
+                model.item(row, 0).setCheckState(Qt.Unchecked)
+
+    def replace_category_names(self):
+        old_category_name = self.search_category_for_replace_line_edit.text()
+        new_category_name = self.replace_category_name_line_edit.text()
+
+        category_ids = []
+        for category_id, category_item_name in self.input_categories_replacement_dict.items():
+            category_name = category_item_name.data(Qt.DisplayRole)
+            if old_category_name in category_name:
+                category_ids.append(category_id)
+        pprint.pp(category_ids)
+
+        self.replace_words_in_input_categories_dicts(category_ids, old_category_name, new_category_name)
+        self.replace_words_in_tree_categories_table(self.input_category_model, category_ids)
+        self.replace_words_in_tree_categories_table(self.output_category_model, category_ids)
+        self.__replace_category_words_in_output_xml_tree(category_ids)
+
+    def replace_product_names(self):
+        old_product_name = self.search_product_for_replace_line_edit.text()
+        new_product_name = self.replace_product_name_line_edit.text()
+        product_ids_description = self.get_products_description_ids(old_product_name)
+        product_ids_names = self.get_products_names_ids(old_product_name)
+        for product_id, product_item_name in self.input_products_dict.items():
+            product_name = product_item_name["product_name"].data(Qt.DisplayRole)
+            if product_id in product_ids_names:
+                print("-----------------", "-" * len(product_name), sep="")
+                print("Old product name:", product_name)
+                while old_product_name in product_name:
+                    product_name = product_name.replace(old_product_name, new_product_name)
+                print("New product name:", product_name)
+                product_item_name["product_name"].setData(product_name, Qt.DisplayRole)
+        product_ids = set()
+        product_ids.update(product_ids_names)
+        product_ids.update(product_ids_description)
+        self.replace_words_in_input_product_names_table(product_ids_names)
+        self.__replace_product_words_in_output_xml_tree(product_ids)
+
+    def replace_words_in_input_product_names_table(self, category_ids):
+        for product_id, product_item_name in self.input_products_replacement_dict.items():
+            product_item_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
+            if product_id in category_ids:
+                self.input_products_replacement_dict[product_id].setText(product_item_name)
+
+    def __replace_product_words_in_output_xml_tree(self, product_ids):
+        output_xml_tree = self.output_xml_tree
+        offers_elements_list = output_xml_tree.xpath("//offer")
+        for offer in offers_elements_list:
+            product_id = offer.get("id")
+            if product_id in product_ids:
+                # ts000027787
+                self.change_name_tag(offer, product_id)
+                description_tag, description_text = self.change_description_tag(offer)
+                if description_text is not None and len(description_text) > 0:
+                    description_tag.text = description_text
+
+        pprint.pp(offers_elements_list[0])
+
+    def change_description_tag(self, offer):
+        description_tag = offer.xpath("description")[0]
+        description_text = description_tag.text
+        description_text = self.find_and_replace_in_description_tag(description_text)
+        return description_tag, description_text
+
+    def change_name_tag(self, offer, product_id):
+        product_name_tag = offer.xpath("name")[0]
+        product_name = self.input_products_dict[product_id]["product_name"].data(Qt.DisplayRole)
+        product_name_tag.text = product_name
+
+    def find_and_replace_in_description_tag(self, description_tag_text):
+        old_product_name = self.search_product_for_replace_line_edit.text()
+        new_product_name = self.replace_product_name_line_edit.text()
+        if description_tag_text is None:
+            return None
+        while old_product_name in description_tag_text:
+            description_tag_text = description_tag_text.replace(old_product_name, new_product_name)
+        return description_tag_text
+
+    def __replace_category_words_in_output_xml_tree(self, category_ids):
+        output_xml_tree = self.output_xml_tree
+        categories_elements_list = output_xml_tree.xpath("//category")
+        for category in categories_elements_list:
+            category_id = category.get("id")
+            if category_id in category_ids:
+                category.text = self.input_categories_dict[category_id]
+
+    def replace_words_in_tree_categories_table(self, input_model, category_ids):
+        row_count = input_model.rowCount()
+        for row in range(row_count):
+            name_item = input_model.item(row, 0)
+            self.check_id_and_change(category_ids, name_item)
+            self.iterate_categories_tree_and_replace_words(name_item, category_ids)
+
+    def check_id_and_change(self, category_ids, name_item):
+        id_item_value = name_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
+        if id_item_value in category_ids:
+            new_item_name = self.input_categories_dict[id_item_value]
+            name_item.setData(new_item_name, Qt.DisplayRole)
+
+    def iterate_categories_tree_and_replace_words(self, name_item, category_ids):
+        if name_item.hasChildren():
+            for i in range(name_item.rowCount()):
+                child_item = name_item.child(i)
+                self.check_id_and_change(category_ids, child_item)
+                self.iterate_categories_tree_and_replace_words(child_item, category_ids)
+
+    def replace_words_in_input_categories_dicts(self, category_ids, old_category_name: str, new_category_name: str):
+        print("Replaced words in input input_categories_dict:")
+        for category_id in category_ids:
+            category_name = self.input_categories_dict[category_id]
+            print("Old category:", category_name)
+            while old_category_name in category_name:
+                category_name = category_name.replace(old_category_name, new_category_name)
+            print("New category:", category_name)
+            print("--" * len(category_name))
+            self.input_categories_dict[category_id] = category_name
+            self.input_categories_replacement_dict[category_id].setData(category_name, Qt.DisplayRole)
 
     def on_clicked_check_for_subcategories(self, item):
         if self.block_parent_checkboxes_checking is False:
@@ -330,9 +613,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 "Верхня межа не може бути менше за нижню!",
                                 QMessageBox.Ok)
 
+    def convert_to_csv(self, output_xml):
+        pass
+
     def get_new_xml(self):
         # output_category_model = self.output_category_tree_view.model().sourceModel()
         final_product_model = self.output_products_table_view.model().sourceModel()
+
+        if self.output_xml_tree is None:
+            return
+        output_xml_tree = self.output_xml_tree
 
         chosen_id_products_dict = {}
         for row in range(final_product_model.rowCount()):
@@ -346,12 +636,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 chosen_id_products_dict[product_id]["wholesale_price"] = wholesale_price
             if drop_price != 0:
                 chosen_id_products_dict[product_id]["drop_price"] = drop_price
-
-        # Create a copy of self.input_xml_tree
-        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
-        output_xml_tree = self.output_xml_tree
-        if output_xml_tree is None:
-            return
 
         # Remove unselected categories
         categories_elements_list = output_xml_tree.xpath("//category")
@@ -388,6 +672,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price_drop.text = str(drop_price)
                     price.addnext(price_drop)
 
+        # self.write_to_csv(chosen_id_products_dict)
+
         # Create a window for saving a new xml file
         save_dialog = QFileDialog()
         # noinspection PyUnresolvedReferences
@@ -402,6 +688,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.correction_of_the_xml_elements(save_path)
             print(f"XML {save_path} created")
             return
+
+    # def write_to_csv(self, selected_products_ids_dict: dict):
+    #     import csv
+    #     with open("output_categories.csv", 'w', newline='') as csvfile:
+    #         csvwriter = csv.writer(csvfile, delimiter=';')
+    #         csvwriter.writerow(["category", "id", "parent_id"])
+    #         for category_id in self.selected_categories_ids:
+    #             category_name = self.input_categories_dict[category_id]
+    #             parent_id = self.categoryid_parent_ids_dict[category_id]
+    #             csvwriter.writerow([category_name, category_id, parent_id])
+    #
+    #     with open("output_products.csv", 'w', newline='') as csvfile:
+    #         csvwriter = csv.writer(csvfile, delimiter=';')
+    #         csvwriter.writerow(["product_name", "wholesale_price", "drop_price", "id", "category_id"])
+    #         for product_id in selected_products_ids_dict.keys():
+    #             product_name = selected_products_ids_dict[product_id]["product_name"]
+    #             wholesale_price = selected_products_ids_dict[product_id]["wholesale_price"]
+    #             drop_price = selected_products_ids_dict[product_id]["drop_price"]
+    #             category_id = self.input_products_dict[product_id]["category_id"].data(Qt.DisplayRole)
+    #             csvwriter.writerow([product_name, wholesale_price, drop_price, product_id, category_id])
 
     @staticmethod
     def correction_of_the_xml_elements(filename: str):
@@ -519,7 +825,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for col in range(input_col_count):
                     item_data = input_model.takeItem(row, col)
                     header_name = input_model.headerData(col, Qt.Horizontal)
-                    input_table_dict[header_name].append(item_data.data(Qt.DisplayRole))
+                    input_table_dict[header_name].append(item_data)
                 input_model.removeRow(row)
                 input_table_row_count -= 1
             else:
@@ -534,16 +840,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             out_table_row_items = []
             for col in range(output_table_col_count):
                 out_col_name = output_table_dict[col]
-                new_item = QStandardItem()
-
                 if out_col_name in input_table_dict:
-                    new_item.setData(input_table_dict[out_col_name][row], Qt.DisplayRole)
+                    new_item = input_table_dict[out_col_name][row]
+                    out_table_row_items.append(new_item)
                 else:
+                    new_item = QStandardItem()
                     new_item.setData(0, Qt.DisplayRole)
+                    out_table_row_items.append(new_item)
 
                 new_item.setCheckable(True if col == 0 else False)
                 new_item.setEditable(False)
-                out_table_row_items.append(new_item)
             output_model.appendRow(out_table_row_items)
 
         input_tabel.resizeColumnsToContents()
@@ -565,7 +871,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 row_items = input_products_model.takeRow(row)
                 name_item = row_items[0]
                 name_item.setCheckState(Qt.Unchecked)
-                # input_products_model.removeRow(row)
                 self.input_products_ids.remove(product_id)
                 input_table_row_count -= 1
             else:
@@ -652,7 +957,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clone_items_from_input_table(self, input_item: QStandardItem):
         check_state: Qt.CheckState = input_item.checkState()
         if check_state != Qt.Unchecked:
-            # TODO: make an optimization here
             clone_name_item = QStandardItem(input_item)
             clone_name_item.setCheckable(True)
             clone_id_item = QStandardItem()
@@ -700,9 +1004,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # open xml file
     def open_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(filter="XML Files (*.xml)")
-        self.init_tables(file_path)
-        print("File closed")
+        load_dialog = QFileDialog()
+        load_dialog.setFileMode(QFileDialog.AnyFile)
+        load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        load_dialog.setNameFilter("XML Files (*.xml)")
+        if load_dialog.exec():
+            load_path = load_dialog.selectedFiles()[0]
+            self.init_tables(load_path)
+            print("File closed")
 
     def init_tables(self, file_path):
         if not self.parse(file_path):
@@ -720,9 +1029,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populate_input_products_replacement_table()
 
     def populate_input_products_replacement_table(self):
-        for product_id_item, product_data in self.input_products_replacement_dict.items():
+        for product_id, product_data in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
-            product_id_item.setData(product_id_item, Qt.DisplayRole)
+            product_id_item.setData(product_id, Qt.DisplayRole)
+            product_id_item.setEditable(False)
+            product_data.setEditable(False)
             self.input_product_names_model.appendRow([product_data, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
@@ -738,6 +1049,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
+
+        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+
         self.get_category_ids_and_names_from_xml()
         self.get_offers_from_xml()
         gc.collect()
@@ -760,9 +1074,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for category in category_elems:
             category_id, category_name_item = self.create_category_item(category)
             self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
-            self.input_categories_dict[category_id] = category_name_item
+            self.input_categories_dict[category_id] = category_name_item.data(Qt.DisplayRole)
             category_id, category_name_item = self.create_category_item(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
+            self.output_categories_replacement_dict[category_name_item.data(Qt.DisplayRole)] = set()
 
     def create_product(self, offer_tag):
         product_id = offer_tag.get("id").strip()
@@ -782,6 +1097,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         product_name_item.setData(product_name, Qt.DisplayRole)
         product_name_item.setCheckable(True)
         return product_name_item
+
+    def get_products_description_ids(self, old_product_name) -> set[str]:
+        product_ids = set()
+        output_xml_tree = self.output_xml_tree
+        offer_tags = output_xml_tree.xpath("//offer")
+        for offer_tag in offer_tags:
+            description_text = offer_tag.xpath("description")[0].text
+            if description_text is not None and old_product_name in description_text:
+                product_id = offer_tag.get("id").strip()
+                product_ids.add(product_id)
+        return product_ids
 
     @staticmethod
     def create_category_item(category):
@@ -810,7 +1136,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 graph.add_edge(parent_id, child_id)
 
         for parent_id in parents_list:
-            input_item = self.input_categories_dict[parent_id]
+            input_item_name = self.input_categories_dict[parent_id]
+            input_item = QStandardItem(input_item_name)
+            input_item.setCheckable(True)
             self.input_category_model.appendRow([input_item, QStandardItem(parent_id)])
             self.dfs(graph, parent_id, input_item)
         self.input_category_tree_view.resizeColumnToContents(0)
@@ -820,5 +1148,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(" " * indent, parent_item.data(Qt.DisplayRole))
         for child_id in graph.neighbors(child_id):
             item = self.input_categories_dict[child_id]
+            item = QStandardItem(item)
+            item.setCheckable(True)
             parent_item.appendRow([item, QStandardItem(child_id)])
             self.dfs(graph, child_id, item, indent + 2)
+
+    def get_products_names_ids(self, old_product_name):
+        product_ids_names = set()
+        for product_id, product_name in self.input_products_dict.items():
+            if old_product_name in product_name["product_name"].data(Qt.DisplayRole):
+                product_ids_names.add(product_id)
+        return product_ids_names
