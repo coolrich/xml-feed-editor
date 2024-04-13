@@ -391,6 +391,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.replace_words_in_tree_categories_table(self.input_category_model, category_ids)
         self.replace_words_in_tree_categories_table(self.output_category_model, category_ids)
         self.__replace_category_words_in_output_xml_tree(category_ids)
+        self.find_category_names_for_replace(self.search_category_for_replace_line_edit.text())
 
     def replace_product_names(self):
         old_product_name = self.search_product_for_replace_line_edit.text()
@@ -411,6 +412,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         product_ids.update(product_ids_description)
         self.replace_words_in_input_product_names_table(product_ids_names)
         self.__replace_product_words_in_output_xml_tree(product_ids)
+        self.find_product_names_for_replace(self.search_product_for_replace_line_edit.text())
 
     def replace_words_in_input_product_names_table(self, category_ids):
         for product_id, product_item_name in self.input_products_replacement_dict.items():
