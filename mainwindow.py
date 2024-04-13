@@ -663,10 +663,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price.text = str(wholesale_price)
 
                 if "drop_price" in output_id_products_dict[product_id].keys():
-                    drop_price = output_id_products_dict[product_id]["drop_price"]
-                    price_drop = etree.Element("price_drop")
-                    price_drop.text = str(drop_price)
-                    price.addnext(price_drop)
+                    price_drop = output_id_products_dict[product_id]["drop_price"]
+                    price_drop_tag = offer.xpath("price_drop")
+                    if not price_drop_tag:
+                        drop_price_tag = etree.Element("price_drop")
+                        drop_price_tag.text = str(price_drop)
+                        price.addnext(drop_price_tag)
+                    else:
+                        price_drop_tag[0].text = str(price_drop)
 
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
