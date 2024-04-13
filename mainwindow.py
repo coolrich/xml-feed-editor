@@ -634,7 +634,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         self.write_to_csv(output_id_products_dict, save_path)
 
-
     def change_xml(self, output_id_products_dict, output_xml_tree):
         # Remove unselected categories
         categories_elements_list = output_xml_tree.xpath("//category")
@@ -685,7 +684,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 output_id_products_dict[product_id]["drop_price"] = drop_price
         return output_id_products_dict
 
-    def save_as(self, file_format):
+    @staticmethod
+    def save_as(file_format):
         # Create a window for saving a new xml file
         save_dialog = QFileDialog()
         # noinspection PyUnresolvedReferences
