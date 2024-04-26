@@ -528,7 +528,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def find_category_names_for_replace(self, text):
         self.input_category_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_category_names_proxy_model.setFilterRegularExpression(text)
+        self.input_category_names_proxy_model.setFilterFixedString(text)
         input_category_names_count = self.input_category_names_proxy_model.rowCount()
         if (input_category_names_count == 0
                 or text == ""
@@ -539,7 +539,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def find_product_names_for_replace(self, text):
         self.input_product_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_product_names_proxy_model.setFilterRegularExpression(text)
+        self.input_product_names_proxy_model.setFilterFixedString(text)
         input_product_count = self.input_product_names_proxy_model.rowCount()
         if (input_product_count == 0
                 or text == ""
@@ -580,7 +580,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def find_in_input_categories(self, text):
         self.input_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_category_proxy_model.setFilterRegularExpression(text)
+        self.input_category_proxy_model.setFilterFixedString(text)
 
     def find_in_output_categories(self, text):
         self.output_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
