@@ -670,6 +670,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     else:
                         price_drop_tag[0].text = str(price_drop)
 
+                # Get all picture tags. Reduce their count to 10 from end.
+                pictures: list = offer.xpath("picture")
+                if len(pictures) > 10:
+                    print("Deleting of the picture elements:")
+                    for i in range((len(pictures) - 10)):
+                        picture_element = pictures.pop()
+                        picture_element.getparent().remove(picture_element)
+                        print("Deleted:", picture_element)
+
+
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
         output_id_products_dict = {}
