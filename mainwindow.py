@@ -192,8 +192,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_output_xml_push_button.clicked.connect(self.get_output_xml)
         self.get_output_csv_push_button.clicked.connect(self.get_output_csv)
-        self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
-        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
+        # self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
+        # self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
 
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
@@ -660,7 +660,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if "drop_price" in output_id_products_dict[product_id].keys():
+                if self.add_drop_price_check_box.checkState() == Qt.Checked and "drop_price" in output_id_products_dict[product_id].keys():
                     price_drop = output_id_products_dict[product_id]["drop_price"]
                     price_drop_tag = offer.xpath("price_drop")
                     if not price_drop_tag:
@@ -765,6 +765,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         upper_price_limit = self.upper_price_limit_spin_box.value()
         multiplier = self.multiplier_double_spin_box.value()
         resulted_products_list = []
+
+        # Display alert menu
+        if bottom_price_limit > upper_price_limit:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Нижня цінова границя повинна бути меншою за верхню")
+            msg.setWindowTitle("Помилка налаштувань цінових діапазонів")
+            msg.exec()
+            return
 
         # Get all products from self.output_products_table_view model
         fptv_tabel = self.output_products_table_view
