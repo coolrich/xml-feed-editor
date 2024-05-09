@@ -192,8 +192,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_output_xml_push_button.clicked.connect(self.get_output_xml)
         self.get_output_csv_push_button.clicked.connect(self.get_output_csv)
-        # self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
-        # self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
 
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
@@ -596,14 +594,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def about_qt(self):
         QMessageBox.aboutQt(self)
-
-    def checkForBottomPriceValue(self, value):
-        if value > self.upper_price_limit_spin_box.value():
-            self.bottom_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value())
-
-    def checkForUpperPriceValue(self, value):
-        if value < self.bottom_price_limit_spin_box.value():
-            self.upper_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value())
 
     def get_output_xml(self):
         if self.output_xml_tree is None:
