@@ -754,7 +754,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         bottom_price_limit = self.bottom_price_limit_spin_box.value()
         upper_price_limit = self.upper_price_limit_spin_box.value()
         multiplier = self.multiplier_double_spin_box.value()
-        resulted_products_list = []
 
         # Display alert menu
         if bottom_price_limit > upper_price_limit:
