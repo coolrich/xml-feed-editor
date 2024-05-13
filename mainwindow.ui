@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>XML parser</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -180,7 +180,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>759</width>
+               <width>784</width>
                <height>816</height>
               </rect>
              </property>

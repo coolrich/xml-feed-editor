@@ -1,20 +1,79 @@
 import copy
 import gc
 import json
+import os
 import pprint
 import re
 
 import networkx as nx
 import requests
+import wget
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView, QInputDialog, \
+    QWidget
 from lxml import etree
 from lxml.etree import ElementTree
 
 from ui_mainwindow import Ui_MainWindow
+from ui_download_xml_window import Ui_DownloadXmlWindow
 
+
+class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
+    def __init__(self, mainwindow):
+        super().__init__()
+        self.setupUi(self)
+        self.download_xml_push_button.clicked.connect(self.download_file)
+        self.mainwindow = mainwindow
+
+    def download_file(self):
+        url = self.url_line_edit.text()
+        if not re.match(r'^https?://', url):
+            error_message = "URL is not valid. It should start with 'https://'."
+            # Show the error message
+            QMessageBox.critical(self, "Error", error_message)
+            return
+        print("Url is valid")
+        timeout = self.timeout_spin_box.value() * 60
+        response = None
+        try:
+            headers = {
+                "User-Agent": "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.Version/33833",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "Referer": "https://www.opera.com/",
+                "Upgrade-Insecure-Requests": "1",
+            }
+
+            # Запит до URL з хедерами
+            response = requests.get(url, headers=headers, timeout=timeout)
+            response.raise_for_status()
+            print("File downloaded successfully.")
+            print("Demonstration of the content of the downloaded file(5000 symbols):")
+            print(response.text[:5000] + "...")
+            if response.status_code == 200:
+                content = response.content
+                # Save the content to a file
+                with open("downloaded_file.xml", "wb") as file:
+                    file.write(content)
+                print("File saved successfully.")
+                self.mainwindow.open_file("downloaded_file.xml")
+                self.close()
+            else:
+                raise requests.exceptions.RequestException
+            #     # Create an error message
+            #     error_message = f"Failed to download file. Status code: {response.status_code}"
+            #     # Show the error message
+            #     QMessageBox.critical(self, "Error", error_message)
+        except requests.exceptions.RequestException as e:
+            # Create an error message
+            error_message = f"Failed to download file. Error: {e}"
+            # Show the error message
+            QMessageBox.critical(self, "Error", error_message)
+            return
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     # DEFAULT_CATEGORY_NAME = "Без категорії"
@@ -25,6 +84,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("XML parser")
         self.setupUi(self)
         self.app = app
+        self.download_xml_window = DownloadXmlDialog(self)
+
 
         self.selected_categories_ids = []
         self.input_products_ids = []
@@ -253,21 +314,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
-        # Open file open_file()
-        self.download_xml_action.triggered.connect(self.download_file())
+        self.download_xml_action.triggered.connect(self.download_xml_window.show)
 
         self.xml_data = None
 
-    def download_file(self):
-        url = "https://example.com/example.xml"
-        # Завантаження файлу
-        response = requests.get(url)
-        # Перевірка успішного завантаження
-        if response.status_code == 200:
-            # Зчитування вмісту XML-файлу
-            content = response.content
-        else:
-            print("Помилка завантаження XML: ", response.status_code)
+    def __delete__(self, instance):
+        self.download_xml_window.close()
 
     def load_data_from_disk(self):
         load_dialog = QFileDialog()
@@ -417,7 +469,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print("Old product name:", product_name)
                 # while old_product_name in product_name:
                 #     product_name = product_name.replace(old_product_name, new_product_name)
-                product_name = re.sub(old_product_name, new_product_name, product_name, flags=(re.IGNORECASE | re.MULTILINE))
+                product_name = re.sub(old_product_name, new_product_name, product_name,
+                                      flags=(re.IGNORECASE | re.MULTILINE))
                 print("New product name:", product_name)
                 product_item_name["product_name"].setData(product_name, Qt.DisplayRole)
         product_ids = set()
@@ -465,7 +518,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return None
         # while old_product_name.lower() in description_tag_text.lower():
         #     description_tag_text = description_tag_text.replace(old_product_name, new_product_name)
-        description_tag_text = re.sub(old_product_name, new_product_name, description_tag_text, flags=(re.IGNORECASE | re.MULTILINE))
+        description_tag_text = re.sub(old_product_name, new_product_name, description_tag_text,
+                                      flags=(re.IGNORECASE | re.MULTILINE))
         return description_tag_text
 
     def __replace_category_words_in_output_xml_tree(self, category_ids):
@@ -502,7 +556,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_name = self.input_categories_dict[category_id]
             print("Old category:", category_name)
             # while old_category_name.lower() in category_name.lower():
-                # category_name = category_name.replace(old_category_name, new_category_name)
+            # category_name = category_name.replace(old_category_name, new_category_name)
             category_name = re.sub(old_category_name, new_category_name, category_name, flags=re.IGNORECASE)
             print("New category:", category_name)
             print("--" * len(category_name))
@@ -664,7 +718,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if self.add_drop_price_check_box.checkState() == Qt.Checked and "drop_price" in output_id_products_dict[product_id].keys():
+                if self.add_drop_price_check_box.checkState() == Qt.Checked and "drop_price" in output_id_products_dict[
+                    product_id].keys():
                     price_drop = output_id_products_dict[product_id]["drop_price"]
                     price_drop_tag = offer.xpath("price_drop")
                     if not price_drop_tag:
@@ -682,7 +737,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         picture_element = pictures.pop()
                         picture_element.getparent().remove(picture_element)
                         print("Deleted:", picture_element)
-
 
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
@@ -1035,15 +1089,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.iterate_output_category_tree_and_insert(child)
 
     # open xml file
-    def open_file(self):
-        load_dialog = QFileDialog()
-        load_dialog.setFileMode(QFileDialog.AnyFile)
-        load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
-        load_dialog.setNameFilter("XML Files (*.xml)")
-        if load_dialog.exec():
-            load_path = load_dialog.selectedFiles()[0]
+    def open_file(self, load_path=None):
+        if load_path is not None:
+            if not os.path.isfile(load_path):
+                raise FileNotFoundError
             self.init_tables(load_path)
-            print("File closed")
+        else:
+            load_dialog = QFileDialog()
+            load_dialog.setFileMode(QFileDialog.AnyFile)
+            load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+            load_dialog.setNameFilter("XML Files (*.xml)")
+
+            if load_dialog.exec():
+                load_path = load_dialog.selectedFiles()[0]
+                self.init_tables(load_path)
+        print("File closed")
 
     def init_tables(self, file_path):
         if not self.parse(file_path):
