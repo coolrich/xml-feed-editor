@@ -192,8 +192,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.apply_multiplier_push_button.clicked.connect(self.apply_multiplier)
         self.get_output_xml_push_button.clicked.connect(self.get_output_xml)
         self.get_output_csv_push_button.clicked.connect(self.get_output_csv)
-        self.bottom_price_limit_spin_box.valueChanged.connect(self.checkForBottomPriceValue)
-        self.upper_price_limit_spin_box.valueChanged.connect(self.checkForUpperPriceValue)
         self.action_about_qt.triggered.connect(self.about_qt)
 
         self.search_category_for_replace_line_edit.textChanged.connect(self.find_category_names_for_replace)
@@ -383,7 +381,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_ids = []
         for category_id, category_item_name in self.input_categories_replacement_dict.items():
             category_name = category_item_name.data(Qt.DisplayRole)
-            if old_category_name in category_name:
+            if old_category_name.lower() in category_name.lower():
                 category_ids.append(category_id)
         pprint.pp(category_ids)
 
@@ -403,8 +401,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if product_id in product_ids_names:
                 print("-----------------", "-" * len(product_name), sep="")
                 print("Old product name:", product_name)
-                while old_product_name in product_name:
-                    product_name = product_name.replace(old_product_name, new_product_name)
+                # while old_product_name in product_name:
+                #     product_name = product_name.replace(old_product_name, new_product_name)
+                product_name = re.sub(old_product_name, new_product_name, product_name, flags=(re.IGNORECASE | re.MULTILINE))
                 print("New product name:", product_name)
                 product_item_name["product_name"].setData(product_name, Qt.DisplayRole)
         product_ids = set()
@@ -450,8 +449,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         new_product_name = self.replace_product_name_line_edit.text()
         if description_tag_text is None:
             return None
-        while old_product_name in description_tag_text:
-            description_tag_text = description_tag_text.replace(old_product_name, new_product_name)
+        # while old_product_name.lower() in description_tag_text.lower():
+        #     description_tag_text = description_tag_text.replace(old_product_name, new_product_name)
+        description_tag_text = re.sub(old_product_name, new_product_name, description_tag_text, flags=(re.IGNORECASE | re.MULTILINE))
         return description_tag_text
 
     def __replace_category_words_in_output_xml_tree(self, category_ids):
@@ -487,8 +487,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for category_id in category_ids:
             category_name = self.input_categories_dict[category_id]
             print("Old category:", category_name)
-            while old_category_name in category_name:
-                category_name = category_name.replace(old_category_name, new_category_name)
+            # while old_category_name.lower() in category_name.lower():
+                # category_name = category_name.replace(old_category_name, new_category_name)
+            category_name = re.sub(old_category_name, new_category_name, category_name, flags=re.IGNORECASE)
             print("New category:", category_name)
             print("--" * len(category_name))
             self.input_categories_dict[category_id] = category_name
@@ -525,7 +526,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def find_category_names_for_replace(self, text):
         self.input_category_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_category_names_proxy_model.setFilterRegularExpression(text)
+        self.input_category_names_proxy_model.setFilterFixedString(text)
         input_category_names_count = self.input_category_names_proxy_model.rowCount()
         if (input_category_names_count == 0
                 or text == ""
@@ -536,7 +537,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def find_product_names_for_replace(self, text):
         self.input_product_names_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_product_names_proxy_model.setFilterRegularExpression(text)
+        self.input_product_names_proxy_model.setFilterFixedString(text)
         input_product_count = self.input_product_names_proxy_model.rowCount()
         if (input_product_count == 0
                 or text == ""
@@ -577,39 +578,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def find_in_input_categories(self, text):
         self.input_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.input_category_proxy_model.setFilterRegularExpression(text)
+        self.input_category_proxy_model.setFilterFixedString(text)
 
     def find_in_output_categories(self, text):
         self.output_category_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.output_category_proxy_model.setFilterFixedString(text)
 
     def find_in_input_products(self, text):
-        self.input_products_table_view.model().setFilterFixedString(text)
         self.input_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.input_products_table_view.model().setFilterFixedString(text)
 
     def find_in_output_products(self, text):
-        self.output_products_table_view.model().setFilterFixedString(text)
         self.output_products_table_view.model().setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.output_products_table_view.model().setFilterFixedString(text)
 
     def about_qt(self):
         QMessageBox.aboutQt(self)
-
-    def checkForBottomPriceValue(self, value):
-        if value > self.upper_price_limit_spin_box.value():
-            self.bottom_price_limit_spin_box.setValue(self.upper_price_limit_spin_box.value())
-            # Show a warning window with message Нижня межа не може перевищувати верхню
-            # noinspection PyUnresolvedReferences
-            QMessageBox.warning(self, "Попередження",
-                                "Нижня межа не може перевищувати верхню",
-                                QMessageBox.Ok)
-
-    def checkForUpperPriceValue(self, value):
-        if value < self.bottom_price_limit_spin_box.value():
-            self.upper_price_limit_spin_box.setValue(self.bottom_price_limit_spin_box.value())
-            # noinspection PyUnresolvedReferences
-            QMessageBox.warning(self, "Попередження",
-                                "Верхня межа не може бути менше за нижню!",
-                                QMessageBox.Ok)
 
     def get_output_xml(self):
         if self.output_xml_tree is None:
@@ -666,7 +650,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
 
-                if "drop_price" in output_id_products_dict[product_id].keys():
+                if self.add_drop_price_check_box.checkState() == Qt.Checked and "drop_price" in output_id_products_dict[product_id].keys():
                     price_drop = output_id_products_dict[product_id]["drop_price"]
                     price_drop_tag = offer.xpath("price_drop")
                     if not price_drop_tag:
@@ -675,6 +659,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         price.addnext(drop_price_tag)
                     else:
                         price_drop_tag[0].text = str(price_drop)
+
+                # Get all picture tags. Reduce their count to 10 from end.
+                pictures: list = offer.xpath("picture")
+                if len(pictures) > 10:
+                    print("Deleting of the picture elements:")
+                    for i in range((len(pictures) - 10)):
+                        picture_element = pictures.pop()
+                        picture_element.getparent().remove(picture_element)
+                        print("Deleted:", picture_element)
+
 
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
@@ -760,7 +754,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         bottom_price_limit = self.bottom_price_limit_spin_box.value()
         upper_price_limit = self.upper_price_limit_spin_box.value()
         multiplier = self.multiplier_double_spin_box.value()
-        resulted_products_list = []
+
+        # Display alert menu
+        if bottom_price_limit > upper_price_limit:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Нижня цінова границя повинна бути меншою за верхню")
+            msg.setWindowTitle("Помилка налаштувань цінових діапазонів")
+            msg.exec()
+            return
 
         # Get all products from self.output_products_table_view model
         fptv_tabel = self.output_products_table_view
@@ -1120,7 +1122,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         offer_tags = output_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
             description_text = offer_tag.xpath("description")[0].text
-            if description_text is not None and old_product_name in description_text:
+            if description_text is not None and old_product_name.lower() in description_text.lower():
                 product_id = offer_tag.get("id").strip()
                 product_ids.add(product_id)
         return product_ids
@@ -1172,6 +1174,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def get_products_names_ids(self, old_product_name):
         product_ids_names = set()
         for product_id, product_name in self.input_products_dict.items():
-            if old_product_name in product_name["product_name"].data(Qt.DisplayRole):
+            if old_product_name.lower() in product_name["product_name"].data(Qt.DisplayRole).lower():
                 product_ids_names.add(product_id)
         return product_ids_names
