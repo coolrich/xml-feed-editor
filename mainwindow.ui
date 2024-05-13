@@ -180,7 +180,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>784</width>
+               <width>759</width>
                <height>816</height>
               </rect>
              </property>
@@ -834,6 +834,7 @@ XML</string>
      <string>Файл</string>
     </property>
     <addaction name="open_action"/>
+    <addaction name="download_xml_action"/>
     <addaction name="load_project_action"/>
     <addaction name="save_project_action"/>
     <addaction name="exit_action"/>
@@ -860,17 +861,22 @@ XML</string>
   </action>
   <action name="load_project_action">
    <property name="text">
-    <string>Відкрити шаблон...</string>
+    <string>Відкрити шаблон</string>
    </property>
   </action>
   <action name="save_project_action">
    <property name="text">
-    <string>Зберегти шаблон...</string>
+    <string>Зберегти шаблон</string>
    </property>
   </action>
   <action name="action_about_qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="download_xml_action">
+   <property name="text">
+    <string>Завантажити xml файл</string>
    </property>
   </action>
  </widget>

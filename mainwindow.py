@@ -5,6 +5,7 @@ import pprint
 import re
 
 import networkx as nx
+import requests
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
@@ -252,8 +253,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
+        # Open file open_file()
+        self.download_xml_action.triggered.connect(self.download_file())
 
         self.xml_data = None
+
+    def download_file(self):
+        url = "https://example.com/example.xml"
+        # Завантаження файлу
+        response = requests.get(url)
+        # Перевірка успішного завантаження
+        if response.status_code == 200:
+            # Зчитування вмісту XML-файлу
+            content = response.content
+        else:
+            print("Помилка завантаження XML: ", response.status_code)
 
     def load_data_from_disk(self):
         load_dialog = QFileDialog()
