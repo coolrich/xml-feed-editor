@@ -43,8 +43,8 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             timeout = self.timeout_spin_box.value() * 60
             print("Downloading the file...")
             self.download_xml_push_button.setEnabled(False)
-            self.download_xml_push_button.setText("Завантаження ...")
-            time.sleep(1)
+            self.download_xml_push_button.setText("Завантаження...")
+            self.download_xml_push_button.repaint()
             response = requests.get(url=url, headers=headers, timeout=timeout)
             response.raise_for_status()
             print("File downloaded successfully.")
@@ -91,6 +91,7 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             return
         finally:
             self.download_xml_push_button.setText("Завантажити")
+            self.download_xml_push_button.repaint()
             self.download_xml_push_button.setEnabled(True)
 class MainWindow(QMainWindow, Ui_MainWindow):
     # DEFAULT_CATEGORY_NAME = "Без категорії"
