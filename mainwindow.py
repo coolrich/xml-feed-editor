@@ -4,6 +4,7 @@ import json
 import os
 import pprint
 import re
+import time
 
 import networkx as nx
 import requests
@@ -28,11 +29,6 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
         self.mainwindow = mainwindow
 
     def download_file(self):
-        # if not re.match(r'^https?://', url):
-        #     error_message = "URL is not valid. It should start with 'https://'."
-        #     # Show the error message
-        #     QMessageBox.critical(self, "Error", error_message)
-        #     return
         try:
             headers = {
                 "User-Agent": "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.Version/33833",
@@ -45,67 +41,57 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             }
             url = self.url_line_edit.text()
             timeout = self.timeout_spin_box.value() * 60
-            response = requests.get(url, headers=headers, timeout=timeout)
+            print("Downloading the file...")
+            self.download_xml_push_button.setEnabled(False)
+            self.download_xml_push_button.setText("Завантаження ...")
+            time.sleep(1)
+            response = requests.get(url=url, headers=headers, timeout=timeout)
             response.raise_for_status()
             print("File downloaded successfully.")
+            QMessageBox.information(self, "Успіх", "Файл успішно завантажено!")
             print("Demonstration of the content of the downloaded file(5000 symbols):")
             print(response.text[:5000] + "...")
             content = response.content
-            # Save the content to a file
             with open("downloaded_file.xml", "wb") as file:
                 file.write(content)
             print("File saved successfully.")
             self.mainwindow.open_file("downloaded_file.xml")
             self.close()
         except requests.exceptions.ReadTimeout as e:
-            # Create an error message
             error_message = "Сервер не відповідає"
-            # Show the error message
             QMessageBox.critical(self, "Error", error_message)
             return
         except requests.exceptions.ConnectionError as e:
-            # Create an error message
             error_message = "Перевірте з'єднання з інтернетом та повторіть спробу"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
         except requests.exceptions.Timeout as e:
-            # Create an error message
             error_message = "Неможливо з'єднатися з сервером"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
         except requests.exceptions.URLRequired as e:
-            # Create an error message
             error_message = "Потрібно вписати URL"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
         except requests.exceptions.MissingSchema as e:
-            # Create an error message
             error_message = "Відсутня URL адреса"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
         except requests.exceptions.InvalidSchema as e:
-            # Create an error message
             error_message = "Некорректна URL адреса"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
         except requests.exceptions.InvalidURL as e:
-            # Create an error message
             error_message = "Перевірте правильність URL адреси"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
         except requests.exceptions.HTTPError as e:
-            # Create an error message
             error_message = "Вказана адреса заборонена"
-            # Show the error message
             QMessageBox.critical(self, "Помилка", error_message)
             return
-
+        finally:
+            self.download_xml_push_button.setText("Завантажити")
+            self.download_xml_push_button.setEnabled(True)
 class MainWindow(QMainWindow, Ui_MainWindow):
     # DEFAULT_CATEGORY_NAME = "Без категорії"
     # DEFAULT_CATEGORY_ID = "-1"
@@ -1120,20 +1106,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.iterate_output_category_tree_and_insert(child)
 
     # open xml file
-    def open_file(self, load_path=None):
-        if load_path is not None:
+    def open_file(self, load_path):
+        load_dialog = QFileDialog()
+        load_dialog.setFileMode(QFileDialog.AnyFile)
+        load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        load_dialog.setNameFilter("XML Files (*.xml)")
+        if not load_path and load_dialog.exec():
+            load_path = load_dialog.selectedFiles()[0]
+            self.init_tables(load_path)
+        else:
             if not os.path.isfile(load_path):
                 raise FileNotFoundError
             self.init_tables(load_path)
-        else:
-            load_dialog = QFileDialog()
-            load_dialog.setFileMode(QFileDialog.AnyFile)
-            load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
-            load_dialog.setNameFilter("XML Files (*.xml)")
-
-            if load_dialog.exec():
-                load_path = load_dialog.selectedFiles()[0]
-                self.init_tables(load_path)
         print("File closed")
 
     def init_tables(self, file_path):

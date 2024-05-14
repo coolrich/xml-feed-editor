@@ -177,7 +177,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 759, 816))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 784, 816))
         self.verticalLayout_22 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_22.setObjectName(u"verticalLayout_22")
         self.verticalLayout_12 = QVBoxLayout()
@@ -656,7 +656,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"XML parser", None))
         self.open_action.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0456\u0434\u043a\u0440\u0438\u0442\u0438 XML", None))
         self.exit_action.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0445\u0456\u0434", None))
         self.load_project_action.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0456\u0434\u043a\u0440\u0438\u0442\u0438 \u0448\u0430\u0431\u043b\u043e\u043d", None))
