@@ -28,15 +28,11 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
         self.mainwindow = mainwindow
 
     def download_file(self):
-        url = self.url_line_edit.text()
-        if not re.match(r'^https?://', url):
-            error_message = "URL is not valid. It should start with 'https://'."
-            # Show the error message
-            QMessageBox.critical(self, "Error", error_message)
-            return
-        print("Url is valid")
-        timeout = self.timeout_spin_box.value() * 60
-        response = None
+        # if not re.match(r'^https?://', url):
+        #     error_message = "URL is not valid. It should start with 'https://'."
+        #     # Show the error message
+        #     QMessageBox.critical(self, "Error", error_message)
+        #     return
         try:
             headers = {
                 "User-Agent": "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.Version/33833",
@@ -47,32 +43,67 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
                 "Referer": "https://www.opera.com/",
                 "Upgrade-Insecure-Requests": "1",
             }
-
-            # Запит до URL з хедерами
+            url = self.url_line_edit.text()
+            timeout = self.timeout_spin_box.value() * 60
             response = requests.get(url, headers=headers, timeout=timeout)
             response.raise_for_status()
             print("File downloaded successfully.")
             print("Demonstration of the content of the downloaded file(5000 symbols):")
             print(response.text[:5000] + "...")
-            if response.status_code == 200:
-                content = response.content
-                # Save the content to a file
-                with open("downloaded_file.xml", "wb") as file:
-                    file.write(content)
-                print("File saved successfully.")
-                self.mainwindow.open_file("downloaded_file.xml")
-                self.close()
-            else:
-                raise requests.exceptions.RequestException
-            #     # Create an error message
-            #     error_message = f"Failed to download file. Status code: {response.status_code}"
-            #     # Show the error message
-            #     QMessageBox.critical(self, "Error", error_message)
-        except requests.exceptions.RequestException as e:
+            content = response.content
+            # Save the content to a file
+            with open("downloaded_file.xml", "wb") as file:
+                file.write(content)
+            print("File saved successfully.")
+            self.mainwindow.open_file("downloaded_file.xml")
+            self.close()
+        except requests.exceptions.ReadTimeout as e:
             # Create an error message
-            error_message = f"Failed to download file. Error: {e}"
+            error_message = "Сервер не відповідає"
             # Show the error message
             QMessageBox.critical(self, "Error", error_message)
+            return
+        except requests.exceptions.ConnectionError as e:
+            # Create an error message
+            error_message = "Перевірте з'єднання з інтернетом та повторіть спробу"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.Timeout as e:
+            # Create an error message
+            error_message = "Неможливо з'єднатися з сервером"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.URLRequired as e:
+            # Create an error message
+            error_message = "Потрібно вписати URL"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.MissingSchema as e:
+            # Create an error message
+            error_message = "Відсутня URL адреса"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.InvalidSchema as e:
+            # Create an error message
+            error_message = "Некорректна URL адреса"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.InvalidURL as e:
+            # Create an error message
+            error_message = "Перевірте правильність URL адреси"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.HTTPError as e:
+            # Create an error message
+            error_message = "Вказана адреса заборонена"
+            # Show the error message
+            QMessageBox.critical(self, "Помилка", error_message)
             return
 
 class MainWindow(QMainWindow, Ui_MainWindow):
