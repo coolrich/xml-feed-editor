@@ -73,11 +73,7 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             error_message = "Потрібно вписати URL"
             QMessageBox.critical(self, "Помилка", error_message)
             return
-        except requests.exceptions.MissingSchema as e:
-            error_message = "Відсутня URL адреса"
-            QMessageBox.critical(self, "Помилка", error_message)
-            return
-        except requests.exceptions.InvalidSchema as e:
+        except (requests.exceptions.MissingSchema,requests.exceptions.InvalidSchema) as e:
             error_message = "Некорректна URL адреса"
             QMessageBox.critical(self, "Помилка", error_message)
             return
