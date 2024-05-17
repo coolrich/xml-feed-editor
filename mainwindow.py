@@ -4,11 +4,9 @@ import json
 import os
 import pprint
 import re
-import time
 
 import networkx as nx
 import requests
-import wget
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
@@ -106,6 +104,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
         self.block_parent_checkboxes_checking = False
+        self.xml_data = None
 
         # Important
         self.categoryid_parent_ids_dict = {}
@@ -329,8 +328,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
         self.download_xml_action.triggered.connect(self.download_xml_window.show)
-
-        self.xml_data = None
 
     def __delete__(self, instance):
         self.download_xml_window.close()
@@ -762,10 +759,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_id = final_product_model.data(final_product_model.index(row, 4))
             output_id_products_dict[product_id] = {}
             output_id_products_dict[product_id]["product_name"] = product_name
-            if wholesale_price != 0:
-                output_id_products_dict[product_id]["wholesale_price"] = wholesale_price
-            if drop_price != 0:
-                output_id_products_dict[product_id]["drop_price"] = drop_price
+            if wholesale_price != 0 and drop_price != 0:
+                del output_id_products_dict[product_id]
+            else:
+                if wholesale_price != 0:
+                    output_id_products_dict[product_id]["wholesale_price"] = wholesale_price
+                if drop_price != 0:
+                    output_id_products_dict[product_id]["drop_price"] = drop_price
         return output_id_products_dict
 
     @staticmethod
