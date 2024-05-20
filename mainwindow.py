@@ -71,7 +71,7 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             error_message = "Потрібно вписати URL"
             QMessageBox.critical(self, "Помилка", error_message)
             return
-        except (requests.exceptions.MissingSchema,requests.exceptions.InvalidSchema) as e:
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
             error_message = "Некорректна URL адреса"
             QMessageBox.critical(self, "Помилка", error_message)
             return
@@ -87,6 +87,8 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             self.download_xml_push_button.setText("Завантажити")
             self.download_xml_push_button.repaint()
             self.download_xml_push_button.setEnabled(True)
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     # DEFAULT_CATEGORY_NAME = "Без категорії"
     # DEFAULT_CATEGORY_ID = "-1"
@@ -97,7 +99,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.app = app
         self.download_xml_window = DownloadXmlDialog(self)
-
 
         self.selected_categories_ids = []
         self.input_products_ids = []
@@ -686,6 +687,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_xml_tree.write(save_path, encoding='windows-1251')
         self.change_encoding_letter_case_in_output_xml(save_path)
         self.correction_of_the_xml_elements(save_path)
+        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
 
     def get_output_csv(self):
         output_id_products_dict = self.get_output_id_products_dict()
@@ -724,13 +726,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 # Change price to new
                 price = offer.xpath("url")[0]
-                if "wholesale_price" in output_id_products_dict[product_id].keys():
+                if ("wholesale_price" in (product_data := output_id_products_dict[product_id])
+                        and product_data["wholesale_price"] != 0):
                     wholesale_price = output_id_products_dict[product_id]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
+                else:
+                    offer.getparent().remove(offer)
+                    continue
 
-                if self.add_drop_price_check_box.checkState() == Qt.Checked and "drop_price" in output_id_products_dict[
-                    product_id].keys():
+                if (self.add_drop_price_check_box.checkState() == Qt.Checked
+                        and "drop_price" in output_id_products_dict[product_id].keys()):
                     price_drop = output_id_products_dict[product_id]["drop_price"]
                     price_drop_tag = offer.xpath("price_drop")
                     if not price_drop_tag:
@@ -759,13 +765,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_id = final_product_model.data(final_product_model.index(row, 4))
             output_id_products_dict[product_id] = {}
             output_id_products_dict[product_id]["product_name"] = product_name
-            if wholesale_price != 0 and drop_price != 0:
-                del output_id_products_dict[product_id]
-            else:
-                if wholesale_price != 0:
-                    output_id_products_dict[product_id]["wholesale_price"] = wholesale_price
-                if drop_price != 0:
-                    output_id_products_dict[product_id]["drop_price"] = drop_price
+
+            if wholesale_price != 0:
+                output_id_products_dict[product_id]["wholesale_price"] = wholesale_price
+            if drop_price != 0:
+                output_id_products_dict[product_id]["drop_price"] = drop_price
         return output_id_products_dict
 
     @staticmethod
@@ -1153,9 +1157,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
-
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
-
         self.get_category_ids_and_names_from_xml()
         self.get_offers_from_xml()
         gc.collect()
