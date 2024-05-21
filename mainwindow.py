@@ -467,6 +467,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.replace_words_in_input_categories_dicts(category_ids, old_category_name, new_category_name)
         self.replace_words_in_tree_categories_table(self.input_category_model, category_ids)
         self.replace_words_in_tree_categories_table(self.output_category_model, category_ids)
+        # TODO: Replace this method in get_output_xml
         self.__replace_category_words_in_output_xml_tree(category_ids)
         self.find_category_names_for_replace(self.search_category_for_replace_line_edit.text())
 
@@ -490,6 +491,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         product_ids.update(product_ids_names)
         product_ids.update(product_ids_description)
         self.replace_words_in_input_product_names_table(product_ids_names)
+        # TODO: Replace this method in get_output_xml
         self.__replace_product_words_in_output_xml_tree(product_ids)
         self.find_product_names_for_replace(self.search_product_for_replace_line_edit.text())
 
@@ -1129,14 +1131,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.__load_and_parse_file(load_path) is False:
                 print("File is not loaded")
                 return
-            self.refresh_tables_data()
-            self.load_path = load_path
+
         else:
             if not os.path.isfile(load_path):
                 raise FileNotFoundError
             if self.__load_and_parse_file(load_path) is False:
                 print("File is not loaded")
                 return
+        self.refresh_tables_data()
+        self.load_path = load_path
         print("File closed")
 
     def __load_and_parse_file(self, file_path=None):
