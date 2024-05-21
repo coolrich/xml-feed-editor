@@ -99,6 +99,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.app = app
         self.download_xml_window = DownloadXmlDialog(self)
+        self.load_path = None
 
         self.selected_categories_ids = []
         self.input_products_ids = []
@@ -687,7 +688,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_xml_tree.write(save_path, encoding='windows-1251')
         self.change_encoding_letter_case_in_output_xml(save_path)
         self.correction_of_the_xml_elements(save_path)
+
+        self.__load_and_parse_file(self.load_path)
+        self.refresh_tables_data()
+
+    def refresh_tables_data(self):
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+        self.reset_input_categories_tables_data()
+        self.clear_replacement_tables()
+        self.populate_input_tables()
+        self.move_categories_between_tables(self.output_category_tree_view, self.input_category_tree_view)
+        self.refresh_products_tables()
 
     def get_output_csv(self):
         output_id_products_dict = self.get_output_id_products_dict()
@@ -1114,22 +1125,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         load_dialog.setNameFilter("XML Files (*.xml)")
         if not load_path and load_dialog.exec():
             load_path = load_dialog.selectedFiles()[0]
-            self.init_tables(load_path)
+            if self.__load_and_parse_file(load_path) is False:
+                print("File is not loaded")
+                return
+            self.refresh_tables_data()
+            self.load_path = load_path
         else:
             if not os.path.isfile(load_path):
                 raise FileNotFoundError
-            self.init_tables(load_path)
+            if self.__load_and_parse_file(load_path) is False:
+                print("File is not loaded")
+                return
         print("File closed")
 
-    def init_tables(self, file_path):
-        if not self.parse(file_path):
-            return
-        self.reset_input_categories_tables_data()
-        self.populate_input_tables()
+    def __load_and_parse_file(self, file_path=None):
+        if (self.load_path is not None) and (file_path is None):
+            file_path = self.load_path
+        return self.parse(file_path)
+        # self.reset_input_categories_tables_data()
+        # self.populate_input_tables()
 
     def reset_input_categories_tables_data(self):
         self.input_category_model.removeRows(0, self.input_category_model.rowCount())
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
+
+    def clear_replacement_tables(self):
+        # self.input_product_names_model.clear()
+        # self.input_category_names_model.clear()
+        # Remove rows from the table input_product_names_model and input_category_names_model using takeRow method
+        for row in reversed(range(self.input_product_names_model.rowCount())):
+            self.input_product_names_model.takeRow(row)
+        for row in reversed(range(self.input_category_names_model.rowCount())):
+            self.input_category_names_model.takeRow(row)
 
     def populate_input_tables(self):
         self.populate_input_category_table()
