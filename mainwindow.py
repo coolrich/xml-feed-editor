@@ -691,10 +691,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.__load_and_parse_file(self.load_path)
         self.refresh_tables_data()
+        # self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
 
     def refresh_tables_data(self):
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
-        self.reset_input_categories_tables_data()
+        self.reset_categories_tables_data()
         self.clear_replacement_tables()
         self.populate_input_tables()
         self.move_categories_between_tables(self.output_category_tree_view, self.input_category_tree_view)
@@ -1145,7 +1146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.reset_input_categories_tables_data()
         # self.populate_input_tables()
 
-    def reset_input_categories_tables_data(self):
+    def reset_categories_tables_data(self):
         self.input_category_model.removeRows(0, self.input_category_model.rowCount())
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
 
