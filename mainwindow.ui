@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>XML parser</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -180,7 +180,7 @@ XML</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>784</width>
+               <width>759</width>
                <height>816</height>
               </rect>
              </property>
@@ -834,6 +834,7 @@ XML</string>
      <string>Файл</string>
     </property>
     <addaction name="open_action"/>
+    <addaction name="download_xml_action"/>
     <addaction name="load_project_action"/>
     <addaction name="save_project_action"/>
     <addaction name="exit_action"/>
@@ -850,7 +851,7 @@ XML</string>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="open_action">
    <property name="text">
-    <string>Відкрити XML</string>
+    <string>Відкрити XML...</string>
    </property>
   </action>
   <action name="exit_action">
@@ -871,6 +872,11 @@ XML</string>
   <action name="action_about_qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="download_xml_action">
+   <property name="text">
+    <string>Завантажити xml файл...</string>
    </property>
   </action>
  </widget>

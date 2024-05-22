@@ -1,18 +1,92 @@
 import copy
 import gc
 import json
+import os
 import pprint
 import re
 
 import networkx as nx
+import requests
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView, QInputDialog, \
+    QWidget
 from lxml import etree
 from lxml.etree import ElementTree
 
 from ui_mainwindow import Ui_MainWindow
+from ui_download_xml_window import Ui_DownloadXmlWindow
+
+
+class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
+    def __init__(self, mainwindow):
+        super().__init__()
+        self.setupUi(self)
+        self.download_xml_push_button.clicked.connect(self.download_file)
+        self.mainwindow = mainwindow
+
+    def download_file(self):
+        try:
+            headers = {
+                "User-Agent": "Opera/9.80 (Windows NT 6.1; WOW64) Presto/2.12.Version/33833",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "Referer": "https://www.opera.com/",
+                "Upgrade-Insecure-Requests": "1",
+            }
+            url = self.url_line_edit.text()
+            timeout = self.timeout_spin_box.value() * 60
+            print("Downloading the file...")
+            self.download_xml_push_button.setEnabled(False)
+            self.download_xml_push_button.setText("Завантаження...")
+            self.download_xml_push_button.repaint()
+            response = requests.get(url=url, headers=headers, timeout=timeout)
+            response.raise_for_status()
+            print("File downloaded successfully.")
+            QMessageBox.information(self, "Успіх", "Файл успішно завантажено!")
+            print("Demonstration of the content of the downloaded file(5000 symbols):")
+            print(response.text[:5000] + "...")
+            content = response.content
+            with open("downloaded_file.xml", "wb") as file:
+                file.write(content)
+            print("File saved successfully.")
+            self.mainwindow.open_file("downloaded_file.xml")
+            self.close()
+        except requests.exceptions.ReadTimeout as e:
+            error_message = "Сервер не відповідає"
+            QMessageBox.critical(self, "Error", error_message)
+            return
+        except requests.exceptions.ConnectionError as e:
+            error_message = "Перевірте з'єднання з інтернетом та повторіть спробу"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.Timeout as e:
+            error_message = "Неможливо з'єднатися з сервером"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.URLRequired as e:
+            error_message = "Потрібно вписати URL"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
+            error_message = "Некорректна URL адреса"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.InvalidURL as e:
+            error_message = "Перевірте правильність URL адреси"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.HTTPError as e:
+            error_message = "Вказана адреса заборонена"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        finally:
+            self.download_xml_push_button.setText("Завантажити")
+            self.download_xml_push_button.repaint()
+            self.download_xml_push_button.setEnabled(True)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -24,12 +98,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("XML parser")
         self.setupUi(self)
         self.app = app
+        self.category_replacement_ids = set()
+        self.product_replacement_ids = set()
+        self.download_xml_window = DownloadXmlDialog(self)
+        self.load_path = None
 
         self.selected_categories_ids = []
         self.input_products_ids = []
         self.cloned_parentid_items_dict = {}
         self.parentid_childid_dict = {}
         self.block_parent_checkboxes_checking = False
+        self.xml_data = None
 
         # Important
         self.categoryid_parent_ids_dict = {}
@@ -252,8 +331,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
+        self.download_xml_action.triggered.connect(self.download_xml_window.show)
 
-        self.xml_data = None
+    def __delete__(self, instance):
+        self.download_xml_window.close()
 
     def load_data_from_disk(self):
         load_dialog = QFileDialog()
@@ -378,17 +459,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         old_category_name = self.search_category_for_replace_line_edit.text()
         new_category_name = self.replace_category_name_line_edit.text()
 
-        category_ids = []
+        # self.category_replacement_ids = []
         for category_id, category_item_name in self.input_categories_replacement_dict.items():
             category_name = category_item_name.data(Qt.DisplayRole)
             if old_category_name.lower() in category_name.lower():
-                category_ids.append(category_id)
-        pprint.pp(category_ids)
+                self.category_replacement_ids.add(category_id)
+        pprint.pp(self.category_replacement_ids)
 
-        self.replace_words_in_input_categories_dicts(category_ids, old_category_name, new_category_name)
-        self.replace_words_in_tree_categories_table(self.input_category_model, category_ids)
-        self.replace_words_in_tree_categories_table(self.output_category_model, category_ids)
-        self.__replace_category_words_in_output_xml_tree(category_ids)
+        self.replace_words_in_input_categories_dicts(old_category_name, new_category_name)
+        self.replace_words_in_tree_categories_table(self.input_category_model)
+        self.replace_words_in_tree_categories_table(self.output_category_model)
+        # self.__replace_category_words_in_output_xml_tree()
         self.find_category_names_for_replace(self.search_category_for_replace_line_edit.text())
 
     def replace_product_names(self):
@@ -403,14 +484,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print("Old product name:", product_name)
                 # while old_product_name in product_name:
                 #     product_name = product_name.replace(old_product_name, new_product_name)
-                product_name = re.sub(old_product_name, new_product_name, product_name, flags=(re.IGNORECASE | re.MULTILINE))
+                product_name = re.sub(old_product_name, new_product_name, product_name,
+                                      flags=(re.IGNORECASE | re.MULTILINE))
                 print("New product name:", product_name)
                 product_item_name["product_name"].setData(product_name, Qt.DisplayRole)
-        product_ids = set()
-        product_ids.update(product_ids_names)
-        product_ids.update(product_ids_description)
+        self.product_replacement_ids.update(product_ids_names)
+        self.product_replacement_ids.update(product_ids_description)
         self.replace_words_in_input_product_names_table(product_ids_names)
-        self.__replace_product_words_in_output_xml_tree(product_ids)
+        # self.__replace_product_words_in_output_xml_tree()
         self.find_product_names_for_replace(self.search_product_for_replace_line_edit.text())
 
     def replace_words_in_input_product_names_table(self, category_ids):
@@ -419,18 +500,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if product_id in category_ids:
                 self.input_products_replacement_dict[product_id].setText(product_item_name)
 
-    def __replace_product_words_in_output_xml_tree(self, product_ids):
+    def __replace_product_words_in_output_xml_tree(self):
         output_xml_tree = self.output_xml_tree
         offers_elements_list = output_xml_tree.xpath("//offer")
         for offer in offers_elements_list:
             product_id = offer.get("id")
-            if product_id in product_ids:
-                # ts000027787
+            if product_id in self.product_replacement_ids:
                 self.change_name_tag(offer, product_id)
                 description_tag, description_text = self.change_description_tag(offer)
                 if description_text is not None and len(description_text) > 0:
                     description_tag.text = description_text
-
         pprint.pp(offers_elements_list[0])
 
     def change_description_tag(self, offer):
@@ -451,44 +530,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return None
         # while old_product_name.lower() in description_tag_text.lower():
         #     description_tag_text = description_tag_text.replace(old_product_name, new_product_name)
-        description_tag_text = re.sub(old_product_name, new_product_name, description_tag_text, flags=(re.IGNORECASE | re.MULTILINE))
+        description_tag_text = re.sub(old_product_name, new_product_name, description_tag_text,
+                                      flags=(re.IGNORECASE | re.MULTILINE))
         return description_tag_text
 
-    def __replace_category_words_in_output_xml_tree(self, category_ids):
+    def __replace_category_words_in_output_xml_tree(self):
         output_xml_tree = self.output_xml_tree
         categories_elements_list = output_xml_tree.xpath("//category")
         for category in categories_elements_list:
             category_id = category.get("id")
-            if category_id in category_ids:
+            if category_id in self.category_replacement_ids:
                 category.text = self.input_categories_dict[category_id]
 
-    def replace_words_in_tree_categories_table(self, input_model, category_ids):
+    def replace_words_in_tree_categories_table(self, input_model):
         row_count = input_model.rowCount()
         for row in range(row_count):
             name_item = input_model.item(row, 0)
-            self.check_id_and_change(category_ids, name_item)
-            self.iterate_categories_tree_and_replace_words(name_item, category_ids)
+            self.check_id_and_change(name_item)
+            self.iterate_categories_tree_and_replace_words(name_item)
 
-    def check_id_and_change(self, category_ids, name_item):
+    def check_id_and_change(self, name_item):
         id_item_value = name_item.index().siblingAtColumn(1).data(Qt.DisplayRole)
-        if id_item_value in category_ids:
+        if id_item_value in self.category_replacement_ids:
             new_item_name = self.input_categories_dict[id_item_value]
             name_item.setData(new_item_name, Qt.DisplayRole)
 
-    def iterate_categories_tree_and_replace_words(self, name_item, category_ids):
+    def iterate_categories_tree_and_replace_words(self, name_item):
         if name_item.hasChildren():
             for i in range(name_item.rowCount()):
                 child_item = name_item.child(i)
-                self.check_id_and_change(category_ids, child_item)
-                self.iterate_categories_tree_and_replace_words(child_item, category_ids)
+                self.check_id_and_change(child_item)
+                self.iterate_categories_tree_and_replace_words(child_item)
 
-    def replace_words_in_input_categories_dicts(self, category_ids, old_category_name: str, new_category_name: str):
+    def replace_words_in_input_categories_dicts(self, old_category_name: str, new_category_name: str):
         print("Replaced words in input input_categories_dict:")
-        for category_id in category_ids:
+        for category_id in self.category_replacement_ids:
             category_name = self.input_categories_dict[category_id]
             print("Old category:", category_name)
             # while old_category_name.lower() in category_name.lower():
-                # category_name = category_name.replace(old_category_name, new_category_name)
+            # category_name = category_name.replace(old_category_name, new_category_name)
             category_name = re.sub(old_category_name, new_category_name, category_name, flags=re.IGNORECASE)
             print("New category:", category_name)
             print("--" * len(category_name))
@@ -607,6 +687,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.output_xml_tree.write(save_path, encoding='windows-1251')
         self.change_encoding_letter_case_in_output_xml(save_path)
         self.correction_of_the_xml_elements(save_path)
+        # self.__load_and_parse_file(self.load_path)
+        # self.refresh_tables_data()
+        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+
+    def refresh_tables_data(self):
+        self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
+        self.reset_categories_tables_data()
+        self.clear_replacement_tables()
+        self.populate_input_tables()
+        self.move_categories_between_tables(self.output_category_tree_view, self.input_category_tree_view)
+        self.refresh_products_tables()
 
     def get_output_csv(self):
         output_id_products_dict = self.get_output_id_products_dict()
@@ -622,7 +713,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         output_xml_tree.xpath("//name")[0].text = "smart-b2b"
         output_xml_tree.xpath("//company")[0].text = "smart-b2b"
         output_xml_tree.xpath("//url")[0].text = "https://smart-b2b.com.ua/ua/"
-
+        self.__replace_category_words_in_output_xml_tree()
+        self.__replace_product_words_in_output_xml_tree()
         # Remove unselected categories
         categories_elements_list = output_xml_tree.xpath("//category")
         for category in categories_elements_list:
@@ -645,12 +737,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 # Change price to new
                 price = offer.xpath("url")[0]
-                if "wholesale_price" in output_id_products_dict[product_id].keys():
+                if ("wholesale_price" in (product_data := output_id_products_dict[product_id])
+                        and product_data["wholesale_price"] != 0):
                     wholesale_price = output_id_products_dict[product_id]["wholesale_price"]
                     price = offer.xpath("price")[0]
                     price.text = str(wholesale_price)
+                else:
+                    offer.getparent().remove(offer)
+                    continue
 
-                if self.add_drop_price_check_box.checkState() == Qt.Checked and "drop_price" in output_id_products_dict[product_id].keys():
+                if (self.add_drop_price_check_box.checkState() == Qt.Checked
+                        and "drop_price" in output_id_products_dict[product_id].keys()):
                     price_drop = output_id_products_dict[product_id]["drop_price"]
                     price_drop_tag = offer.xpath("price_drop")
                     if not price_drop_tag:
@@ -669,7 +766,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         picture_element.getparent().remove(picture_element)
                         print("Deleted:", picture_element)
 
-
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
         output_id_products_dict = {}
@@ -680,6 +776,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             product_id = final_product_model.data(final_product_model.index(row, 4))
             output_id_products_dict[product_id] = {}
             output_id_products_dict[product_id]["product_name"] = product_name
+
             if wholesale_price != 0:
                 output_id_products_dict[product_id]["wholesale_price"] = wholesale_price
             if drop_price != 0:
@@ -1021,25 +1118,48 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.iterate_output_category_tree_and_insert(child)
 
     # open xml file
-    def open_file(self):
+    def open_file(self, load_path):
         load_dialog = QFileDialog()
         load_dialog.setFileMode(QFileDialog.AnyFile)
         load_dialog.setAcceptMode(QFileDialog.AcceptOpen)
         load_dialog.setNameFilter("XML Files (*.xml)")
-        if load_dialog.exec():
+        if not load_path and load_dialog.exec():
             load_path = load_dialog.selectedFiles()[0]
-            self.init_tables(load_path)
-            print("File closed")
+            if self.__load_and_parse_file(load_path) is False:
+                print("File is not loaded")
+                return
+            self.load_path = load_path
+        else:
+            if not os.path.isfile(load_path):
+                raise FileNotFoundError
+            if self.__load_and_parse_file(load_path) is False:
+                print("File is not loaded")
+                return
+        self.refresh_tables_data()
+        print("File closed")
 
-    def init_tables(self, file_path):
-        if not self.parse(file_path):
-            return
-        self.reset_input_categories_tables_data()
-        self.populate_input_tables()
+    def __load_and_parse_file(self, file_path=None):
+        if file_path is None:
+            if self.load_path is not None:
+                file_path = self.load_path
+            else:
+                return False
+        return self.parse(file_path)
+        # self.reset_input_categories_tables_data()
+        # self.populate_input_tables()
 
-    def reset_input_categories_tables_data(self):
+    def reset_categories_tables_data(self):
         self.input_category_model.removeRows(0, self.input_category_model.rowCount())
         self.output_category_model.removeRows(0, self.output_category_model.rowCount())
+
+    def clear_replacement_tables(self):
+        # self.input_product_names_model.clear()
+        # self.input_category_names_model.clear()
+        # Remove rows from the table input_product_names_model and input_category_names_model using takeRow method
+        for row in reversed(range(self.input_product_names_model.rowCount())):
+            self.input_product_names_model.takeRow(row)
+        for row in reversed(range(self.input_category_names_model.rowCount())):
+            self.input_category_names_model.takeRow(row)
 
     def populate_input_tables(self):
         self.populate_input_category_table()
@@ -1063,13 +1183,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_names_table_view.resizeColumnsToContents()
 
     def parse(self, file_path):
-        if not file_path:
+        if file_path is None:
             return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
-
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
-
         self.get_category_ids_and_names_from_xml()
         self.get_offers_from_xml()
         gc.collect()
