@@ -332,6 +332,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
         self.download_xml_action.triggered.connect(self.download_xml_window.show)
+        self.add_description_push_button.connect(self.add_offer_description)
+
+    def add_offer_description(self):
+        pass
 
     def __delete__(self, instance):
         self.download_xml_window.close()
