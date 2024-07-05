@@ -10,13 +10,12 @@ import requests
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView, QInputDialog, \
-    QWidget
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView, QWidget
 from lxml import etree
 from lxml.etree import ElementTree
 
-from ui_mainwindow import Ui_MainWindow
 from ui_download_xml_window import Ui_DownloadXmlWindow
+from ui_mainwindow import Ui_MainWindow
 
 
 class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
@@ -102,7 +101,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.product_replacement_ids = set()
         self.download_xml_window = DownloadXmlDialog(self)
         self.load_path = None
-        self.offers_prefix_description = None
+        self.offers_prefix_description = ""
 
         self.selected_categories_ids = []
         self.input_products_ids = []
@@ -340,8 +339,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def change_description_text_indicator(self):
         old_prefix_description = self.offers_prefix_description
         new_prefix_description = self.offer_description_plain_text_edit.toPlainText()
-        if (old_prefix_description is not None and
-                old_prefix_description != new_prefix_description):
+        if old_prefix_description != new_prefix_description:
             self.description_text_indicator_label.setText("*")
         else:
             self.description_text_indicator_label.setText("")
@@ -769,12 +767,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.reduce_picture_elements(offer)
 
                 # Paste a text from self.description_text to the description tag
-                if self.offers_prefix_description is not None:
-                    prefix_description = self.offers_prefix_description
-                    old_description = offer.xpath("description")[0].text
-                    old_description = old_description if old_description is not None else ""
-                    new_description = "\n\n" + prefix_description + "\n\n" + old_description
-                    offer.xpath("description")[0].text = new_description
+                # if self.offers_prefix_description is not None:
+                prefix_description = self.offers_prefix_description
+                old_description = offer.xpath("description")[0].text
+                old_description = old_description if old_description is not None else ""
+                new_description = "\n\n" + prefix_description + "\n\n" + old_description
+                offer.xpath("description")[0].text = new_description
 
     def reduce_picture_elements(self, offer):
         pictures: list = offer.xpath("picture")
