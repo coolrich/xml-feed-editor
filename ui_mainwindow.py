@@ -17,12 +17,12 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
-    QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPlainTextEdit,
-    QPushButton, QScrollArea, QSizePolicy, QSpinBox,
-    QStatusBar, QTabWidget, QTableView, QTreeView,
-    QVBoxLayout, QWidget)
+    QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPlainTextEdit, QPushButton, QScrollArea, QSizePolicy,
+    QSpinBox, QStatusBar, QTabWidget, QTableView,
+    QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -605,22 +605,40 @@ class Ui_MainWindow(object):
         self.offer_description_tab_widget.addTab(self.tab_3, "")
         self.tab_4 = QWidget()
         self.tab_4.setObjectName(u"tab_4")
-        self.widget = QWidget(self.tab_4)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(10, 10, 791, 491))
-        self.gridLayout_2 = QGridLayout(self.widget)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.offer_decription_plain_text_edit = QPlainTextEdit(self.widget)
-        self.offer_decription_plain_text_edit.setObjectName(u"offer_decription_plain_text_edit")
+        self.verticalLayout_24 = QVBoxLayout(self.tab_4)
+        self.verticalLayout_24.setObjectName(u"verticalLayout_24")
+        self.formLayout = QFormLayout()
+        self.formLayout.setObjectName(u"formLayout")
+        self.offer_description_plain_text_edit = QPlainTextEdit(self.tab_4)
+        self.offer_description_plain_text_edit.setObjectName(u"offer_description_plain_text_edit")
+        self.offer_description_plain_text_edit.setMinimumSize(QSize(0, 457))
 
-        self.gridLayout_2.addWidget(self.offer_decription_plain_text_edit, 0, 0, 1, 1)
+        self.formLayout.setWidget(0, QFormLayout.SpanningRole, self.offer_description_plain_text_edit)
 
-        self.add_description_push_button = QPushButton(self.widget)
+        self.add_description_push_button = QPushButton(self.tab_4)
         self.add_description_push_button.setObjectName(u"add_description_push_button")
         self.add_description_push_button.setMaximumSize(QSize(100, 16777215))
 
-        self.gridLayout_2.addWidget(self.add_description_push_button, 1, 0, 1, 1)
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.add_description_push_button)
+
+        self.description_text_indicator_label = QLabel(self.tab_4)
+        self.description_text_indicator_label.setObjectName(u"description_text_indicator_label")
+        self.description_text_indicator_label.setEnabled(True)
+        self.description_text_indicator_label.setMaximumSize(QSize(27, 16777215))
+        font = QFont()
+        font.setPointSize(17)
+        font.setBold(True)
+        font.setStrikeOut(False)
+        font.setKerning(True)
+        self.description_text_indicator_label.setFont(font)
+        self.description_text_indicator_label.setLineWidth(1)
+        self.description_text_indicator_label.setTextFormat(Qt.PlainText)
+        self.description_text_indicator_label.setWordWrap(False)
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.description_text_indicator_label)
+
+
+        self.verticalLayout_24.addLayout(self.formLayout)
 
         self.offer_description_tab_widget.addTab(self.tab_4, "")
 
@@ -738,6 +756,7 @@ class Ui_MainWindow(object):
         self.delete_product_row_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0440\u044f\u0434\u043e\u043a(-\u043a\u0438)", None))
         self.offer_description_tab_widget.setTabText(self.offer_description_tab_widget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0430 \u0441\u043b\u0456\u0432", None))
         self.add_description_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u043e\u043f\u0438\u0441", None))
+        self.description_text_indicator_label.setText(QCoreApplication.translate("MainWindow", u"*", None))
         self.offer_description_tab_widget.setTabText(self.offer_description_tab_widget.indexOf(self.tab_4), QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0438\u0441 \u0442\u043e\u0432\u0430\u0440\u0443", None))
         self.get_output_xml_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
         self.get_output_csv_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 CSV", None))

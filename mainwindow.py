@@ -334,9 +334,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.load_project_action.triggered.connect(self.load_data_from_disk)
         self.download_xml_action.triggered.connect(self.download_xml_window.show)
         self.add_description_push_button.clicked.connect(self.add_offer_description)
+        self.description_text_indicator_label.setText("")
+        self.offer_description_plain_text_edit.textChanged.connect(self.change_description_text_indicator)
+
+    def change_description_text_indicator(self):
+        old_prefix_description = self.offers_prefix_description
+        new_prefix_description = self.offer_description_plain_text_edit.toPlainText()
+        if (old_prefix_description is not None and
+                old_prefix_description != new_prefix_description):
+            self.description_text_indicator_label.setText("*")
+        else:
+            self.description_text_indicator_label.setText("")
 
     def add_offer_description(self):
-        self.offers_prefix_description = self.offer_decription_plain_text_edit.toPlainText()
+        self.offers_prefix_description = self.offer_description_plain_text_edit.toPlainText()
+        self.change_description_text_indicator()
 
     def __delete__(self, instance):
         self.download_xml_window.close()
