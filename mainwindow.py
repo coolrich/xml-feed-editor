@@ -102,6 +102,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.product_replacement_ids = set()
         self.download_xml_window = DownloadXmlDialog(self)
         self.load_path = None
+        self.offers_prefix_description = None
 
         self.selected_categories_ids = []
         self.input_products_ids = []
@@ -332,10 +333,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
         self.download_xml_action.triggered.connect(self.download_xml_window.show)
-        self.add_description_push_button.connect(self.add_offer_description)
+        self.add_description_push_button.clicked.connect(self.add_offer_description)
 
     def add_offer_description(self):
-        pass
+        self.offers_prefix_description = self.offer_decription_plain_text_edit.toPlainText()
 
     def __delete__(self, instance):
         self.download_xml_window.close()
@@ -750,25 +751,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     offer.getparent().remove(offer)
                     continue
 
-                if (self.add_drop_price_check_box.checkState() == Qt.Checked
-                        and "drop_price" in output_id_products_dict[product_id].keys()):
-                    price_drop = output_id_products_dict[product_id]["drop_price"]
-                    price_drop_tag = offer.xpath("price_drop")
-                    if not price_drop_tag:
-                        drop_price_tag = etree.Element("price_drop")
-                        drop_price_tag.text = str(price_drop)
-                        price.addnext(drop_price_tag)
-                    else:
-                        price_drop_tag[0].text = str(price_drop)
+                self.add_dropprice_element(offer, output_id_products_dict, price, product_id)
 
                 # Get all picture tags. Reduce their count to 10 from end.
-                pictures: list = offer.xpath("picture")
-                if len(pictures) > 10:
-                    print("Deleting of the picture elements:")
-                    for i in range((len(pictures) - 10)):
-                        picture_element = pictures.pop()
-                        picture_element.getparent().remove(picture_element)
-                        print("Deleted:", picture_element)
+                self.reduce_picture_elements(offer)
+
+                # Paste a text from self.description_text to the description tag
+                if self.offers_prefix_description is not None:
+                    prefix_description = self.offers_prefix_description
+                    old_description = offer.xpath("description")[0].text
+                    old_description = old_description if old_description is not None else ""
+                    new_description = "\n\n" + prefix_description + "\n\n" + old_description
+                    offer.xpath("description")[0].text = new_description
+
+    def reduce_picture_elements(self, offer):
+        pictures: list = offer.xpath("picture")
+        if len(pictures) > 10:
+            print("Deleting of the picture elements:")
+            for i in range((len(pictures) - 10)):
+                picture_element = pictures.pop()
+                picture_element.getparent().remove(picture_element)
+                print("Deleted:", picture_element)
+
+    def add_dropprice_element(self, offer, output_id_products_dict, price, product_id):
+        if (self.add_drop_price_check_box.checkState() == Qt.Checked
+                and "drop_price" in output_id_products_dict[product_id].keys()):
+            price_drop = output_id_products_dict[product_id]["drop_price"]
+            price_drop_tag = offer.xpath("price_drop")
+            if not price_drop_tag:
+                drop_price_tag = etree.Element("price_drop")
+                drop_price_tag.text = str(price_drop)
+                price.addnext(drop_price_tag)
+            else:
+                price_drop_tag[0].text = str(price_drop)
 
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
@@ -1187,7 +1202,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_names_table_view.resizeColumnsToContents()
 
     def parse(self, file_path):
-        if file_path is None:
+        if not file_path:
             return False
         parser = etree.XMLParser(encoding="windows-1251")
         self.input_xml_tree = etree.parse(file_path, parser=parser)
