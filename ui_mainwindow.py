@@ -19,10 +19,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QMainWindow, QMenu, QMenuBar,
-    QPlainTextEdit, QPushButton, QScrollArea, QSizePolicy,
-    QSpinBox, QStatusBar, QTabWidget, QTableView,
-    QTreeView, QVBoxLayout, QWidget)
+    QLayout, QLineEdit, QMainWindow, QMenu,
+    QMenuBar, QPlainTextEdit, QPushButton, QScrollArea,
+    QSizePolicy, QSpinBox, QStatusBar, QTabWidget,
+    QTableView, QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -177,7 +177,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, -324, 784, 816))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, -355, 784, 847))
         self.verticalLayout_22 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_22.setObjectName(u"verticalLayout_22")
         self.verticalLayout_12 = QVBoxLayout()
@@ -242,9 +242,11 @@ class Ui_MainWindow(object):
 
         self.groupBox_6 = QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox_6.setObjectName(u"groupBox_6")
-        self.groupBox_6.setMinimumSize(QSize(0, 430))
+        self.groupBox_6.setMinimumSize(QSize(0, 461))
+        self.groupBox_6.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout_23 = QVBoxLayout(self.groupBox_6)
         self.verticalLayout_23.setObjectName(u"verticalLayout_23")
+        self.verticalLayout_23.setContentsMargins(-1, 7, -1, -1)
         self.verticalLayout_9 = QVBoxLayout()
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
         self.horizontalLayout_15 = QHBoxLayout()
@@ -286,19 +288,22 @@ class Ui_MainWindow(object):
         self.output_products_table_view = QTableView(self.groupBox_6)
         self.output_products_table_view.setObjectName(u"output_products_table_view")
         self.output_products_table_view.setMinimumSize(QSize(0, 245))
-        self.output_products_table_view.setMaximumSize(QSize(16777215, 300))
+        self.output_products_table_view.setMaximumSize(QSize(16777215, 267))
         self.output_products_table_view.setAlternatingRowColors(True)
 
         self.verticalLayout_9.addWidget(self.output_products_table_view)
 
         self.frame = QFrame(self.groupBox_6)
         self.frame.setObjectName(u"frame")
-        self.frame.setMaximumSize(QSize(16777215, 150))
+        self.frame.setMaximumSize(QSize(16777215, 94))
         self.frame.setFrameShape(QFrame.Box)
         self.frame.setFrameShadow(QFrame.Raised)
         self.frame.setLineWidth(1)
         self.verticalLayout_6 = QVBoxLayout(self.frame)
+        self.verticalLayout_6.setSpacing(9)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.verticalLayout_6.setSizeConstraint(QLayout.SetNoConstraint)
+        self.verticalLayout_6.setContentsMargins(-1, 16, -1, -1)
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
         self.horizontalLayout_12 = QHBoxLayout()
@@ -687,7 +692,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.exit_action.triggered.connect(MainWindow.close)
 
-        self.offer_description_tab_widget.setCurrentIndex(3)
+        self.offer_description_tab_widget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

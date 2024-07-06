@@ -771,7 +771,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 prefix_description = self.offers_prefix_description
                 old_description = offer.xpath("description")[0].text
                 old_description = old_description if old_description is not None else ""
-                new_description = "\n\n" + prefix_description + "\n\n" + old_description
+                new_description = prefix_description + old_description
                 offer.xpath("description")[0].text = new_description
 
     def reduce_picture_elements(self, offer):
@@ -1196,12 +1196,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populate_input_products_replacement_table()
 
     def populate_input_products_replacement_table(self):
-        for product_id, product_data in self.input_products_replacement_dict.items():
+        for product_id, product_name_item in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
             product_id_item.setData(product_id, Qt.DisplayRole)
             product_id_item.setEditable(False)
-            product_data.setEditable(False)
-            self.input_product_names_model.appendRow([product_data, product_id_item])
+            product_name_item.setEditable(False)
+            self.input_product_names_model.appendRow([product_name_item, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
     def populate_input_categories_replacement_table(self):
