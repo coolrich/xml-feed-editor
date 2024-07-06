@@ -525,7 +525,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 description_tag, description_text = self.change_description_tag(offer)
                 if description_text is not None and len(description_text) > 0:
                     description_tag.text = description_text
-        pprint.pp(offers_elements_list[0])
+        # pprint.pp(offers_elements_list[0])
 
     def change_description_tag(self, offer):
         description_tag = offer.xpath("description")[0]
@@ -1231,8 +1231,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.input_products_dict[product_id] = {"product_name": product_name_item,
                                                     "product_price": product_price_item,
                                                     "category_id": category_id_item}
-            product_name_item = self.create_product_name_item(offer_tag)
+            # product_name_item = self.create_product_name_item(offer_tag)
+            product_name_item = self.create_product_name_item_without_checkboxes(offer_tag)
             self.input_products_replacement_dict[product_id] = product_name_item
+
+    @staticmethod
+    def create_product_name_item_without_checkboxes(offer_tag):
+        product_name = offer_tag.xpath("name")[0].text.strip()
+        product_name_item = QStandardItem()
+        product_name_item.setData(product_name, Qt.DisplayRole)
+        # product_name_item.setCheckable(True)
+        return product_name_item
 
     def get_category_ids_and_names_from_xml(self):
         category_elems = self.input_xml_tree.xpath("//category")
@@ -1240,7 +1249,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_id, category_name_item = self.create_category_item(category)
             self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
             self.input_categories_dict[category_id] = category_name_item.data(Qt.DisplayRole)
-            category_id, category_name_item = self.create_category_item(category)
+            # category_id, category_name_item = self.create_category_item(category)
+            category_id, category_name_item = self.create_category_item_without_checkboxes(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
             self.output_categories_replacement_dict[category_name_item.data(Qt.DisplayRole)] = set()
 
@@ -1280,6 +1290,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_name = category.text.strip()
         category_name_item: QStandardItem = QStandardItem()
         category_name_item.setCheckable(True)
+        category_name_item.setData(category_name, Qt.DisplayRole)
+        return category_id, category_name_item
+
+    @staticmethod
+    def create_category_item_without_checkboxes(category):
+        category_id = category.get("id").strip()
+        category_name = category.text.strip()
+        category_name_item: QStandardItem = QStandardItem()
+        # category_name_item.setCheckable(True)
         category_name_item.setData(category_name, Qt.DisplayRole)
         return category_id, category_name_item
 
