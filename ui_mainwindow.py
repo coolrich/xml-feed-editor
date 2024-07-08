@@ -612,19 +612,20 @@ class Ui_MainWindow(object):
         self.tab_4.setObjectName(u"tab_4")
         self.verticalLayout_24 = QVBoxLayout(self.tab_4)
         self.verticalLayout_24.setObjectName(u"verticalLayout_24")
-        self.formLayout = QFormLayout()
-        self.formLayout.setObjectName(u"formLayout")
+        self.formLayout_2 = QFormLayout()
+        self.formLayout_2.setObjectName(u"formLayout_2")
         self.offer_description_plain_text_edit = QPlainTextEdit(self.tab_4)
         self.offer_description_plain_text_edit.setObjectName(u"offer_description_plain_text_edit")
-        self.offer_description_plain_text_edit.setMinimumSize(QSize(0, 457))
+        self.offer_description_plain_text_edit.setMinimumSize(QSize(0, 433))
+        self.offer_description_plain_text_edit.setMaximumSize(QSize(16777215, 500))
 
-        self.formLayout.setWidget(0, QFormLayout.SpanningRole, self.offer_description_plain_text_edit)
+        self.formLayout_2.setWidget(1, QFormLayout.SpanningRole, self.offer_description_plain_text_edit)
 
         self.add_description_push_button = QPushButton(self.tab_4)
         self.add_description_push_button.setObjectName(u"add_description_push_button")
         self.add_description_push_button.setMaximumSize(QSize(100, 16777215))
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.add_description_push_button)
+        self.formLayout_2.setWidget(2, QFormLayout.LabelRole, self.add_description_push_button)
 
         self.description_text_indicator_label = QLabel(self.tab_4)
         self.description_text_indicator_label.setObjectName(u"description_text_indicator_label")
@@ -640,10 +641,45 @@ class Ui_MainWindow(object):
         self.description_text_indicator_label.setTextFormat(Qt.PlainText)
         self.description_text_indicator_label.setWordWrap(False)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.description_text_indicator_label)
+        self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.description_text_indicator_label)
+
+        self.widget = QWidget(self.tab_4)
+        self.widget.setObjectName(u"widget")
+        self.widget.setMinimumSize(QSize(0, 25))
+        self.formLayout = QFormLayout(self.widget)
+        self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setContentsMargins(-1, 1, -1, 1)
+        self.horizontalLayout_16 = QHBoxLayout()
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.bold_text_push_button = QPushButton(self.widget)
+        self.bold_text_push_button.setObjectName(u"bold_text_push_button")
+        self.bold_text_push_button.setMaximumSize(QSize(30, 16777215))
+        font1 = QFont()
+        font1.setBold(True)
+        self.bold_text_push_button.setFont(font1)
+
+        self.horizontalLayout_16.addWidget(self.bold_text_push_button)
+
+        self.anchor_text_push_button = QPushButton(self.widget)
+        self.anchor_text_push_button.setObjectName(u"anchor_text_push_button")
+        self.anchor_text_push_button.setMaximumSize(QSize(30, 16777215))
+
+        self.horizontalLayout_16.addWidget(self.anchor_text_push_button)
+
+        self.set_plain_text_push_button = QPushButton(self.widget)
+        self.set_plain_text_push_button.setObjectName(u"set_plain_text_push_button")
+        self.set_plain_text_push_button.setMaximumSize(QSize(30, 16777215))
+
+        self.horizontalLayout_16.addWidget(self.set_plain_text_push_button)
 
 
-        self.verticalLayout_24.addLayout(self.formLayout)
+        self.formLayout.setLayout(0, QFormLayout.LabelRole, self.horizontalLayout_16)
+
+
+        self.formLayout_2.setWidget(0, QFormLayout.SpanningRole, self.widget)
+
+
+        self.verticalLayout_24.addLayout(self.formLayout_2)
 
         self.offer_description_tab_widget.addTab(self.tab_4, "")
 
@@ -692,7 +728,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.exit_action.triggered.connect(MainWindow.close)
 
-        self.offer_description_tab_widget.setCurrentIndex(0)
+        self.offer_description_tab_widget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -762,6 +798,9 @@ class Ui_MainWindow(object):
         self.offer_description_tab_widget.setTabText(self.offer_description_tab_widget.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043c\u0456\u043d\u0430 \u0441\u043b\u0456\u0432", None))
         self.add_description_push_button.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0434\u0430\u0442\u0438 \u043e\u043f\u0438\u0441", None))
         self.description_text_indicator_label.setText(QCoreApplication.translate("MainWindow", u"*", None))
+        self.bold_text_push_button.setText(QCoreApplication.translate("MainWindow", u"B", None))
+        self.anchor_text_push_button.setText(QCoreApplication.translate("MainWindow", u"<a>", None))
+        self.set_plain_text_push_button.setText(QCoreApplication.translate("MainWindow", u"text", None))
         self.offer_description_tab_widget.setTabText(self.offer_description_tab_widget.indexOf(self.tab_4), QCoreApplication.translate("MainWindow", u"\u041e\u043f\u0438\u0441 \u0442\u043e\u0432\u0430\u0440\u0443", None))
         self.get_output_xml_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 XML", None))
         self.get_output_csv_push_button.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u0440\u0438\u043c\u0430\u0442\u0438 CSV", None))

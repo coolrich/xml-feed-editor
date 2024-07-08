@@ -350,6 +350,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_description_push_button.clicked.connect(self.add_offer_description)
         self.description_text_indicator_label.setText("")
         self.offer_description_plain_text_edit.textChanged.connect(self.change_description_text_indicator)
+        self.bold_text_push_button.clicked.connect(self.set_bold_text)
+        self.anchor_text_push_button.clicked.connect(self.set_anchor_text)
+        self.set_plain_text_push_button.clicked.connect(self.set_plain_text)
+
+    def set_plain_text(self):
+        selected_text = self.offer_description_plain_text_edit.textCursor().selectedText()
+        import bs4
+        soup = bs4.BeautifulSoup(selected_text, 'html.parser')
+        selected_text = soup.get_text()
+        self.offer_description_plain_text_edit.textCursor().removeSelectedText()
+        self.offer_description_plain_text_edit.textCursor().insertText(selected_text)
+
+    # add anchor text only to selected parts of the offer_description_plain_text_edit
+    def set_anchor_text(self):
+        selected_text = self.offer_description_plain_text_edit.textCursor().selectedText()
+        self.offer_description_plain_text_edit.textCursor().insertText(
+            "<a href=\"" + selected_text + "\">" + selected_text + "</a>")
+        print("Anchor added: ", selected_text)
+
+    # add bold text only to selected parts of the offer_description_plain_text_edit
+    def set_bold_text(self):
+        selected_text = self.offer_description_plain_text_edit.textCursor().selectedText()
+        self.offer_description_plain_text_edit.textCursor().insertText("<b>" + selected_text + "</b>")
 
     def change_description_text_indicator(self):
         old_prefix_description = self.offers_prefix_description
