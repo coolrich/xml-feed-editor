@@ -36,6 +36,17 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
                 "Referer": "https://www.opera.com/",
                 "Upgrade-Insecure-Requests": "1",
             }
+            # headers = {
+            #     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+            #                   "Chrome/125.0.0.0 Safari/537.36 OPR/111.0.0.0",
+            #     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,"
+            #               "*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            #     "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6",
+            #     "Accept-Encoding": "gzip, deflate, br, zstd",
+            #     # "Connection": "keep-alive",
+            #     # "Referer": "https://www.opera.com/",
+            #     # "Upgrade-Insecure-Requests": "1",
+            # }
             url = self.url_line_edit.text()
             timeout = self.timeout_spin_box.value() * 60
             print("Downloading the file...")
@@ -80,6 +91,10 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             return
         except requests.exceptions.HTTPError as e:
             error_message = "Вказана адреса заборонена"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
+        except requests.exceptions.RequestException as e:
+            error_message = "Невідома помилка"
             QMessageBox.critical(self, "Помилка", error_message)
             return
         finally:
@@ -1215,7 +1230,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not file_path:
             return False
         parser = etree.XMLParser(encoding="windows-1251")
-        self.input_xml_tree = etree.parse(file_path, parser=parser)
+        try:
+            self.input_xml_tree = etree.parse(file_path, parser=parser)
+        except etree.XMLSyntaxError as e:
+            print(e)
+            error_message = "Помилка парсингу XML файлу"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return False
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
         self.get_category_ids_and_names_from_xml()
         self.get_offers_from_xml()
@@ -1226,6 +1247,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def get_offers_from_xml(self):
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
+            offer_is_available = MainWindow.check_for_availability(offer_tag)
+            if not offer_is_available:
+                continue
             category_id_item, product_id, product_name_item, product_price_item = self.create_product(offer_tag)
             print("product_id: ", product_id)
             self.input_products_dict[product_id] = {"product_name": product_name_item,
@@ -1234,6 +1258,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # product_name_item = self.create_product_name_item(offer_tag)
             product_name_item = self.create_product_name_item_without_checkboxes(offer_tag)
             self.input_products_replacement_dict[product_id] = product_name_item
+
+    @staticmethod
+    def check_for_availability(offer_tag):
+        return offer_tag.get("available").strip() == "true"
 
     @staticmethod
     def create_product_name_item_without_checkboxes(offer_tag):
