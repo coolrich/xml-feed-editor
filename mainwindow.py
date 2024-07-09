@@ -809,7 +809,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 prefix_description = self.offers_prefix_description
                 old_description = offer.xpath("description")[0].text
                 old_description = old_description if old_description is not None else ""
-                new_description = prefix_description + old_description
+                new_description = " <! [CDATA [" + prefix_description + " ]] > " + old_description
                 offer.xpath("description")[0].text = new_description
 
     def reduce_picture_elements(self, offer):
