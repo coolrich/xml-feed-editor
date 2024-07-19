@@ -10,13 +10,12 @@ import requests
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView, QInputDialog, \
-    QWidget
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QTableView, QHeaderView, QMessageBox, QTreeView, QWidget
 from lxml import etree
 from lxml.etree import ElementTree
 
-from ui_mainwindow import Ui_MainWindow
 from ui_download_xml_window import Ui_DownloadXmlWindow
+from ui_mainwindow import Ui_MainWindow
 
 
 class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
@@ -37,6 +36,17 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
                 "Referer": "https://www.opera.com/",
                 "Upgrade-Insecure-Requests": "1",
             }
+            # headers = {
+            #     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+            #                   "Chrome/125.0.0.0 Safari/537.36 OPR/111.0.0.0",
+            #     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,"
+            #               "*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            #     "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6",
+            #     "Accept-Encoding": "gzip, deflate, br, zstd",
+            #     # "Connection": "keep-alive",
+            #     # "Referer": "https://www.opera.com/",
+            #     # "Upgrade-Insecure-Requests": "1",
+            # }
             url = self.url_line_edit.text()
             timeout = self.timeout_spin_box.value() * 60
             print("Downloading the file...")
@@ -83,6 +93,10 @@ class DownloadXmlDialog(QWidget, Ui_DownloadXmlWindow):
             error_message = "Вказана адреса заборонена"
             QMessageBox.critical(self, "Помилка", error_message)
             return
+        except requests.exceptions.RequestException as e:
+            error_message = "Невідома помилка"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return
         finally:
             self.download_xml_push_button.setText("Завантажити")
             self.download_xml_push_button.repaint()
@@ -102,6 +116,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.product_replacement_ids = set()
         self.download_xml_window = DownloadXmlDialog(self)
         self.load_path = None
+        self.offers_prefix_description = ""
 
         self.selected_categories_ids = []
         self.input_products_ids = []
@@ -332,6 +347,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.save_project_action.triggered.connect(self.save_data_to_disk)
         self.load_project_action.triggered.connect(self.load_data_from_disk)
         self.download_xml_action.triggered.connect(self.download_xml_window.show)
+        self.add_description_push_button.clicked.connect(self.add_offer_description)
+        self.description_text_indicator_label.setText("")
+        self.offer_description_plain_text_edit.textChanged.connect(self.change_description_text_indicator)
+        self.bold_text_push_button.clicked.connect(self.set_bold_text)
+        self.anchor_text_push_button.clicked.connect(self.set_anchor_text)
+        self.set_plain_text_push_button.clicked.connect(self.set_plain_text)
+
+    def set_plain_text(self):
+        selected_text = self.offer_description_plain_text_edit.textCursor().selectedText()
+        import bs4
+        soup = bs4.BeautifulSoup(selected_text, 'html.parser')
+        selected_text = soup.get_text()
+        self.offer_description_plain_text_edit.textCursor().removeSelectedText()
+        self.offer_description_plain_text_edit.textCursor().insertText(selected_text)
+
+    # add anchor text only to selected parts of the offer_description_plain_text_edit
+    def set_anchor_text(self):
+        selected_text = self.offer_description_plain_text_edit.textCursor().selectedText()
+        self.offer_description_plain_text_edit.textCursor().insertText(
+            "<a href=\"" + selected_text + "\">" + selected_text + "</a>")
+        print("Anchor added: ", selected_text)
+
+    # add bold text only to selected parts of the offer_description_plain_text_edit
+    def set_bold_text(self):
+        selected_text = self.offer_description_plain_text_edit.textCursor().selectedText()
+        self.offer_description_plain_text_edit.textCursor().insertText("<b>" + selected_text + "</b>")
+
+    def change_description_text_indicator(self):
+        old_prefix_description = self.offers_prefix_description
+        new_prefix_description = self.offer_description_plain_text_edit.toPlainText()
+        if old_prefix_description != new_prefix_description:
+            self.description_text_indicator_label.setText("*")
+        else:
+            self.description_text_indicator_label.setText("")
+
+    def add_offer_description(self):
+        self.offers_prefix_description = self.offer_description_plain_text_edit.toPlainText()
+        self.change_description_text_indicator()
 
     def __delete__(self, instance):
         self.download_xml_window.close()
@@ -510,7 +563,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 description_tag, description_text = self.change_description_tag(offer)
                 if description_text is not None and len(description_text) > 0:
                     description_tag.text = description_text
-        pprint.pp(offers_elements_list[0])
+        # pprint.pp(offers_elements_list[0])
 
     def change_description_tag(self, offer):
         description_tag = offer.xpath("description")[0]
@@ -746,25 +799,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     offer.getparent().remove(offer)
                     continue
 
-                if (self.add_drop_price_check_box.checkState() == Qt.Checked
-                        and "drop_price" in output_id_products_dict[product_id].keys()):
-                    price_drop = output_id_products_dict[product_id]["drop_price"]
-                    price_drop_tag = offer.xpath("price_drop")
-                    if not price_drop_tag:
-                        drop_price_tag = etree.Element("price_drop")
-                        drop_price_tag.text = str(price_drop)
-                        price.addnext(drop_price_tag)
-                    else:
-                        price_drop_tag[0].text = str(price_drop)
+                self.add_dropprice_element(offer, output_id_products_dict, price, product_id)
 
                 # Get all picture tags. Reduce their count to 10 from end.
-                pictures: list = offer.xpath("picture")
-                if len(pictures) > 10:
-                    print("Deleting of the picture elements:")
-                    for i in range((len(pictures) - 10)):
-                        picture_element = pictures.pop()
-                        picture_element.getparent().remove(picture_element)
-                        print("Deleted:", picture_element)
+                self.reduce_picture_elements(offer)
+
+                # Paste a text from self.description_text to the description tag
+                # if self.offers_prefix_description is not None:
+                prefix_description = self.offers_prefix_description
+                old_description = offer.xpath("description")[0].text
+                old_description = old_description if old_description is not None else ""
+                new_description = " <![CDATA[" + prefix_description + old_description + "]]>"
+                offer.xpath("description")[0].text = new_description
+
+    def reduce_picture_elements(self, offer):
+        pictures: list = offer.xpath("picture")
+        if len(pictures) > 10:
+            print("Deleting of the picture elements:")
+            for i in range((len(pictures) - 10)):
+                picture_element = pictures.pop()
+                picture_element.getparent().remove(picture_element)
+                print("Deleted:", picture_element)
+
+    def add_dropprice_element(self, offer, output_id_products_dict, price, product_id):
+        if (self.add_drop_price_check_box.checkState() == Qt.Checked
+                and "drop_price" in output_id_products_dict[product_id].keys()):
+            price_drop = output_id_products_dict[product_id]["drop_price"]
+            price_drop_tag = offer.xpath("price_drop")
+            if not price_drop_tag:
+                drop_price_tag = etree.Element("price_drop")
+                drop_price_tag.text = str(price_drop)
+                price.addnext(drop_price_tag)
+            else:
+                price_drop_tag[0].text = str(price_drop)
 
     def get_output_id_products_dict(self):
         final_product_model = self.output_products_table_view.model().sourceModel()
@@ -1167,12 +1234,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populate_input_products_replacement_table()
 
     def populate_input_products_replacement_table(self):
-        for product_id, product_data in self.input_products_replacement_dict.items():
+        for product_id, product_name_item in self.input_products_replacement_dict.items():
             product_id_item = QStandardItem()
             product_id_item.setData(product_id, Qt.DisplayRole)
             product_id_item.setEditable(False)
-            product_data.setEditable(False)
-            self.input_product_names_model.appendRow([product_data, product_id_item])
+            product_name_item.setEditable(False)
+            self.input_product_names_model.appendRow([product_name_item, product_id_item])
         self.input_product_names_table_view.resizeColumnsToContents()
 
     def populate_input_categories_replacement_table(self):
@@ -1183,10 +1250,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_category_names_table_view.resizeColumnsToContents()
 
     def parse(self, file_path):
-        if file_path is None:
+        if not file_path:
             return False
         parser = etree.XMLParser(encoding="windows-1251")
-        self.input_xml_tree = etree.parse(file_path, parser=parser)
+        try:
+            self.input_xml_tree = etree.parse(file_path, parser=parser)
+        except etree.XMLSyntaxError as e:
+            print(e)
+            error_message = "Помилка парсингу XML файлу"
+            QMessageBox.critical(self, "Помилка", error_message)
+            return False
         self.output_xml_tree: ElementTree = copy.deepcopy(self.input_xml_tree)
         self.get_category_ids_and_names_from_xml()
         self.get_offers_from_xml()
@@ -1197,13 +1270,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def get_offers_from_xml(self):
         offer_tags = self.input_xml_tree.xpath("//offer")
         for offer_tag in offer_tags:
+            offer_is_available = MainWindow.check_for_availability(offer_tag)
+            if not offer_is_available:
+                continue
             category_id_item, product_id, product_name_item, product_price_item = self.create_product(offer_tag)
             print("product_id: ", product_id)
             self.input_products_dict[product_id] = {"product_name": product_name_item,
                                                     "product_price": product_price_item,
                                                     "category_id": category_id_item}
-            product_name_item = self.create_product_name_item(offer_tag)
+            # product_name_item = self.create_product_name_item(offer_tag)
+            product_name_item = self.create_product_name_item_without_checkboxes(offer_tag)
             self.input_products_replacement_dict[product_id] = product_name_item
+
+    @staticmethod
+    def check_for_availability(offer_tag):
+        return offer_tag.get("available").strip() == "true"
+
+    @staticmethod
+    def create_product_name_item_without_checkboxes(offer_tag):
+        product_name = offer_tag.xpath("name")[0].text.strip()
+        product_name_item = QStandardItem()
+        product_name_item.setData(product_name, Qt.DisplayRole)
+        # product_name_item.setCheckable(True)
+        return product_name_item
 
     def get_category_ids_and_names_from_xml(self):
         category_elems = self.input_xml_tree.xpath("//category")
@@ -1211,7 +1300,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             category_id, category_name_item = self.create_category_item(category)
             self.categoryid_parent_ids_dict[category_id] = category.get("parentId")
             self.input_categories_dict[category_id] = category_name_item.data(Qt.DisplayRole)
-            category_id, category_name_item = self.create_category_item(category)
+            # category_id, category_name_item = self.create_category_item(category)
+            category_id, category_name_item = self.create_category_item_without_checkboxes(category)
             self.input_categories_replacement_dict[category_id] = category_name_item
             self.output_categories_replacement_dict[category_name_item.data(Qt.DisplayRole)] = set()
 
@@ -1251,6 +1341,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         category_name = category.text.strip()
         category_name_item: QStandardItem = QStandardItem()
         category_name_item.setCheckable(True)
+        category_name_item.setData(category_name, Qt.DisplayRole)
+        return category_id, category_name_item
+
+    @staticmethod
+    def create_category_item_without_checkboxes(category):
+        category_id = category.get("id").strip()
+        category_name = category.text.strip()
+        category_name_item: QStandardItem = QStandardItem()
+        # category_name_item.setCheckable(True)
         category_name_item.setData(category_name, Qt.DisplayRole)
         return category_id, category_name_item
 
