@@ -811,7 +811,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # add new attribute selling_type="w" to offer element
                 offer.attrib["selling_type"] = "w"
 
-                # create a new xml element <minimum_order_quantity>1</minimum_order_quantity>
+                # create a new xml tag <minimum_order_quantity>1</minimum_order_quantity>
                 self.create_minimum_order_quantity_element(offer)
 
     def create_minimum_order_quantity_element(self, offer):
