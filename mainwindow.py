@@ -806,11 +806,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 # Paste a text from self.description_text to the description tag
                 # if self.offers_prefix_description is not None:
-                prefix_description = self.offers_prefix_description
-                old_description = offer.xpath("description")[0].text
-                old_description = old_description if old_description is not None else ""
-                new_description = " <![CDATA[" + prefix_description + old_description + "]]>"
-                offer.xpath("description")[0].text = new_description
+                self.change_description(offer)
+
+
+
+    def change_description(self, offer):
+        prefix_description = self.offers_prefix_description
+        old_description = offer.xpath("description")[0].text
+        old_description = old_description if old_description is not None else ""
+        new_description = " <![CDATA[" + prefix_description + old_description + "]]>"
+        offer.xpath("description")[0].text = new_description
 
     def reduce_picture_elements(self, offer):
         pictures: list = offer.xpath("picture")
