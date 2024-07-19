@@ -808,7 +808,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # if self.offers_prefix_description is not None:
                 self.change_description(offer)
 
+                # add new attribute selling_type="w" to offer element
+                offer.attrib["selling_type"] = "w"
 
+                # create a new xml element <minimum_order_quantity>1</minimum_order_quantity>
+                self.create_minimum_order_quantity_element(offer)
+
+    def create_minimum_order_quantity_element(self, offer):
+        minimum_order_quantity = offer.xpath("minimum_order_quantity")
+        if len(minimum_order_quantity) == 0:
+            minimum_order_quantity = etree.Element("minimum_order_quantity")
+            minimum_order_quantity.text = "1"
+            offer.xpath("picture")[-1].addnext(minimum_order_quantity)
 
     def change_description(self, offer):
         prefix_description = self.offers_prefix_description
@@ -895,6 +906,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pattern = r"</price_drop>"
         new_text = r"</price_drop>\n"
         new_content = re.sub(rf"{pattern}", new_text, text, flags=re.MULTILINE)
+        pattern = r"</minimum_order_quantity>"
+        new_text = r"</minimum_order_quantity>\n"
+        new_content = re.sub(rf"{pattern}", new_text, new_content, flags=re.MULTILINE)
         with open(filename, "w") as f:
             f.write(new_content)
 
